@@ -11,6 +11,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read   # to see GitHub's own "pages build and deployment" run (see the deploy job)
 
 concurrency:
   group: pages
@@ -38,5 +39,21 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # If the repo's Pages source is still "Deploy from a branch", GitHub also runs its own
+      # "pages build and deployment" on every push, publishing the raw repo. Whichever deployment
+      # finishes last is what gets served, so wait for that run to end before deploying ours.
+      # With the source set to "GitHub Actions" there is no such run and this exits at once.
+      - name: Wait for any branch-mode Pages build on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 36); do
+            pending=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=${{ github.sha }}&per_page=30" \
+              --jq '[.workflow_runs[] | select(.name == "pages build and deployment" and .status != "completed")] | length')
+            echo "branch-mode Pages builds still running: $pending"
+            [ "$pending" = "0" ] && exit 0
+            sleep 10
+          done
+          echo "Timed out after 6 minutes; deploying anyway"
       - id: deployment
         uses: actions/deploy-pages@v4
