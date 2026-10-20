@@ -80,9 +80,9 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   border-bottom: 0.2rem solid var(--line-soft);
   z-index: 3;
 }
-.eras { display: flex; gap: 2.4rem; }
+.eras { --dot: 9.6rem; --dot-gap: 2.4rem; position: relative; display: flex; gap: var(--dot-gap); }
 .era-dot {
-  width: 9.6rem; height: 9.6rem;
+  width: var(--dot); height: var(--dot);
   border-radius: 50%;
   border: var(--stroke) solid var(--ink);
   display: grid; place-items: center;
@@ -93,8 +93,15 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   transition: background .2s, color .2s, border-color .2s;
 }
 .era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
-/* Era in view: a second ring outside the dot, with a gap the colour of the HUD. */
-.era-dot[data-current="true"] { box-shadow: 0 0 0 0.6rem #efefef, 0 0 0 1rem var(--ink); }
+/* One ring, 1rem outside the dot, slides along the row to the era in view (--era-index). */
+.era-ring {
+  position: absolute; left: -1rem; top: -1rem;
+  width: calc(var(--dot) + 2rem); height: calc(var(--dot) + 2rem);
+  border: var(--stroke) solid var(--ink); border-radius: 50%;
+  pointer-events: none;
+  transform: translateX(calc(var(--era-index, 0) * (var(--dot) + var(--dot-gap))));
+  transition: transform .35s cubic-bezier(.2, .7, .2, 1);
+}
 .era-dot[data-state="cleared"]::after {
   content: '✓'; position: absolute; right: -0.6rem; top: -0.6rem;
   width: 3.6rem; height: 3.6rem; border-radius: 50%;
@@ -392,6 +399,10 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   font: 700 4.4rem/1 var(--font-display);
 }
 .step__text .t-heading { margin-bottom: 0.8rem; }
+
+/* Menu */
+.menu { display: flex; flex-direction: column; gap: 3.2rem; }
+.menu__hint { text-align: center; margin-top: 4.8rem; }
 
 /* About */
 .bullets { padding-left: 2.4rem; text-indent: -2.4rem; }

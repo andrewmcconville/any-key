@@ -12,6 +12,7 @@ const routes = [
       { path: 'start',       name: 'start',      component: () => import('../views/StartView.vue') },
       { path: 'key/:id',     name: 'key',        component: () => import('../views/KeyDetailView.vue'), props: true },
       { path: 'stats',       name: 'stats',      component: () => import('../views/StatsView.vue') },
+      { path: 'menu',        name: 'menu',       component: () => import('../views/MenuView.vue') },
       { path: 'how-to-play', name: 'how-to-play', component: () => import('../views/HowToPlayView.vue') },
       { path: 'about',       name: 'about',      component: () => import('../views/AboutView.vue') },
       { path: 'reset',       name: 'reset',      component: () => import('../views/ResetView.vue') },

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ERAS, KEYS, ERA_WIDTH } from '../data/content';
 import { UNLOCK_AT, useGameStore } from '../stores/game';
@@ -48,6 +48,7 @@ function onScroll() {
 }
 
 function scrollToEra(eraId, behavior = 'smooth') {
+  stopGlide();
   board.value?.scrollTo({ left: padLeft() + (eraId - 1) * ERA_WIDTH * scale(), behavior });
 }
 
@@ -56,16 +57,22 @@ onMounted(onScroll);
 
 // Click-and-drag scrolling for the mouse (touch already scrolls natively). A press only becomes
 // a drag after DRAG_PX of movement, so an ordinary click on a key still opens it; once it is a
-// drag, the pointer is captured and the click that follows the release is swallowed.
+// drag, the pointer is captured and the click that follows the release is swallowed. Releasing
+// mid-motion (a flick) hands the release velocity to a glide that decays with friction.
 const DRAG_PX = 6;
+const VELOCITY_WINDOW_MS = 100;   // pointer samples this recent set the release velocity
+const FRICTION = 0.95;            // share of velocity kept per 16ms of glide
+const MIN_VELOCITY = 0.02;        // px/ms; the glide stops below this
 const dragging = ref(false);
-let drag = null;            // { id, startX, startScroll, moved }
+let drag = null;            // { id, startX, startScroll, moved, samples: [{ t, x }] }
 let swallowClick = false;
+let glide = null;           // requestAnimationFrame id while coasting
 
 function onPointerDown(e) {
   if (e.pointerType === 'touch' || e.button !== 0) return;
+  stopGlide();
   swallowClick = false;
-  drag = { id: e.pointerId, startX: e.clientX, startScroll: board.value.scrollLeft, moved: false };
+  drag = { id: e.pointerId, startX: e.clientX, startScroll: board.value.scrollLeft, moved: false, samples: [] };
 }
 function onPointerMove(e) {
   if (!drag || e.pointerId !== drag.id) return;
@@ -74,19 +81,52 @@ function onPointerMove(e) {
     if (Math.abs(dx) < DRAG_PX) return;
     drag.moved = true;
     dragging.value = true;
-    board.value.setPointerCapture(e.pointerId);
+    try { board.value.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
   }
   board.value.scrollLeft = drag.startScroll - dx;
+  drag.samples.push({ t: e.timeStamp, x: e.clientX });
+  while (drag.samples.length && drag.samples[0].t < e.timeStamp - VELOCITY_WINDOW_MS) drag.samples.shift();
 }
 function onPointerUp(e) {
   if (!drag || e.pointerId !== drag.id) return;
   if (drag.moved) {
-    board.value.releasePointerCapture(e.pointerId);
+    try { board.value.releasePointerCapture(e.pointerId); } catch { /* already released */ }
     swallowClick = true;
+    startGlide(-releaseVelocity(drag.samples, e.timeStamp));
   }
   drag = null;
   dragging.value = false;
 }
+
+/** Pointer velocity (px/ms) over the recent samples; 0 if the pointer paused before release. */
+function releaseVelocity(samples, now) {
+  if (samples.length < 2) return 0;
+  const first = samples[0], last = samples[samples.length - 1];
+  if (now - last.t > VELOCITY_WINDOW_MS || last.t === first.t) return 0;
+  return (last.x - first.x) / (last.t - first.t);
+}
+function startGlide(velocity) {
+  if (Math.abs(velocity) < MIN_VELOCITY) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let v = velocity;
+  let last = performance.now();
+  const step = now => {
+    const el = board.value;
+    if (!el) return;
+    const dt = Math.min(now - last, 50);   // a stalled frame must not jump the board
+    last = now;
+    el.scrollTo({ left: el.scrollLeft + v * dt, behavior: 'instant' });
+    v *= FRICTION ** (dt / 16);
+    const atEdge = el.scrollLeft <= 0 || el.scrollLeft >= el.scrollWidth - el.clientWidth;
+    glide = Math.abs(v) < MIN_VELOCITY || atEdge ? null : requestAnimationFrame(step);
+  };
+  glide = requestAnimationFrame(step);
+}
+function stopGlide() {
+  if (glide) cancelAnimationFrame(glide);
+  glide = null;
+}
+onUnmounted(stopGlide);
 function onClickCapture(e) {
   if (!swallowClick) return;
   swallowClick = false;
@@ -112,6 +152,7 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
     @pointercancel="onPointerUp"
+    @wheel.passive="stopGlide"
     @click.capture="onClickCapture"
   >
     <div class="track" :style="trackStyle">

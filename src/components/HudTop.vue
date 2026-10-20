@@ -9,7 +9,7 @@ const ui = useUiStore();
 const shaking = ref(null);
 const pop = ref(false);
 
-// locked → dashed, open → white, cleared → white + ✓. The era in view gets a ring (data-current).
+// locked → dashed, open → white, cleared → white + ✓. One ring slides to the era in view.
 function dotState(era) {
   if (!game.isUnlocked(era.id)) return 'locked';
   return game.eraCleared(era.id) ? 'cleared' : 'open';
@@ -34,13 +34,14 @@ watch(() => game.count, () => {
 <template>
   <header class="hud-top">
     <div class="eras" aria-label="Eras">
+      <div class="era-ring" :style="{ '--era-index': ui.eraInView - 1 }" aria-hidden="true" />
       <button
         v-for="era in ERAS"
         :key="era.id"
         class="era-dot"
         :class="{ shake: shaking === era.id }"
         :data-state="dotState(era)"
-        :data-current="era.id === ui.eraInView"
+        :aria-current="era.id === ui.eraInView ? 'location' : null"
         type="button"
         :aria-label="`Era ${era.numeral} · ${era.name}`"
         @click="onDot(era)"
