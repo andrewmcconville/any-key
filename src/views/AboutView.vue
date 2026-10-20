@@ -24,3 +24,8 @@ const about = COPY.about;
     <template #footer><AppButton @click="close">CLOSE</AppButton></template>
   </ModalShell>
 </template>
+
+<style scoped>
+.bullets { padding-left: 2.4rem; text-indent: -2.4rem; }
+.bullets p { margin: 0 0 1.2rem; }
+</style>

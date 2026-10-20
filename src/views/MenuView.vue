@@ -18,3 +18,8 @@ const go = name => router.replace({ name });
     <p class="menu__hint t-label t-label--lc muted">Esc opens and closes this menu</p>
   </ModalShell>
 </template>
+
+<style scoped>
+.menu { display: flex; flex-direction: column; gap: 3.2rem; }
+.menu__hint { text-align: center; margin-top: 4.8rem; }
+</style>

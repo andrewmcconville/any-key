@@ -20,3 +20,14 @@ const close = () => router.replace({ path: '/' });
     <template #footer><AppButton @click="close">GOT IT</AppButton></template>
   </ModalShell>
 </template>
+
+<style scoped>
+.step { display: flex; gap: 4rem; margin-bottom: 4.8rem; }
+.step__badge {
+  width: 10rem; height: 10rem; border-radius: 50%; flex: 0 0 auto;
+  background: var(--ink); color: var(--white);
+  display: grid; place-items: center;
+  font: 700 4.4rem/1 var(--font-display);
+}
+.step__text .t-heading { margin-bottom: 0.8rem; }
+</style>

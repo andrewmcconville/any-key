@@ -64,3 +64,18 @@ function close() {
     </template>
   </ModalShell>
 </template>
+
+<style scoped>
+.meta { color: var(--muted); margin-bottom: 4.8rem; }
+.image {
+  width: 120rem; height: 40.2rem;
+  background: var(--fill-soft);
+  border-radius: 1.2rem;
+  display: grid; place-items: center;
+  text-align: center;
+  padding: 0 4.8rem;
+  color: var(--muted);
+  margin-bottom: 4.8rem;
+}
+.btn-caption { text-align: center; color: var(--muted); margin-top: 2.4rem; }
+</style>

@@ -1,4 +1,5 @@
-/* Any Key — lo-fi prototype styles.
+/* Any Key — global styles: tokens, resets, type styles, the stage and the overlay contract.
+   Everything a single component draws lives in that component's <style scoped> block.
    The Figma board is 1440 canvas px wide. 1rem = 10 canvas px, so Figma values ÷ 10 map straight onto rem. */
 
 :root {
@@ -56,6 +57,12 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 .t-label--lc { text-transform: none; }
 .muted { color: var(--muted); }
 
+/* Eyebrow + body block used by the content modals (Key detail, About). */
+.section { margin-bottom: 4.8rem; }
+.section:last-child { margin-bottom: 0; }
+.section .t-label { color: var(--muted); margin-bottom: 0.8rem; }
+.section .t-body { max-width: 110rem; }
+
 /* ---------- Stage ---------- */
 /* Fills the viewport. On a landscape screen the rem scale makes 100vh = 256rem (the phone frame);
    on a portrait phone the board simply takes whatever height is left between the HUD bars. */
@@ -70,214 +77,9 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   flex-direction: column;
 }
 
-/* ---------- HUD top ---------- */
-.hud-top {
-  flex: 0 0 16.8rem;
-  height: 16.8rem;
-  width: 100%;
-  max-width: var(--phone-w);
-  margin-inline: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 4.8rem;
-  background: #efefef;
-  border-bottom: 0.2rem solid var(--line-soft);
-  z-index: 3;
-}
-.eras { --dot: 9.6rem; --dot-gap: 2.4rem; position: relative; display: flex; gap: var(--dot-gap); }
-.era-dot {
-  width: var(--dot); height: var(--dot);
-  border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  display: grid; place-items: center;
-  font: 500 3.2rem/1 var(--font-display);
-  color: var(--ink);
-  background: var(--white);
-  position: relative;
-  transition: background .2s, color .2s, border-color .2s;
-}
-.era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
-/* One ring, 1rem outside the dot, slides along the row to the era in view (--era-index). */
-.era-ring {
-  position: absolute; left: -1rem; top: -1rem;
-  width: calc(var(--dot) + 2rem); height: calc(var(--dot) + 2rem);
-  border: var(--stroke) solid var(--ink); border-radius: 50%;
-  pointer-events: none;
-  transform: translateX(calc(var(--era-index, 0) * (var(--dot) + var(--dot-gap))));
-  transition: transform .35s cubic-bezier(.2, .7, .2, 1);
-}
-.era-dot[data-state="cleared"]::after {
-  content: '✓'; position: absolute; right: -0.6rem; top: -0.6rem;
-  width: 3.6rem; height: 3.6rem; border-radius: 50%;
-  background: var(--ink); color: var(--white);
-  font: 600 2.4rem/3.6rem var(--font-body); text-align: center;
-}
-.hud-total { display: flex; gap: 1.2rem; }
-.hud-total .count { min-width: 2.9rem; text-align: right; }
-
-/* ---------- Board ---------- */
-.board {
-  position: relative;
-  flex: 1 1 auto;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  overscroll-behavior-x: contain;
-}
-.board::-webkit-scrollbar { display: none; }
-.board { cursor: grab; }
-/* While dragging: follow the pointer directly (no smooth scrolling) and show a grabbing hand everywhere. */
-.board[data-dragging="true"] { scroll-behavior: auto; }
-.board[data-dragging="true"], .board[data-dragging="true"] * { cursor: grabbing; }
-.track {
-  /* Width and left padding set inline from the key data (see TimelineBoard.vue). */
-  box-sizing: border-box;
-  height: 100%;
-  display: flex;
-  align-items: center;    /* the tree is a fixed-height drawing; centre it so the rail sits mid-board */
-  overflow: hidden;       /* fallback */
-  overflow: clip;         /* clip the tree's empty tail without becoming a scroll container */
-}
-.tree {
-  position: relative;
-  flex: 0 0 auto;
-  width: 720rem;          /* 4 eras × 180rem */
-  height: 218.4rem;       /* twice the rail's y inside the tree (126rem − 16.8rem HUD top), so the rail is its centre */
-}
-.rail {
-  position: absolute;            /* left/width set inline: first key tick → last key tick */
-  top: calc(126rem - 16.8rem);   /* RAIL_Y minus HUD top */
-  height: 0.6rem; margin-top: -0.3rem;
-  background: var(--ink);
-}
-.rail-break {
-  position: absolute;
-  top: calc(126rem - 16.8rem);
-  width: 8rem; height: 8rem; margin-top: -4rem;
-  background: var(--paper);
-  display: grid; place-items: center;
-  font: 400 5.6rem/1 var(--font-body);
-  color: var(--ink);
-}
-.era-region {
-  position: absolute; top: 0; height: 100%;
-  width: 180rem;
-}
-.era-region__label { position: absolute; left: 4.8rem; top: calc(20.8rem - 16.8rem); color: var(--muted); }
-.era-region__lock  { position: absolute; left: 4.8rem; top: calc(26.4rem - 16.8rem); color: var(--muted); }
-.era-region[data-locked="false"] .era-region__lock { display: none; }
-.era-region[data-locked="true"] .era-region__label { opacity: .7; }
-
-.node {
-  position: absolute;
-  width: 21.6rem; height: 21.6rem;
-  margin: -10.8rem 0 0 -10.8rem;
-  border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  display: grid; place-items: center;
-  color: var(--ink);
-  transition: transform .12s, background .2s, color .2s;
-}
-.node:active { transform: scale(.94); }
-.node .glyph { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em; }
-.node[data-state="collected"] { background: var(--ink); color: var(--white); }
-.node[data-state="collected"] .glyph { font: 600 7.2rem/1 var(--font-body); }
-.node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
-.node[data-state="locked"] .glyph { font: 600 2.8rem/1 var(--font-body); color: var(--muted); }
-.node.shake, .era-dot.shake { animation: shake .4s; }
-@keyframes shake {
-  20%, 60% { transform: translateX(-1.2rem); }
-  40%, 80% { transform: translateX(1.2rem); }
-}
-.node-label {
-  position: absolute;
-  width: 36rem; margin-left: -18rem;
-  text-align: center;
-  pointer-events: none;
-}
-.node-label .name { font: 400 3.2rem/4.6rem var(--font-body); }
-.node-label .year { font: 500 2.6rem/3.4rem var(--font-display); color: var(--muted); letter-spacing: .02em; }
-.node-label[data-locked="true"] { color: var(--muted); }
-.connector {
-  position: absolute;
-  width: 0; margin-left: -0.15rem;
-  border-left: 0.3rem dashed var(--muted);
-  pointer-events: none;
-}
-.rail-dot {
-  position: absolute;
-  width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;
-  border-radius: 50%; background: var(--ink);
-  top: calc(126rem - 16.8rem);
-}
-.swipe-hint {
-  position: absolute;
-  top: calc(50% + 4.8rem);         /* just under the rail, which sits at the board's vertical centre */
-  right: 4.8rem;                   /* right edge of the board at scroll start */
-  width: 43.2rem; text-align: right;
-  color: var(--muted);
-  transition: opacity .3s;
-}
-.board[data-scrolled="true"] .swipe-hint { opacity: 0; }
-
-/* ---------- HUD bottom ---------- */
-.hud-bottom {
-  flex: 0 0 19.2rem;
-  height: 19.2rem;
-  width: 100%;
-  max-width: var(--phone-w);
-  margin-inline: auto;
-  display: flex;
-  align-items: center;
-  gap: 3.2rem;
-  padding: 0 4.8rem;
-  background: #efefef;
-  border-top: 0.2rem solid var(--line-soft);
-  z-index: 3;
-}
-.hud-btn {
-  flex: 1 1 0;
-  height: 13.6rem;
-  display: grid; place-items: center;
-  text-decoration: none; color: var(--ink);
-  border-radius: 1.6rem;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em;
-  transition: transform .08s;
-}
-.hud-btn:active { transform: translateY(0.4rem); }
-.hud-btn--quiet { border-color: transparent; background: #f8f8f8; }
-
-/* ---------- Buttons ---------- */
-.btn {
-  width: 100%;
-  height: 16rem;
-  border-radius: var(--radius);
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  color: var(--ink);
-  font: 700 4.4rem/5.2rem var(--font-display);
-  text-transform: uppercase;
-  display: grid; place-items: center;
-  transition: transform .08s, background .2s, color .2s, box-shadow .08s;
-}
-.btn:active { transform: translateY(0.4rem); }
-.btn--solid { background: var(--ink); color: var(--white); }
-.btn--keycap {
-  height: 19.2rem;
-  box-shadow: 0 1.2rem 0 var(--ink);
-  margin-bottom: 1.2rem;
-}
-.btn--keycap:active { transform: translateY(1.2rem); box-shadow: 0 0 0 var(--ink); }
-.btn--keycap.btn--solid { box-shadow: none; }
-.btn--keycap.btn--solid:active { transform: none; }
-.btn-caption { text-align: center; color: var(--muted); margin-top: 2.4rem; }
-
-/* ---------- Overlays & modals ---------- */
+/* ---------- Overlay contract ----------
+   Every overlay route renders a .layer as its root; TimelineView wraps the RouterView in
+   <Transition name="layer" mode="out-in">, which adds the enter/leave classes below. */
 .layer {
   position: absolute; inset: 0;
   z-index: 10;
@@ -285,157 +87,14 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   background: var(--scrim);
   transition: opacity .2s;
 }
-.layer--start { background: rgba(38,38,38,.85); }
 .layer-enter-from, .layer-leave-to { opacity: 0; }
-.layer-enter-from .modal { transform: translateY(2.4rem) scale(.98); }
 
-.modal {
-  width: 129.6rem;
-  max-height: 236rem;
-  background: var(--white);
-  border-radius: 4.8rem;
-  border: 0.2rem solid var(--line-soft);
-  padding: 4.8rem;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-  transition: transform .2s;
+/* Shared animation: locked keys and locked era dots shake when tapped. */
+@keyframes shake {
+  20%, 60% { transform: translateX(-1.2rem); }
+  40%, 80% { transform: translateX(1.2rem); }
 }
-.modal__header {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 2.4rem;
-  margin-bottom: 4.8rem;
-}
-.modal__scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; min-height: 0; }
-.modal__scroll::-webkit-scrollbar { display: none; }
-.modal__footer { margin-top: 4.8rem; flex: 0 0 auto; }
-.close {
-  width: 14.4rem; height: 14.4rem; flex: 0 0 auto;
-  border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  display: grid; place-items: center;
-}
-.close svg { width: 5.6rem; height: 5.6rem; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; fill: none; }
-.close:active { transform: scale(.94); }
-
-.section { margin-bottom: 4.8rem; }
-.section:last-child { margin-bottom: 0; }
-.section .t-label { color: var(--muted); margin-bottom: 0.8rem; }
-.section .t-body { max-width: 110rem; }
-
-/* Key detail */
-.meta { color: var(--muted); margin-bottom: 4.8rem; }
-.image {
-  width: 120rem; height: 40.2rem;
-  background: var(--fill-soft);
-  border-radius: 1.2rem;
-  display: grid; place-items: center;
-  text-align: center;
-  padding: 0 4.8rem;
-  color: var(--muted);
-  margin-bottom: 4.8rem;
-}
-
-/* Start */
-.start {
-  width: 144rem; height: 256rem;
-  position: relative;
-  color: var(--white);
-  text-align: center;
-  cursor: pointer;
-}
-.start__title { position: absolute; left: 12rem; width: 120rem; top: 134rem; color: var(--white); }
-.start__sub   { position: absolute; left: 16rem; width: 112rem; top: 158rem; }
-.start__btn   { position: absolute; left: 27rem; width: 90rem; top: 190rem; }
-.start__cap   { position: absolute; left: 16rem; width: 112rem; top: 218rem; }
-.start .btn--keycap { background: var(--white); color: var(--ink); border-color: var(--ink); }
-
-/* Toast */
-.toast {
-  position: absolute;
-  left: calc(50% - 60rem); width: 120rem; height: 18rem;
-  top: 21.6rem;
-  z-index: 8;
-  border-radius: 3.2rem;
-  background: var(--ink); color: var(--white);
-  display: grid; place-items: center;
-  text-align: center;
-  transform: translateY(-4rem); opacity: 0; pointer-events: none;
-  transition: transform .25s, opacity .25s;
-}
-.toast[data-open="true"] { transform: none; opacity: 1; pointer-events: auto; }
-
-/* Stats */
-.stats-summary { color: var(--muted); margin-bottom: 4.8rem; }
-.stats-era { margin-bottom: 4.8rem; }
-.stats-era__label { font: 700 4rem/5.2rem var(--font-display); color: var(--muted); margin-bottom: 2.4rem; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 26.4rem); gap: 4.8rem; }
-.stat { display: flex; flex-direction: column; align-items: center; gap: 2.4rem; }
-.stat__circle {
-  width: 14.4rem; height: 14.4rem; border-radius: 50%;
-  border: var(--stroke) solid var(--muted);
-  display: grid; place-items: center;
-  font: 600 5rem/1 var(--font-body); color: var(--muted);
-}
-.stat[data-state="locked"] .stat__circle { border-style: dashed; }
-.stat[data-state="collected"] .stat__circle { background: var(--ink); border-color: var(--ink); color: var(--white); }
-.stat__label { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em; text-align: center; }
-.ach-list { display: flex; flex-direction: column; gap: 2.4rem; margin-top: 2.4rem; }
-.ach {
-  min-height: 13.6rem;
-  border: 0.3rem solid var(--line-soft);
-  border-radius: 2.4rem;
-  display: flex; align-items: center; gap: 3.2rem;
-  padding: 1.6rem 3.2rem;
-}
-.ach__circle {
-  width: 7rem; height: 7rem; border-radius: 50%; flex: 0 0 auto;
-  border: var(--stroke) solid var(--ink);
-  display: grid; place-items: center;
-  font: 600 4rem/1 var(--font-body);
-}
-.ach[data-done="true"] .ach__circle { background: var(--ink); color: var(--white); }
-.ach[data-done="true"] { border-color: var(--ink); }
-.ach__sub { color: var(--muted); }
-
-/* How to play */
-.step { display: flex; gap: 4rem; margin-bottom: 4.8rem; }
-.step__badge {
-  width: 10rem; height: 10rem; border-radius: 50%; flex: 0 0 auto;
-  background: var(--ink); color: var(--white);
-  display: grid; place-items: center;
-  font: 700 4.4rem/1 var(--font-display);
-}
-.step__text .t-heading { margin-bottom: 0.8rem; }
-
-/* Menu */
-.menu { display: flex; flex-direction: column; gap: 3.2rem; }
-.menu__hint { text-align: center; margin-top: 4.8rem; }
-
-/* About */
-.bullets { padding-left: 2.4rem; text-indent: -2.4rem; }
-.bullets p { margin: 0 0 1.2rem; }
-
-/* Completion */
-.modal.completion { width: 120rem; text-align: center; padding: 8.2rem 4.8rem 6rem; }
-.completion .t-display { margin-bottom: 4rem; }
-.completion .t-heading { margin-bottom: 2.4rem; }
-.completion .ach-line { color: var(--muted); margin-bottom: 4rem; }
-.completion .t-body { color: var(--muted); margin-bottom: 9.6rem; }
-.completion .btn + .btn { margin-top: 3.2rem; }
-
-/* Reset */
-.modal.reset { width: 112rem; text-align: center; padding: 8rem; }
-.reset .t-title { margin-bottom: 4rem; }
-.reset .t-body { color: var(--muted); margin-bottom: 8rem; white-space: pre-line; }
-.reset__buttons { display: flex; gap: 3.6rem; }
-.reset__buttons .btn { height: 17rem; }
-
-/* Pulse the HUD count when it changes */
-@keyframes pop { 50% { transform: scale(1.18); } }
-.pop { animation: pop .3s; display: inline-block; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
-  .board { scroll-behavior: auto; }
 }

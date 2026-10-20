@@ -191,3 +191,71 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
     <p class="swipe-hint t-label t-label--lc">swipe to explore →</p>
   </main>
 </template>
+
+<style scoped>
+.board {
+  position: relative;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+}
+.board::-webkit-scrollbar { display: none; }
+/* While dragging: follow the pointer directly (no smooth scrolling) and show a grabbing hand everywhere. */
+.board[data-dragging="true"] { scroll-behavior: auto; }
+.board[data-dragging="true"], .board[data-dragging="true"] :deep(*) { cursor: grabbing; }
+.track {
+  /* Width and left padding set inline from the key data (see <script>). */
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  align-items: center;    /* the tree is a fixed-height drawing; centre it so the rail sits mid-board */
+  overflow: hidden;       /* fallback */
+  overflow: clip;         /* clip the tree's empty tail without becoming a scroll container */
+}
+.tree {
+  position: relative;
+  flex: 0 0 auto;
+  width: 720rem;          /* 4 eras × 180rem */
+  height: 218.4rem;       /* twice the rail's y inside the tree (126rem − 16.8rem HUD top), so the rail is its centre */
+}
+.rail {
+  position: absolute;            /* left/width set inline: first key tick → last key tick */
+  top: calc(126rem - 16.8rem);   /* RAIL_Y minus HUD top */
+  height: 0.6rem; margin-top: -0.3rem;
+  background: var(--ink);
+}
+.rail-break {
+  position: absolute;
+  top: calc(126rem - 16.8rem);
+  width: 8rem; height: 8rem; margin-top: -4rem;
+  background: var(--paper);
+  display: grid; place-items: center;
+  font: 400 5.6rem/1 var(--font-body);
+  color: var(--ink);
+}
+.era-region {
+  position: absolute; top: 0; height: 100%;
+  width: 180rem;
+}
+.era-region__label { position: absolute; left: 4.8rem; top: calc(20.8rem - 16.8rem); color: var(--muted); }
+.era-region__lock  { position: absolute; left: 4.8rem; top: calc(26.4rem - 16.8rem); color: var(--muted); }
+.era-region[data-locked="false"] .era-region__lock { display: none; }
+.era-region[data-locked="true"] .era-region__label { opacity: .7; }
+.swipe-hint {
+  position: absolute;
+  top: calc(50% + 4.8rem);         /* just under the rail, which sits at the board's vertical centre */
+  right: 4.8rem;                   /* right edge of the board at scroll start */
+  width: 43.2rem; text-align: right;
+  color: var(--muted);
+  transition: opacity .3s;
+}
+.board[data-scrolled="true"] .swipe-hint { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .board { scroll-behavior: auto; }
+}
+</style>

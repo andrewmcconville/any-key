@@ -5,8 +5,14 @@ import CloseButton from './CloseButton.vue';
 const props = defineProps({
   title: { type: String, default: '' },
   titleId: { type: String, default: 'modal-title' },
-  /** 'default' | 'completion' | 'reset' */
-  variant: { type: String, default: 'default' },
+  /** Panel width, a CSS length. */
+  width: { type: String, default: '129.6rem' },
+  /** Text alignment inside the panel: 'start' | 'center'. */
+  align: { type: String, default: 'start' },
+  /** Panel padding, a CSS shorthand. */
+  padding: { type: String, default: '4.8rem' },
+  /** 'dialog' | 'alertdialog' */
+  role: { type: String, default: 'dialog' },
   /** Show the × and allow Esc / backdrop to close */
   closable: { type: Boolean, default: true },
 });
@@ -23,8 +29,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   <div class="layer" @click.self="closable && emit('close')">
     <section
       class="modal"
-      :class="{ completion: variant === 'completion', reset: variant === 'reset' }"
-      :role="variant === 'reset' ? 'alertdialog' : 'dialog'"
+      :style="{ width, padding, textAlign: align }"
+      :role="role"
       aria-modal="true"
       :aria-labelledby="titleId"
     >
@@ -41,3 +47,25 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
     </section>
   </div>
 </template>
+
+<style scoped>
+.modal {
+  max-height: 236rem;
+  background: var(--white);
+  border-radius: 4.8rem;
+  border: 0.2rem solid var(--line-soft);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: transform .2s;
+}
+/* The panel rises into place while the layer fades in (see the overlay contract in styles.css). */
+.layer-enter-from .modal { transform: translateY(2.4rem) scale(.98); }
+.modal__header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2.4rem;
+  margin-bottom: 4.8rem;
+}
+.modal__scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; min-height: 0; }
+.modal__scroll::-webkit-scrollbar { display: none; }
+.modal__footer { margin-top: 4.8rem; flex: 0 0 auto; }
+</style>

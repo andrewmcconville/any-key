@@ -41,3 +41,37 @@ const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
     </div>
   </ModalShell>
 </template>
+
+<style scoped>
+.stats-summary { color: var(--muted); margin-bottom: 4.8rem; }
+.stats-era { margin-bottom: 4.8rem; }
+.stats-era__label { font: 700 4rem/5.2rem var(--font-display); color: var(--muted); margin-bottom: 2.4rem; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 26.4rem); gap: 4.8rem; }
+.stat { display: flex; flex-direction: column; align-items: center; gap: 2.4rem; }
+.stat__circle {
+  width: 14.4rem; height: 14.4rem; border-radius: 50%;
+  border: var(--stroke) solid var(--muted);
+  display: grid; place-items: center;
+  font: 600 5rem/1 var(--font-body); color: var(--muted);
+}
+.stat[data-state="locked"] .stat__circle { border-style: dashed; }
+.stat[data-state="collected"] .stat__circle { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.stat__label { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em; text-align: center; }
+.ach-list { display: flex; flex-direction: column; gap: 2.4rem; margin-top: 2.4rem; }
+.ach {
+  min-height: 13.6rem;
+  border: 0.3rem solid var(--line-soft);
+  border-radius: 2.4rem;
+  display: flex; align-items: center; gap: 3.2rem;
+  padding: 1.6rem 3.2rem;
+}
+.ach__circle {
+  width: 7rem; height: 7rem; border-radius: 50%; flex: 0 0 auto;
+  border: var(--stroke) solid var(--ink);
+  display: grid; place-items: center;
+  font: 600 4rem/1 var(--font-body);
+}
+.ach[data-done="true"] .ach__circle { background: var(--ink); color: var(--white); }
+.ach[data-done="true"] { border-color: var(--ink); }
+.ach__sub { color: var(--muted); }
+</style>

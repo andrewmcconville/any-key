@@ -60,3 +60,45 @@ function onPress() {
     <div class="year">{{ node.year }}</div>
   </div>
 </template>
+
+<style scoped>
+.node {
+  position: absolute;
+  width: 21.6rem; height: 21.6rem;
+  margin: -10.8rem 0 0 -10.8rem;
+  border-radius: 50%;
+  border: var(--stroke) solid var(--ink);
+  background: var(--white);
+  display: grid; place-items: center;
+  color: var(--ink);
+  transition: transform .12s, background .2s, color .2s;
+}
+.node:active { transform: scale(.94); }
+.node .glyph { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em; }
+.node[data-state="collected"] { background: var(--ink); color: var(--white); }
+.node[data-state="collected"] .glyph { font: 600 7.2rem/1 var(--font-body); }
+.node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
+.node[data-state="locked"] .glyph { font: 600 2.8rem/1 var(--font-body); color: var(--muted); }
+.node.shake { animation: shake .4s; }
+.node-label {
+  position: absolute;
+  width: 36rem; margin-left: -18rem;
+  text-align: center;
+  pointer-events: none;
+}
+.node-label .name { font: 400 3.2rem/4.6rem var(--font-body); }
+.node-label .year { font: 500 2.6rem/3.4rem var(--font-display); color: var(--muted); letter-spacing: .02em; }
+.node-label[data-locked="true"] { color: var(--muted); }
+.connector {
+  position: absolute;
+  width: 0; margin-left: -0.15rem;
+  border-left: 0.3rem dashed var(--muted);
+  pointer-events: none;
+}
+.rail-dot {
+  position: absolute;
+  width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;
+  border-radius: 50%; background: var(--ink);
+  top: calc(126rem - 16.8rem);
+}
+</style>
