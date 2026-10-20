@@ -14,6 +14,8 @@
   --stroke: 0.4rem;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  /* Phone frame width (the Figma board). The HUD bars never grow past it; the board does. */
+  --phone-w: 144rem;
 }
 
 html {
@@ -28,6 +30,7 @@ body {
   color: var(--ink);
   font-family: var(--font-body);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);   /* keep the column at viewport width; the board's 720rem tree must not widen it */
   place-items: center;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -35,6 +38,8 @@ body {
   user-select: none;
   -webkit-user-select: none;
 }
+/* The mount point is the body's grid item; without an explicit width it shrink-wraps to the board's 720rem tree. */
+#app { width: 100%; min-width: 0; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outline-offset: 0.4rem; }
 
@@ -49,9 +54,10 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 .muted { color: var(--muted); }
 
 /* ---------- Stage ---------- */
+/* Full viewport width so the board can spread out on wide screens; height stays the phone frame. */
 .stage {
   position: relative;
-  width: 144rem;
+  width: 100%;
   height: 256rem;
   background: var(--paper);
   overflow: hidden;
@@ -63,6 +69,9 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 .hud-top {
   flex: 0 0 16.8rem;
   height: 16.8rem;
+  width: 100%;
+  max-width: var(--phone-w);
+  margin-inline: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -84,7 +93,8 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   transition: background .2s, color .2s, border-color .2s;
 }
 .era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
-.era-dot[data-state="current"] { background: var(--ink); color: var(--white); }
+/* Era in view: a second ring outside the dot, with a gap the colour of the HUD. */
+.era-dot[data-current="true"] { box-shadow: 0 0 0 0.6rem #efefef, 0 0 0 1rem var(--ink); }
 .era-dot[data-state="cleared"]::after {
   content: '✓'; position: absolute; right: -0.6rem; top: -0.6rem;
   width: 3.6rem; height: 3.6rem; border-radius: 50%;
@@ -105,13 +115,24 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   overscroll-behavior-x: contain;
 }
 .board::-webkit-scrollbar { display: none; }
+.board { cursor: grab; }
+/* While dragging: follow the pointer directly (no smooth scrolling) and show a grabbing hand everywhere. */
+.board[data-dragging="true"] { scroll-behavior: auto; }
+.board[data-dragging="true"], .board[data-dragging="true"] * { cursor: grabbing; }
+.track {
+  /* Width and left padding set inline from the key data (see TimelineBoard.vue). */
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;       /* fallback */
+  overflow: clip;         /* clip the tree's empty tail without becoming a scroll container */
+}
 .tree {
   position: relative;
   width: 720rem;          /* 4 eras × 180rem */
   height: 100%;
 }
 .rail {
-  position: absolute; left: 0; right: 0;
+  position: absolute;            /* left/width set inline: first key tick → last key tick */
   top: calc(126rem - 16.8rem);   /* RAIL_Y minus HUD top */
   height: 0.6rem; margin-top: -0.3rem;
   background: var(--ink);
@@ -180,7 +201,7 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 .swipe-hint {
   position: absolute;
   top: calc(130.8rem - 16.8rem);
-  right: calc(720rem - 139.2rem);  /* right edge at x = 1392 of the first screen */
+  right: 4.8rem;                   /* right edge of the board at scroll start */
   width: 43.2rem; text-align: right;
   color: var(--muted);
   transition: opacity .3s;
@@ -191,6 +212,9 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 .hud-bottom {
   flex: 0 0 19.2rem;
   height: 19.2rem;
+  width: 100%;
+  max-width: var(--phone-w);
+  margin-inline: auto;
   display: flex;
   align-items: center;
   gap: 3.2rem;
@@ -314,7 +338,7 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 /* Toast */
 .toast {
   position: absolute;
-  left: 12rem; width: 120rem; height: 18rem;
+  left: calc(50% - 60rem); width: 120rem; height: 18rem;
   top: 21.6rem;
   z-index: 8;
   border-radius: 3.2rem;

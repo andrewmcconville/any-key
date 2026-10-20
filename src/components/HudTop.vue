@@ -9,9 +9,9 @@ const ui = useUiStore();
 const shaking = ref(null);
 const pop = ref(false);
 
+// locked → dashed, open → white, cleared → white + ✓. The era in view gets a ring (data-current).
 function dotState(era) {
   if (!game.isUnlocked(era.id)) return 'locked';
-  if (era.id === ui.eraInView) return 'current';
   return game.eraCleared(era.id) ? 'cleared' : 'open';
 }
 
@@ -40,6 +40,7 @@ watch(() => game.count, () => {
         class="era-dot"
         :class="{ shake: shaking === era.id }"
         :data-state="dotState(era)"
+        :data-current="era.id === ui.eraInView"
         type="button"
         :aria-label="`Era ${era.numeral} · ${era.name}`"
         @click="onDot(era)"
