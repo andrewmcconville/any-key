@@ -47,9 +47,15 @@ function onScroll() {
   ui.eraInView = best;
 }
 
+// Jumping to an era centres its first key, the same spot Space bar occupies at scroll start,
+// so Era I resolves to scrollLeft 0 and every other era lands with the same framing.
 function scrollToEra(eraId, behavior = 'smooth') {
   stopGlide();
-  board.value?.scrollTo({ left: padLeft() + (eraId - 1) * ERA_WIDTH * scale(), behavior });
+  const el = board.value;
+  if (!el) return;
+  const firstKeyX = padLeft() + ((eraId - 1) * ERA_WIDTH + RAIL_START) * scale();
+  const left = Math.max(0, Math.min(firstKeyX - el.clientWidth / 2, el.scrollWidth - el.clientWidth));
+  el.scrollTo({ left, behavior });
 }
 
 watch(() => ui.scrollRequest, req => scrollToEra(req.eraId));

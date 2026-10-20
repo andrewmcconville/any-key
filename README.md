@@ -15,7 +15,11 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (http://127.0.0.1:5173 by default). `npm run build` writes a static site to `dist/` that can be served from any host, including GitHub Pages, since the router uses hash history and the Vite base is relative.
+Then open the URL Vite prints (http://127.0.0.1:5173 by default). `npm run build` writes a static site to `dist/` that can be served from any host, since the router uses hash history and the Vite base is relative.
+
+## Deploy
+
+Every push to `main` runs `.github/workflows/deploy.yml`, which builds the app and publishes `dist/` to GitHub Pages at https://andrewmcconville.github.io/any-key/. The repo's Pages source must be set to **GitHub Actions** (Settings → Pages → Build and deployment → Source); the "deploy from a branch" mode serves the raw repo and the app will not load.
 
 The app is portrait and sized to a 9:16 stage, so on a desktop browser it sits centred; on a phone or kiosk it fills the screen.
 
