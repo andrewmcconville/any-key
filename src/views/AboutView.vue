@@ -1,11 +1,10 @@
 <script setup>
-import { useRouter } from 'vue-router';
+import { useReturnTo } from '../composables/useReturnTo';
 import { COPY } from '../data/content';
 import ModalShell from '../components/ModalShell.vue';
 import AppButton from '../components/AppButton.vue';
 
-const router = useRouter();
-const close = () => router.replace({ path: '/' });
+const { close } = useReturnTo();
 const about = COPY.about;
 </script>
 

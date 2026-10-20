@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
+import { useReturnTo } from '../composables/useReturnTo';
 import { COPY } from '../data/content';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
@@ -9,7 +10,7 @@ import AppButton from '../components/AppButton.vue';
 const game = useGameStore();
 const ui = useUiStore();
 const router = useRouter();
-const close = () => router.replace({ path: '/' });
+const { close } = useReturnTo();
 
 function confirm() {
   game.reset();

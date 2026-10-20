@@ -1,12 +1,11 @@
 <script setup>
-import { useRouter } from 'vue-router';
+import { useReturnTo } from '../composables/useReturnTo';
 import { ERAS, ACHIEVEMENTS } from '../data/content';
 import { useGameStore } from '../stores/game';
 import ModalShell from '../components/ModalShell.vue';
 
 const game = useGameStore();
-const router = useRouter();
-const close = () => router.replace({ path: '/' });
+const { close } = useReturnTo();
 
 function statState(key) {
   if (game.isCollected(key.id)) return 'collected';
