@@ -11,11 +11,12 @@ const go = name => router.replace({ name });
 <template>
   <ModalShell title="Menu" title-id="menu-title" @close="close">
     <nav class="menu" aria-label="Menu">
+      <AppButton @click="go('stats')">STATS</AppButton>
       <AppButton @click="go('how-to-play')">HOW TO PLAY</AppButton>
       <AppButton @click="go('about')">ABOUT</AppButton>
       <AppButton @click="go('reset')">RESET</AppButton>
     </nav>
-    <p class="menu__hint t-label t-label--lc muted">Esc opens and closes this menu</p>
+    <p class="menu__hint t-label t-label--lc muted">Esc also opens and closes this menu</p>
   </ModalShell>
 </template>
 
