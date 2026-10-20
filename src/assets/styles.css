@@ -89,7 +89,7 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 }
 .layer-enter-from, .layer-leave-to { opacity: 0; }
 
-/* Shared animation: locked keys and locked era dots shake when tapped. */
+/* Shared animation: locked keys shake when tapped. */
 @keyframes shake {
   20%, 60% { transform: translateX(-1.2rem); }
   40%, 80% { transform: translateX(1.2rem); }

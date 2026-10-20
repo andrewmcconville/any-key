@@ -1,12 +1,10 @@
 <script setup>
-import { ref } from 'vue';
 import { ERAS } from '../data/content';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
 
 const game = useGameStore();
 const ui = useUiStore();
-const shaking = ref(null);
 
 // locked → dashed, open → white, cleared → white + ✓. One ring slides to the era in view.
 function dotState(era) {
@@ -14,14 +12,8 @@ function dotState(era) {
   return game.eraCleared(era.id) ? 'cleared' : 'open';
 }
 
-function onDot(era) {
-  if (!game.isUnlocked(era.id)) {
-    shaking.value = era.id;
-    setTimeout(() => { shaking.value = null; }, 400);
-    return;
-  }
-  ui.scrollToEra(era.id);
-}
+// Every dot is a jump, locked or not: a locked era is still worth looking at, and its
+// region on the board explains what unlocks it.
 </script>
 
 <template>
@@ -31,12 +23,11 @@ function onDot(era) {
       v-for="era in ERAS"
       :key="era.id"
       class="era-dot"
-      :class="{ shake: shaking === era.id }"
       :data-state="dotState(era)"
       :aria-current="era.id === ui.eraInView ? 'location' : null"
       type="button"
       :aria-label="`Era ${era.numeral} · ${era.name}`"
-      @click="onDot(era)"
+      @click="ui.scrollToEra(era.id)"
     >{{ era.numeral }}</button>
   </div>
 </template>
@@ -55,7 +46,6 @@ function onDot(era) {
   transition: background .2s, color .2s, border-color .2s;
 }
 .era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
-.era-dot.shake { animation: shake .4s; }
 /* One ring, 1rem outside the dot, slides along the row to the era in view (--era-index). */
 .era-ring {
   position: absolute; left: -1rem; top: -1rem;
