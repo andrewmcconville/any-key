@@ -18,7 +18,7 @@ const ui = useUiStore();
   position: absolute;
   left: calc(50% - 60rem); width: 120rem; height: 18rem;
   top: calc(21.6rem + var(--safe-top));
-  z-index: 8;
+  z-index: 20;            /* above overlays (10): it announces an unlock as the key modal fades out */
   border-radius: 3.2rem;
   background: var(--ink); color: var(--white);
   display: grid; place-items: center;
