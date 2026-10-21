@@ -1,19 +1,11 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue';
 import FloatingPanel from '../components/FloatingPanel.vue';
 import PanelActions from '../components/PanelActions.vue';
+import { useRemPx } from '../composables/useRemPx';
 import { TYPE_TOKENS, useTokensStore } from '../stores/tokens';
 
 const tokens = useTokensStore();
-
-// 1rem in CSS px on this screen, so the readout shows what the visitor actually sees. The root
-// font-size follows the viewport, so re-measure on resize and rotation.
-const remPx = ref(0);
-const measure = () => { remPx.value = parseFloat(getComputedStyle(document.documentElement).fontSize) || 0; };
-measure();
-onMounted(() => window.addEventListener('resize', measure));
-onUnmounted(() => window.removeEventListener('resize', measure));
-const px = rem => (rem * remPx.value).toFixed(1);
+const { remPx, px } = useRemPx();
 
 // The values as they belong in styles.css (rem, with the matching line-height), plus the px they
 // rendered at on this screen, so they can be pasted straight into a message or the stylesheet.

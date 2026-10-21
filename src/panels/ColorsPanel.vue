@@ -72,7 +72,7 @@ function snapshot() {
 </template>
 
 <style scoped>
-.swatch { border-bottom: 0.2rem solid var(--line-soft); }
+.swatch { border-bottom: var(--hairline) solid var(--line-soft); }
 .swatch:last-of-type { border-bottom: 0; }
 /* The whole row is the toggle: a full-width tap target that reveals the sliders beneath it. */
 .swatch__row {

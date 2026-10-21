@@ -3,12 +3,14 @@
 // pointer events, so the app underneath stays usable. Add new panels to the list below.
 import TypeTokensPanel from '../panels/TypeTokensPanel.vue';
 import ColorsPanel from '../panels/ColorsPanel.vue';
+import ShapePanel from '../panels/ShapePanel.vue';
 </script>
 
 <template>
   <div class="panel-host">
     <TypeTokensPanel />
     <ColorsPanel />
+    <ShapePanel />
   </div>
 </template>
 

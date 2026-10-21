@@ -27,6 +27,7 @@ function openPanel(id, at) {
     <nav class="menu" aria-label="Design tools">
       <AppButton @click="openPanel('type-tokens')">TYPE TOKENS</AppButton>
       <AppButton @click="openPanel('colors', { x: 36, y: 120 })">COLOURS</AppButton>
+      <AppButton @click="openPanel('shape', { x: 48, y: 168 })">BORDERS &amp; RADII</AppButton>
     </nav>
     <p class="menu__hint t-label t-label--lc muted">Esc also opens and closes this menu</p>
   </ModalShell>
