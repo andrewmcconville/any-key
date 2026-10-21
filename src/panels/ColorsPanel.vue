@@ -54,7 +54,7 @@ function snapshot() {
         >
         <span class="channel__value t-label t-label--lc">{{ fmt(ch, colors.values[t.id][ch.key]) }}</span>
       </label>
-      <label v-if="t.alpha != null" class="channel">
+      <label v-if="t.hasAlpha" class="channel">
         <span class="channel__key t-label">A</span>
         <input
           class="channel__slider"

@@ -20,8 +20,7 @@ const px = rem => (rem * remPx.value).toFixed(1);
 function snapshot() {
   const lines = TYPE_TOKENS.map(t => {
     const size = tokens.sizes[t.id];
-    const lh = Math.round(size * (t.lh / t.size) * 10) / 10;
-    return `  --text-${t.id}: ${size}rem;  --lh-${t.id}: ${lh}rem;   /* ${px(size)}px${tokens.isDefault(t.id) ? '' : ', changed'} */`;
+    return `  --text-${t.id}: ${size}rem;  --lh-${t.id}: ${tokens.lineHeight(t.id)}rem;   /* ${px(size)}px${tokens.isDefault(t.id) ? '' : ', changed'} */`;
   });
   return [
     `/* Any Key type tokens — ${window.innerWidth}×${window.innerHeight}, 1rem = ${remPx.value.toFixed(2)}px */`,
@@ -38,7 +37,7 @@ function snapshot() {
         <span class="token__sample" :class="t.sample">{{ t.label }}</span>
         <span class="token__value t-label t-label--lc">
           {{ px(tokens.sizes[t.id]) }}px
-          <button v-if="!tokens.isDefault(t.id)" class="token__reset" type="button" @click="tokens.set(t.id, t.size)">reset</button>
+          <button v-if="!tokens.isDefault(t.id)" class="token__reset" type="button" @click="tokens.resetOne(t.id)">reset</button>
         </span>
       </div>
       <input
