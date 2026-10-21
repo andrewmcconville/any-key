@@ -7,9 +7,10 @@ import AppButton from '../components/AppButton.vue';
 const { close, open: go } = useOverlayNav();
 const panels = usePanelsStore();
 
-// Design tools are floating panels, not overlays: open one and get the menu out of the way.
-function openPanel(id) {
-  panels.open(id);
+// Design tools are floating panels, not overlays: open one (at the given position, if any) and
+// get the menu out of the way.
+function openPanel(id, at) {
+  panels.open(id, at);
   close();
 }
 </script>
