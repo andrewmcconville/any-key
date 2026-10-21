@@ -37,7 +37,7 @@ function snapshot() {
             <span class="token__note t-label t-label--lc muted">{{ t.note }}</span>
           </span>
           <span class="token__value t-label t-label--lc">
-            {{ shape.values[t.id] }}rem · {{ px(shape.values[t.id]) }}px
+            {{ px(shape.values[t.id]) }}px
             <button v-if="!shape.isDefault(t.id)" class="token__reset" type="button" @click="shape.resetOne(t.id)">reset</button>
           </span>
         </div>
