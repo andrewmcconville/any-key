@@ -28,15 +28,16 @@ watch(() => game.count, () => {
 
 <style scoped>
 .hud-top {
-  flex: 0 0 16.8rem;
-  height: 16.8rem;
+  flex: 0 0 auto;
+  height: calc(16.8rem + var(--safe-top));
+  padding-top: var(--safe-top);
   width: 100%;
   max-width: var(--phone-w);
   margin-inline: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4.8rem;
+  padding-inline: calc(4.8rem + var(--safe-left)) calc(4.8rem + var(--safe-right));
   background: #efefef;
   border-bottom: 0.2rem solid var(--line-soft);
   z-index: 3;

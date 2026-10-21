@@ -17,7 +17,7 @@ const ui = useUiStore();
 .toast {
   position: absolute;
   left: calc(50% - 60rem); width: 120rem; height: 18rem;
-  top: 21.6rem;
+  top: calc(21.6rem + var(--safe-top));
   z-index: 8;
   border-radius: 3.2rem;
   background: var(--ink); color: var(--white);
