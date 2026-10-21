@@ -5,6 +5,10 @@ import { CHANNELS, COLOR_TOKENS, useColorsStore } from '../stores/colors';
 
 const colors = useColorsStore();
 
+// Which token's sliders are showing; tapping a swatch row toggles it, one open at a time.
+const openId = ref(null);
+const toggle = id => { openId.value = openId.value === id ? null : id; };
+
 const fmt = (ch, v) => (ch.key === 'h' ? `${Math.round(v)}°` : v.toFixed(ch.dp));
 
 function snapshot() {
@@ -30,17 +34,25 @@ async function copy() {
 
 <template>
   <FloatingPanel id="colors" title="Colours">
-    <div v-for="t in COLOR_TOKENS" :key="t.id" class="swatch">
-      <div class="swatch__row">
+    <div v-for="t in COLOR_TOKENS" :key="t.id" class="swatch" :class="{ 'swatch--open': openId === t.id }">
+      <button
+        class="swatch__row"
+        type="button"
+        :aria-expanded="openId === t.id"
+        :aria-controls="`channels-${t.id}`"
+        @click="toggle(t.id)"
+      >
         <span class="swatch__chip" :style="{ background: colors.css(t.id) }" aria-hidden="true" />
-        <span class="swatch__name t-strong">{{ t.label }}</span>
-        <span class="swatch__value t-label t-label--lc">
-          {{ colors.hex(t.id) }}
-          <button v-if="!colors.isDefault(t.id)" class="swatch__reset" type="button" @click="colors.resetOne(t.id)">reset</button>
+        <span class="swatch__text">
+          <span class="swatch__name t-strong">{{ t.label }}</span>
+          <span class="swatch__note t-label t-label--lc muted">{{ t.note }}</span>
         </span>
-      </div>
-      <div class="swatch__note t-label t-label--lc muted">{{ t.note }}</div>
+        <span class="swatch__value t-label t-label--lc">{{ colors.hex(t.id) }}</span>
+        <svg class="swatch__chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </button>
 
+      <div v-show="openId === t.id" :id="`channels-${t.id}`" class="channels">
+      <button v-if="!colors.isDefault(t.id)" class="swatch__reset t-label t-label--lc" type="button" @click="colors.resetOne(t.id)">Reset {{ t.label }}</button>
       <label v-for="ch in CHANNELS" :key="ch.key" class="channel">
         <span class="channel__key t-label">{{ ch.label }}</span>
         <input
@@ -65,6 +77,7 @@ async function copy() {
         >
         <span class="channel__value t-label t-label--lc">{{ Math.round(colors.values[t.id].alpha * 100) }}%</span>
       </label>
+      </div>
     </div>
 
     <div class="actions">
@@ -75,18 +88,34 @@ async function copy() {
 </template>
 
 <style scoped>
-.swatch { margin-bottom: 3.2rem; }
-.swatch__row { display: flex; align-items: center; gap: 1.6rem; }
+.swatch { border-bottom: 0.2rem solid var(--line-soft); }
+.swatch:last-of-type { border-bottom: 0; }
+/* The whole row is the toggle: a full-width tap target that reveals the sliders beneath it. */
+.swatch__row {
+  width: 100%;
+  min-height: 14.4rem;
+  display: flex; align-items: center; gap: 2rem;
+  padding: 1.6rem 0;
+  text-align: left;
+}
 .swatch__chip {
   flex: 0 0 auto;
-  width: 6.4rem; height: 6.4rem;
-  border-radius: 1.2rem;
+  width: 8rem; height: 8rem;
+  border-radius: 1.6rem;
   border: 0.3rem solid var(--ink);
 }
-.swatch__name { flex: 1 1 auto; }
+.swatch__text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.swatch__note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .swatch__value { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.swatch__reset { margin-left: 1.2rem; color: var(--ink); text-decoration: underline; font: inherit; }
-.swatch__note { margin: 0.4rem 0 0.8rem; }
+.swatch__chevron {
+  flex: 0 0 auto;
+  width: 4rem; height: 4rem;
+  stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none;
+  transition: transform .2s;
+}
+.swatch--open .swatch__chevron { transform: rotate(180deg); }
+.channels { padding: 0 0 2rem; }
+.swatch__reset { display: block; margin: 0 0 1.2rem auto; color: var(--ink); text-decoration: underline; }
 .channel { display: grid; grid-template-columns: 3.2rem 1fr 8.8rem; align-items: center; gap: 1.6rem; }
 .channel__key { color: var(--muted); }
 .channel__slider {
