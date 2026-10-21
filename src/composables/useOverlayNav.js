@@ -19,16 +19,31 @@ export function useOverlayNav() {
   /** Open another overlay on top of this one. */
   const open = (name, params) => router.push({ name, params });
 
-  /** Close this overlay: back to whatever was underneath. */
+  // router.back() and router.go() return nothing and navigate asynchronously (via popstate), so
+  // callers that need to act once the overlay is gone get a promise that resolves on the next
+  // completed navigation, with a timeout in case nothing navigates at all.
+  function settled() {
+    return new Promise(resolve => {
+      const stop = router.afterEach(() => { stop(); clearTimeout(timer); resolve(); });
+      const timer = setTimeout(() => { stop(); resolve(); }, 1000);
+    });
+  }
+  function go(delta) {
+    const done = settled();
+    router.go(delta);
+    return done;
+  }
+
+  /** Close this overlay: back to whatever was underneath. Resolves once that has happened. */
   function close() {
-    if (depth() > 0) return router.back();
+    if (depth() > 0) return go(-1);
     return router.replace({ path: '/' });
   }
 
   /** Close every overlay at once and land on the board (Reset confirm, Start over). */
   function closeAll() {
     const d = depth();
-    if (d > 0) return router.go(-d);
+    if (d > 0) return go(-d);
     return router.replace({ path: '/' });
   }
 
