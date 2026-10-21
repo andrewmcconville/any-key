@@ -1,67 +1,76 @@
 import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
+import { oklchCss, oklchToHex, round } from '../lib/oklch';
 
-const STORAGE_KEY = 'any-key/colors/v1';
+const STORAGE_KEY = 'any-key/colors/v2';
 
 /**
- * The colour tokens, mirroring the defaults in styles.css. `hex` is the value; the scrim also has
- * an `alpha` because it is painted as rgba. `note` says what the token is for in the panel.
+ * The colour tokens in OKLCH, mirroring the defaults in styles.css. l is lightness 0–1, c chroma,
+ * h hue in degrees; the scrim also carries an alpha. `note` says what the token paints.
  */
 export const COLOR_TOKENS = [
-  { id: 'ink',       label: 'Ink',       hex: '#262626', note: 'text, strokes, filled keys' },
-  { id: 'paper',     label: 'Paper',     hex: '#f7f7f7', note: 'board background' },
-  { id: 'white',     label: 'White',     hex: '#ffffff', note: 'panels, buttons, open keys' },
-  { id: 'bar',       label: 'Bar',       hex: '#efefef', note: 'HUD bars' },
-  { id: 'muted',     label: 'Muted',     hex: '#6b7280', note: 'eyebrows, years, locked' },
-  { id: 'line-soft', label: 'Line soft', hex: '#c9c9c9', note: 'hairlines, card borders' },
-  { id: 'fill-soft', label: 'Fill soft', hex: '#e5e5e5', note: 'image placeholder' },
-  { id: 'scrim',     label: 'Scrim',     hex: '#262626', alpha: 0.72, note: 'behind modals' },
+  { id: 'ink',       label: 'Ink',       l: 0.269, c: 0,     h: 0,   note: 'text, strokes, filled keys' },
+  { id: 'paper',     label: 'Paper',     l: 0.976, c: 0,     h: 0,   note: 'board background' },
+  { id: 'white',     label: 'White',     l: 1,     c: 0,     h: 0,   note: 'panels, buttons, open keys' },
+  { id: 'bar',       label: 'Bar',       l: 0.952, c: 0,     h: 0,   note: 'HUD bars' },
+  { id: 'muted',     label: 'Muted',     l: 0.551, c: 0.023, h: 264, note: 'eyebrows, years, locked' },
+  { id: 'line-soft', label: 'Line soft', l: 0.836, c: 0,     h: 0,   note: 'hairlines, card borders' },
+  { id: 'fill-soft', label: 'Fill soft', l: 0.922, c: 0,     h: 0,   note: 'image placeholder' },
+  { id: 'scrim',     label: 'Scrim',     l: 0.269, c: 0,     h: 0,   alpha: 0.72, note: 'behind modals' },
 ];
 
-const HEX = /^#[0-9a-f]{6}$/i;
+/** Slider ranges and steps for each channel. */
+export const CHANNELS = [
+  { key: 'l', label: 'L', min: 0, max: 1,   step: 0.005, dp: 3 },
+  { key: 'c', label: 'C', min: 0, max: 0.4, step: 0.005, dp: 3 },
+  { key: 'h', label: 'H', min: 0, max: 360, step: 1,     dp: 0 },
+];
 
-function rgba(hex, alpha) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
-}
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+const fresh = t => ({ l: t.l, c: t.c, h: t.h, alpha: t.alpha ?? 1 });
 
 export const useColorsStore = defineStore('colors', () => {
-  const values = reactive(Object.fromEntries(COLOR_TOKENS.map(t => [t.id, { hex: t.hex, alpha: t.alpha ?? 1 }])));
+  const values = reactive(Object.fromEntries(COLOR_TOKENS.map(t => [t.id, fresh(t)])));
 
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     for (const t of COLOR_TOKENS) {
       const v = saved[t.id];
-      if (v && HEX.test(v.hex)) values[t.id].hex = v.hex.toLowerCase();
-      if (v && t.alpha != null && Number.isFinite(Number(v.alpha))) values[t.id].alpha = Math.min(1, Math.max(0, Number(v.alpha)));
+      if (!v) continue;
+      for (const ch of CHANNELS) {
+        const n = Number(v[ch.key]);
+        if (Number.isFinite(n)) values[t.id][ch.key] = clamp(n, ch.min, ch.max);
+      }
+      if (t.alpha != null && Number.isFinite(Number(v.alpha))) values[t.id].alpha = clamp(Number(v.alpha), 0, 1);
     }
   } catch (_) { /* ignore */ }
 
+  const token = id => COLOR_TOKENS.find(x => x.id === id);
   /** CSS value for a token as the stylesheet expects it. */
-  const css = id => {
-    const t = COLOR_TOKENS.find(x => x.id === id);
-    return t.alpha != null ? rgba(values[id].hex, values[id].alpha) : values[id].hex;
-  };
+  const css = id => oklchCss(values[id]);
+  /** Nearest sRGB hex, for readouts and for pasting into tools that want hex. */
+  const hex = id => oklchToHex(values[id]);
 
   function apply() {
     const root = document.documentElement.style;
     for (const t of COLOR_TOKENS) root.setProperty(`--${t.id}`, css(t.id));
   }
 
-  function setHex(id, hex) {
-    if (values[id] && HEX.test(hex)) values[id].hex = hex.toLowerCase();
+  function setChannel(id, key, value) {
+    const ch = CHANNELS.find(x => x.key === key);
+    if (values[id] && ch) values[id][key] = round(clamp(Number(value), ch.min, ch.max), ch.dp);
   }
   function setAlpha(id, alpha) {
-    if (values[id]) values[id].alpha = Math.round(Math.min(1, Math.max(0, Number(alpha))) * 100) / 100;
+    if (values[id]) values[id].alpha = round(clamp(Number(alpha), 0, 1), 2);
   }
   function resetOne(id) {
-    const t = COLOR_TOKENS.find(x => x.id === id);
-    if (t) { values[id].hex = t.hex; values[id].alpha = t.alpha ?? 1; }
+    const t = token(id);
+    if (t) Object.assign(values[id], fresh(t));
   }
   function reset() { COLOR_TOKENS.forEach(t => resetOne(t.id)); }
   const isDefault = id => {
-    const t = COLOR_TOKENS.find(x => x.id === id);
-    return values[id].hex === t.hex && values[id].alpha === (t.alpha ?? 1);
+    const t = token(id), v = values[id];
+    return v.l === t.l && v.c === t.c && v.h === t.h && v.alpha === (t.alpha ?? 1);
   };
 
   watch(values, () => {
@@ -69,5 +78,5 @@ export const useColorsStore = defineStore('colors', () => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(values)); } catch (_) { /* ignore */ }
   }, { deep: true, immediate: true });
 
-  return { values, css, setHex, setAlpha, resetOne, reset, isDefault };
+  return { values, css, hex, setChannel, setAlpha, resetOne, reset, isDefault };
 });

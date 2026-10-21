@@ -91,12 +91,12 @@ onMounted(() => {
   background: var(--white);
   border: 0.3rem solid var(--ink);
   border-radius: 2.4rem;
-  box-shadow: 0 2.4rem 6rem rgba(0, 0, 0, .25);
+  box-shadow: 0 2.4rem 6rem oklch(0 0 0 / 0.25);
   display: flex; flex-direction: column;
   overflow: hidden;
   touch-action: none;
 }
-.panel--dragging { box-shadow: 0 3.6rem 8rem rgba(0, 0, 0, .3); }
+.panel--dragging { box-shadow: 0 3.6rem 8rem oklch(0 0 0 / 0.3); }
 .panel__bar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 2.4rem;

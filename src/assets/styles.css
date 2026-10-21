@@ -3,15 +3,17 @@
    The Figma board is 1440 canvas px wide. 1rem = 10 canvas px, so Figma values ÷ 10 map straight onto rem. */
 
 :root {
-  --ink: #262626;
-  --paper: #f7f7f7;
-  --white: #ffffff;
-  --bar: #efefef;          /* HUD bars and panel title bars */
-  --muted: #6b7280;
-  --line: #262626;
-  --line-soft: #c9c9c9;
-  --fill-soft: #e5e5e5;
-  --scrim: rgba(38, 38, 38, 0.72);
+  /* Colours are authored in OKLCH (lightness 0–1, chroma, hue°); src/stores/colors.js mirrors these
+     and can override them live from the Colours panel. Nearest sRGB hex in the comments. */
+  --ink:       oklch(0.269 0 0);            /* #262626: text, strokes, filled keys */
+  --paper:     oklch(0.976 0 0);            /* #f7f7f7: board background */
+  --white:     oklch(1 0 0);                /* #ffffff: panels, buttons, open keys */
+  --bar:       oklch(0.952 0 0);            /* #efefef: HUD bars and panel title bars */
+  --muted:     oklch(0.551 0.023 264);      /* #6b7280: eyebrows, years, locked */
+  --line:      var(--ink);
+  --line-soft: oklch(0.836 0 0);            /* #c9c9c9: hairlines, card borders */
+  --fill-soft: oklch(0.922 0 0);            /* #e5e5e5: image placeholder */
+  --scrim:     oklch(0.269 0 0 / 0.72);     /* behind modals */
   --radius: 2.4rem;
   --stroke: 0.4rem;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
@@ -50,7 +52,7 @@ html {
 *, *::before, *::after { box-sizing: border-box; }
 body {
   margin: 0;
-  background: #111;
+  background: oklch(0.18 0 0);   /* outside the stage on wide screens */
   color: var(--ink);
   font-family: var(--font-body);
   display: grid;

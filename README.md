@@ -37,7 +37,8 @@ src/
                        so a Figma value of 192 becomes 19.2rem. Type sizes and the minimum control size are
                        tokens on :root (--text-*, --lh-*, --tap, --icon); change the ramp there, not per component
   stores/tokens.js     the type ramp as live values; writes the --text-*/--lh-* variables on :root
-  stores/colors.js     the colour tokens as live values; writes --ink, --paper, … on :root
+  stores/colors.js     the colour tokens as live OKLCH values; writes --ink, --paper, … on :root
+  lib/oklch.js         OKLCH → CSS string and → sRGB hex
   stores/panels.js     floating panels: open state, position and stacking order
   components/          HudTop, HudBottom, EraDots, TimelineBoard, TimelineNode, ToastBanner, ModalShell, AppButton,
                        CloseButton, FloatingPanel (a draggable window), PanelHost (the layer panels live in)
@@ -65,7 +66,7 @@ Overlays form a stack in browser history: opening one is a history push and clos
 
 ## Design tools
 
-Menu → Design tools opens floating panels: small windows you can drag around by their title bars, like a desktop app, that stack with the last-touched one on top. **Type tokens** lists every type token rendered in its own style with a slider underneath; moving a slider changes the `--text-*` variable on `:root` (and its line-height in proportion) so the whole app updates live. **Colours** gives every colour token a native colour picker, and the scrim an opacity slider. Both persist in localStorage until reset, and both have a Copy values button that puts the current values on the clipboard as a `:root` block ready to paste into `styles.css`. `FloatingPanel` is reusable: give it an id and a title, and the panels store keeps its position and brings the last-touched panel to the front, so more tools can be added to `PanelHost.vue`.
+Menu → Design tools opens floating panels: small windows you can drag around by their title bars, like a desktop app, that stack with the last-touched one on top. **Type tokens** lists every type token rendered in its own style with a slider underneath; moving a slider changes the `--text-*` variable on `:root` (and its line-height in proportion) so the whole app updates live. **Colours** gives every colour token lightness, chroma and hue sliders (the palette is authored in OKLCH, so lightness steps look even and hue can change without the colour going muddy), plus an opacity slider for the scrim; the readout shows the nearest sRGB hex. Both persist in localStorage until reset, and both have a Copy values button that puts the current values on the clipboard as a `:root` block ready to paste into `styles.css`. `FloatingPanel` is reusable: give it an id and a title, and the panels store keeps its position and brings the last-touched panel to the front, so more tools can be added to `PanelHost.vue`.
 
 ## Rules implemented
 

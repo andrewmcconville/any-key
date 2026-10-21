@@ -35,7 +35,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 </template>
 
 <style scoped>
-.layer--start { background: rgba(38,38,38,.85); }
+.layer--start { background: oklch(0.269 0 0 / 0.85); }
 /* The start screen is laid out on the 144 × 256 phone frame, like the Figma overlay. */
 .start {
   width: 144rem; height: 256rem;
