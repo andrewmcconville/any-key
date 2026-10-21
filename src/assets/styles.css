@@ -126,6 +126,11 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 }
 .layer-enter-from, .layer-leave-to { opacity: 0; }
 
+/* Design-tool flash: grabbing a token's slider outlines every element it will change (lib/flash.js
+   adds the class, holds it, then adds --fading so the outline melts away over half a second). */
+.token-flash { outline: 0.3rem solid var(--ink); outline-offset: 0.4rem; transition: outline-color .5s; }
+.token-flash--fading { outline-color: transparent; }
+
 /* Shared animation: locked keys shake when tapped. */
 @keyframes shake {
   20%, 60% { transform: translateX(-1.2rem); }

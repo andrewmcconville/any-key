@@ -2,10 +2,14 @@
 import FloatingPanel from '../components/FloatingPanel.vue';
 import PanelActions from '../components/PanelActions.vue';
 import { useRemPx } from '../composables/useRemPx';
+import { elementsWithFontSize, flashElements } from '../lib/flash';
 import { TYPE_TOKENS, useTokensStore } from '../stores/tokens';
 
 const tokens = useTokensStore();
 const { remPx, px } = useRemPx();
+
+// Grabbing a slider outlines everything on the page set in that token, so you can see what will move.
+const flash = id => flashElements(elementsWithFontSize(tokens.sizes[id] * remPx.value));
 
 // The values as they belong in styles.css (rem, with the matching line-height), plus the px they
 // rendered at on this screen, so they can be pasted straight into a message or the stylesheet.
@@ -40,6 +44,7 @@ function snapshot() {
         step="0.1"
         :value="tokens.sizes[t.id]"
         :aria-label="`${t.label} size`"
+        @pointerdown="flash(t.id)"
         @input="tokens.set(t.id, $event.target.value)"
       >
     </div>
