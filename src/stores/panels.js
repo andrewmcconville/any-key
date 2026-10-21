@@ -22,9 +22,17 @@ export const usePanelsStore = defineStore('panels', () => {
     }
   } catch (_) { /* ignore */ }
 
+  let saveTimer = null;
   function save() {
+    clearTimeout(saveTimer);
+    saveTimer = null;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(panels)); } catch (_) { /* ignore */ }
   }
+  // Dragging calls move() at pointer rate; persist once it settles, and flush if the page goes away.
+  function saveSoon() {
+    if (!saveTimer) saveTimer = setTimeout(save, 250);
+  }
+  if (typeof window !== 'undefined') window.addEventListener('pagehide', () => { if (saveTimer) save(); });
 
   const get = id => panels[id] ?? null;
   const isOpen = id => !!panels[id]?.open;
@@ -49,13 +57,14 @@ export const usePanelsStore = defineStore('panels', () => {
   function focus(id) {
     if (!panels[id]) return;
     panels[id].z = ++topZ.value;
+    saveSoon();
   }
 
   function move(id, x, y) {
     if (!panels[id]) return;
     panels[id].x = Math.round(x);
     panels[id].y = Math.round(y);
-    save();
+    saveSoon();
   }
 
   return { panels, get, isOpen, open, close, toggle, focus, move };
