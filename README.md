@@ -36,7 +36,11 @@ src/
   assets/styles.css    global styles. The Figma board is 1440 canvas px wide and 1rem = 10 canvas px,
                        so a Figma value of 192 becomes 19.2rem. Type sizes and the minimum control size are
                        tokens on :root (--text-*, --lh-*, --tap, --icon); change the ramp there, not per component
-  components/          HudTop, HudBottom, TimelineBoard, TimelineNode, ToastBanner, ModalShell, AppButton, CloseButton
+  stores/tokens.js     the type ramp as live values; writes the --text-*/--lh-* variables on :root
+  stores/panels.js     floating panels: open state, position and stacking order
+  components/          HudTop, HudBottom, EraDots, TimelineBoard, TimelineNode, ToastBanner, ModalShell, AppButton,
+                       CloseButton, FloatingPanel (a draggable window), PanelHost (the layer panels live in)
+  panels/              design-tool panels: TypeTokensPanel (sliders for every type token)
   views/               TimelineView (the board) and one view per overlay:
                        Start, KeyDetail, Stats, HowToPlay, About, Reset, Completion
 docs/                  design reviews
@@ -56,6 +60,10 @@ Overlays form a stack in browser history: opening one is a history push and clos
 | `#/stats` | Stats and achievements |
 | `#/how-to-play`, `#/about`, `#/reset` | The three HUD modals |
 | `#/complete` | Completion screen after the 14th key |
+
+## Design tools
+
+Menu → Design tools → Type tokens opens a floating panel: a small window you can drag around by its title bar, like a desktop app. It lists every type token rendered in its own style with a slider underneath; moving a slider changes the `--text-*` variable on `:root` (and its line-height in proportion) so the whole app updates live, and the values persist in localStorage until reset. `FloatingPanel` is reusable: give it an id and a title, and the panels store keeps its position and brings the last-touched panel to the front, so more tools can be added to `PanelHost.vue`.
 
 ## Rules implemented
 

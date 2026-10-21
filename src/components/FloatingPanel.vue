@@ -1,0 +1,126 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+import { usePanelsStore } from '../stores/panels';
+
+/**
+ * A window that floats above the app. Drag it by its title bar; it stays inside the panel host
+ * and comes to the front when touched. Position and stacking live in the panels store, so a
+ * panel keeps its place across reloads and other panels can stack with it.
+ */
+const props = defineProps({
+  id: { type: String, required: true },
+  title: { type: String, required: true },
+  width: { type: String, default: '104rem' },
+});
+
+const panels = usePanelsStore();
+const state = computed(() => panels.get(props.id));
+const el = ref(null);
+const dragging = ref(false);
+
+let drag = null;   // { pointerId, dx, dy } — pointer offset from the panel's top-left
+
+function clamp(x, y) {
+  const host = el.value?.offsetParent;
+  if (!host) return { x, y };
+  const maxX = Math.max(0, host.clientWidth - el.value.offsetWidth);
+  const maxY = Math.max(0, host.clientHeight - el.value.offsetHeight);
+  return { x: Math.min(maxX, Math.max(0, x)), y: Math.min(maxY, Math.max(0, y)) };
+}
+
+function onPointerDown(e) {
+  if (e.button !== 0 && e.pointerType === 'mouse') return;
+  panels.focus(props.id);
+  drag = { pointerId: e.pointerId, dx: e.clientX - el.value.offsetLeft, dy: e.clientY - el.value.offsetTop };
+  dragging.value = true;
+  e.currentTarget.setPointerCapture(e.pointerId);
+}
+function onPointerMove(e) {
+  if (!drag || e.pointerId !== drag.pointerId) return;
+  const { x, y } = clamp(e.clientX - drag.dx, e.clientY - drag.dy);
+  panels.move(props.id, x, y);
+}
+function onPointerUp(e) {
+  if (!drag || e.pointerId !== drag.pointerId) return;
+  drag = null;
+  dragging.value = false;
+}
+
+// If the viewport shrank since the panel was last placed, pull it back on screen.
+onMounted(() => {
+  const s = state.value;
+  if (!s) return;
+  const { x, y } = clamp(s.x, s.y);
+  if (x !== s.x || y !== s.y) panels.move(props.id, x, y);
+});
+</script>
+
+<template>
+  <section
+    v-if="state?.open"
+    ref="el"
+    class="panel"
+    :class="{ 'panel--dragging': dragging }"
+    :style="{ left: state.x + 'px', top: state.y + 'px', zIndex: 100 + state.z, width }"
+    role="dialog"
+    :aria-label="title"
+    @pointerdown="panels.focus(id)"
+  >
+    <header
+      class="panel__bar"
+      @pointerdown.stop="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
+    >
+      <span class="panel__title t-label">{{ title }}</span>
+      <button class="panel__close" type="button" aria-label="Close panel" @pointerdown.stop @click="panels.close(id)">
+        <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M16 16 40 40M40 16 16 40" /></svg>
+      </button>
+    </header>
+    <div class="panel__body">
+      <slot />
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.panel {
+  position: absolute;
+  max-width: calc(100% - 2.4rem);
+  background: var(--white);
+  border: 0.3rem solid var(--ink);
+  border-radius: 2.4rem;
+  box-shadow: 0 2.4rem 6rem rgba(0, 0, 0, .25);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  touch-action: none;
+}
+.panel--dragging { box-shadow: 0 3.6rem 8rem rgba(0, 0, 0, .3); }
+.panel__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2.4rem;
+  height: 12rem;
+  padding: 0 2.4rem 0 3.2rem;
+  background: #efefef;
+  border-bottom: 0.3rem solid var(--ink);
+  cursor: grab;
+  user-select: none;
+}
+.panel--dragging .panel__bar { cursor: grabbing; }
+.panel__title { color: var(--ink); }
+.panel__close {
+  width: 8.8rem; height: 8.8rem; border-radius: 50%;
+  border: var(--stroke) solid var(--ink);
+  background: var(--white);
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.panel__close svg { width: 4rem; height: 4rem; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; fill: none; }
+.panel__body {
+  padding: 3.2rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+</style>

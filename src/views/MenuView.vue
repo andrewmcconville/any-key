@@ -1,9 +1,17 @@
 <script setup>
 import { useOverlayNav } from '../composables/useOverlayNav';
+import { usePanelsStore } from '../stores/panels';
 import ModalShell from '../components/ModalShell.vue';
 import AppButton from '../components/AppButton.vue';
 
 const { close, open: go } = useOverlayNav();
+const panels = usePanelsStore();
+
+// Design tools are floating panels, not overlays: open one and get the menu out of the way.
+function openPanel(id) {
+  panels.open(id);
+  close();
+}
 </script>
 
 <template>
@@ -14,11 +22,16 @@ const { close, open: go } = useOverlayNav();
       <AppButton @click="go('about')">ABOUT</AppButton>
       <AppButton @click="go('reset')">RESET</AppButton>
     </nav>
+    <p class="menu__group t-label muted">Design tools</p>
+    <nav class="menu" aria-label="Design tools">
+      <AppButton @click="openPanel('type-tokens')">TYPE TOKENS</AppButton>
+    </nav>
     <p class="menu__hint t-label t-label--lc muted">Esc also opens and closes this menu</p>
   </ModalShell>
 </template>
 
 <style scoped>
 .menu { display: flex; flex-direction: column; gap: 3.2rem; }
+.menu__group { margin: 4.8rem 0 1.6rem; }
 .menu__hint { text-align: center; margin-top: 4.8rem; }
 </style>
