@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY } from '../data/content';
 import { useGameStore } from '../stores/game';
@@ -11,7 +10,6 @@ import AppButton from '../components/AppButton.vue';
 const props = defineProps({ id: { type: String, required: true } });
 const game = useGameStore();
 const ui = useUiStore();
-const router = useRouter();
 const nav = useOverlayNav();
 
 const key = computed(() => game.keyById(props.id));
@@ -37,7 +35,7 @@ async function close() {
   if (game.isComplete && !game.completionShown) {
     game.markCompletionShown();
     game.consumePendingUnlock();
-    router.replace({ name: 'complete' });   // takes this entry's place; Start over unwinds to the board
+    nav.swap('complete');   // takes this entry's place at the same depth; Start over unwinds to the board
     return;
   }
   const unlockedEra = game.consumePendingUnlock();

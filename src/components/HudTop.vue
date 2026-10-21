@@ -1,10 +1,10 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useOverlayNav } from '../composables/useOverlayNav';
 import { useGameStore } from '../stores/game';
 
 const game = useGameStore();
-const router = useRouter();
+const nav = useOverlayNav();
 const pop = ref(false);
 
 // Pulse the counter whenever it changes
@@ -16,7 +16,7 @@ watch(() => game.count, () => {
 
 <template>
   <header class="hud-top">
-    <button class="menu-btn" type="button" aria-label="Menu" @click="router.push({ name: 'menu' })">
+    <button class="menu-btn" type="button" aria-label="Menu" @click="nav.open('menu')">
       <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M12 17h32M12 28h32M12 39h32" /></svg>
     </button>
     <div class="hud-total t-heading" aria-live="polite">

@@ -8,7 +8,6 @@ export const useUiStore = defineStore('ui', () => {
   const scrollRequest = ref({ eraId: 1, n: 0 });   // n bumps so repeated requests re-trigger watchers
   const eraInView = ref(1);
   const boardScrolled = ref(false);
-  const boardPosition = ref(null);   // history.state.position of the bare board; overlays stack above it
   let timer = null;
 
   function scrollToEra(eraId) {
@@ -34,5 +33,5 @@ export const useUiStore = defineStore('ui', () => {
     toast.value = { ...toast.value, open: false };
   }
 
-  return { toast, scrollRequest, eraInView, boardScrolled, boardPosition, scrollToEra, showToast, dismissToast, hideToast };
+  return { toast, scrollRequest, eraInView, boardScrolled, scrollToEra, showToast, dismissToast, hideToast };
 });

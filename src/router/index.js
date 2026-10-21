@@ -1,6 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import { useGameStore } from '../stores/game';
-import { useUiStore } from '../stores/ui';
 import TimelineView from '../views/TimelineView.vue';
 
 // Every overlay is a child route of the timeline so the board stays mounted
@@ -35,12 +34,6 @@ router.beforeEach(to => {
   if (game.started && to.name === 'start') return { path: '/' };
   if (to.name === 'key' && !game.canOpen(to.params.id)) return { path: '/' };
   return true;
-});
-
-// Overlays are a stack in browser history above the board (see composables/useOverlayNav.js).
-// Whenever the bare board is shown, remember its history position so "close" knows how far back is.
-router.afterEach(to => {
-  if (to.name === undefined) useUiStore().boardPosition = window.history.state?.position ?? 0;
 });
 
 export default router;

@@ -1,18 +1,19 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { useOverlayNav } from '../composables/useOverlayNav';
 import HudTop from '../components/HudTop.vue';
 import HudBottom from '../components/HudBottom.vue';
 import TimelineBoard from '../components/TimelineBoard.vue';
 import ToastBanner from '../components/ToastBanner.vue';
 
 const route = useRoute();
-const router = useRouter();
+const nav = useOverlayNav();
 
 // Esc on the bare board opens the menu. With an overlay open, ModalShell owns Esc (it closes).
 function onKey(e) {
   if (e.key !== 'Escape' || route.name) return;
-  router.push({ name: 'menu' });
+  nav.open('menu');
 }
 onMounted(() => window.addEventListener('keydown', onKey));
 onUnmounted(() => window.removeEventListener('keydown', onKey));

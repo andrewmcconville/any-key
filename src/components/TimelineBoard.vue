@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useOverlayNav } from '../composables/useOverlayNav';
 import { ERAS, KEYS, ERA_WIDTH } from '../data/content';
 import { UNLOCK_AT, useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
@@ -8,7 +8,7 @@ import TimelineNode from './TimelineNode.vue';
 
 const game = useGameStore();
 const ui = useUiStore();
-const router = useRouter();
+const nav = useOverlayNav();
 const board = ref(null);
 const tree = ref(null);
 const rem = n => `${n / 10}rem`;
@@ -141,7 +141,7 @@ function onClickCapture(e) {
 }
 
 function openKey(node) {
-  router.push({ name: 'key', params: { id: node.id } });
+  nav.open('key', { id: node.id });
 }
 
 const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.id - 2]?.numeral ?? ''} to unlock`;
