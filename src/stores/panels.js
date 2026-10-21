@@ -49,10 +49,6 @@ export const usePanelsStore = defineStore('panels', () => {
     save();
   }
 
-  function toggle(id, at) {
-    isOpen(id) ? close(id) : open(id, at);
-  }
-
   /** Bring a panel to the front. */
   function focus(id) {
     if (!panels[id]) return;
@@ -67,5 +63,5 @@ export const usePanelsStore = defineStore('panels', () => {
     saveSoon();
   }
 
-  return { panels, get, isOpen, open, close, toggle, focus, move };
+  return { panels, get, isOpen, open, close, focus, move };
 });

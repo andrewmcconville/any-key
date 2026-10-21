@@ -45,7 +45,6 @@ function snapshot() {
         <span class="channel__key t-label">{{ ch.label }}</span>
         <input
           class="channel__slider"
-          :class="`channel__slider--${ch.key}`"
           type="range"
           :min="ch.min" :max="ch.max" :step="ch.step"
           :value="colors.values[t.id][ch.key]"
