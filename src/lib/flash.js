@@ -1,7 +1,7 @@
 // Briefly outline a set of elements so a design-tool slider shows what it is about to change:
 // the outline holds for `hold` ms, then fades over the .token-flash transition (see styles.css).
-const HOLD_MS = 1000;
-const FADE_MS = 500;
+const HOLD_MS = 600;
+const FADE_MS = 300;
 
 let current = [];
 let timers = [];
