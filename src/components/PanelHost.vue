@@ -4,6 +4,7 @@
 import TypeTokensPanel from '../panels/TypeTokensPanel.vue';
 import ColorsPanel from '../panels/ColorsPanel.vue';
 import ShapePanel from '../panels/ShapePanel.vue';
+import InspectPanel from '../panels/InspectPanel.vue';
 </script>
 
 <template>
@@ -11,6 +12,7 @@ import ShapePanel from '../panels/ShapePanel.vue';
     <TypeTokensPanel />
     <ColorsPanel />
     <ShapePanel />
+    <InspectPanel />
   </div>
 </template>
 

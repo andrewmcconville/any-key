@@ -130,6 +130,10 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
    adds the class, holds it, then adds --fading so the outline melts away over 300ms). */
 .token-flash { outline: 0.3rem solid var(--ink); outline-offset: 1.2rem; transition: outline-color .3s; }
 .token-flash--fading { outline-color: transparent; }
+/* Inspect tool: the element under the pointer while picking, and the one picked (stores/inspect.js). */
+.inspect-hover { outline: 0.3rem solid var(--ink); outline-offset: 1.2rem; }
+.inspect-selected { outline: 0.3rem dashed var(--ink); outline-offset: 1.2rem; }
+html.inspect-picking, html.inspect-picking * { cursor: crosshair !important; }
 
 /* Shared animation: locked keys shake when tapped. */
 @keyframes shake {
