@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import FloatingPanel from '../components/FloatingPanel.vue';
+import PanelActions from '../components/PanelActions.vue';
 import { CHANNELS, COLOR_TOKENS, useColorsStore } from '../stores/colors';
 
 const colors = useColorsStore();
@@ -17,19 +18,6 @@ function snapshot() {
   return ['/* Any Key colour tokens (OKLCH; nearest sRGB hex in comments) */', ':root {', ...lines, '}'].join('\n');
 }
 
-const copied = ref(false);
-async function copy() {
-  const text = snapshot();
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (_) {
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-  }
-  copied.value = true;
-  setTimeout(() => { copied.value = false; }, 1500);
-}
 </script>
 
 <template>
@@ -80,10 +68,7 @@ async function copy() {
       </div>
     </div>
 
-    <div class="actions">
-      <button class="action t-label" type="button" @click="copy">{{ copied ? 'Copied' : 'Copy values' }}</button>
-      <button class="action t-label" type="button" @click="colors.reset()">Reset all</button>
-    </div>
+    <PanelActions :snapshot="snapshot" @reset="colors.reset()" />
   </FloatingPanel>
 </template>
 
@@ -126,12 +111,4 @@ async function copy() {
   touch-action: pan-y;
 }
 .channel__value { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
-.actions { display: flex; gap: 2.4rem; margin-top: 1.6rem; }
-.action {
-  flex: 1 1 0;
-  height: 11.2rem;
-  border: var(--stroke) solid var(--ink);
-  border-radius: 1.6rem;
-  background: var(--white);
-}
 </style>
