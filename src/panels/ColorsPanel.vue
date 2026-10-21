@@ -95,7 +95,7 @@ function snapshot() {
   flex: 0 0 auto;
   width: 4rem; height: 4rem;
   stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none;
-  transition: transform .2s;
+  transition: transform var(--dur-sm) var(--ease-standard);
 }
 .swatch--open .swatch__chevron { transform: rotate(180deg); }
 .channels { padding: 0 0 2rem; }

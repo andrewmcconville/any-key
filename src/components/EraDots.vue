@@ -43,7 +43,7 @@ function dotState(era) {
   color: var(--ink);
   background: var(--white);
   position: relative;
-  transition: background .2s, color .2s, border-color .2s;
+  transition: background var(--dur-sm) var(--ease-standard), color var(--dur-sm) var(--ease-standard), border-color var(--dur-sm) var(--ease-standard);
 }
 .era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
 /* One ring, 1rem outside the dot, slides along the row to the era in view (--era-index). */

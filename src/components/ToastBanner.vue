@@ -24,7 +24,7 @@ const ui = useUiStore();
   display: grid; place-items: center;
   text-align: center;
   transform: translateY(-4rem); opacity: 0; pointer-events: none;
-  transition: transform .25s, opacity .25s;
+  transition: transform var(--dur-md) var(--ease-standard), opacity var(--dur-md) var(--ease-standard);
 }
 .toast[data-open="true"] { transform: none; opacity: 1; pointer-events: auto; }
 </style>

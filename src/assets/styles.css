@@ -23,6 +23,15 @@
   --radius: var(--radius-md);
   --stroke: 0.4rem;       /* control outlines: buttons, era dots, panel actions */
   --hairline: 0.2rem;     /* soft frames and dividers: HUD bars, modal, swatch rows */
+
+  /* Motion. Durations on a 0.1s grid; easings as cubic-bezier so the Motion tool can edit them. */
+  --dur-xs: 0.1s;   /* press feedback */
+  --dur-sm: 0.2s;   /* state colours, overlays */
+  --dur-md: 0.3s;   /* toast, counter pop, board fade, the era ring */
+  --dur-lg: 0.4s;   /* locked-key shake */
+  --ease-standard:   cubic-bezier(0.25, 0.1, 0.25, 1);   /* the browser's "ease" */
+  --ease-emphasized: cubic-bezier(0.2, 0.7, 0.2, 1);     /* quick out, long settle: the era ring */
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);  /* overshoots; unused by default */
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   /* Phone frame width (the Figma board). The HUD bars never grow past it; the board does. */
@@ -122,7 +131,7 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   display: grid; place-items: center;
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   background: var(--scrim);
-  transition: opacity .2s;
+  transition: opacity var(--dur-sm) var(--ease-standard);
 }
 .layer-enter-from, .layer-leave-to { opacity: 0; }
 

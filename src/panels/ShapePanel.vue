@@ -69,7 +69,7 @@ function snapshot() {
   box-sizing: border-box;
   border: 0 solid var(--ink);
   background: var(--white);
-  transition: border-width .1s, border-radius .1s;
+  transition: border-width var(--dur-xs), border-radius var(--dur-xs);
 }
 .token__sample--radius { border-width: 0.3rem; }
 .token__text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }

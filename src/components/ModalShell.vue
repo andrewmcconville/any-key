@@ -56,7 +56,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   border: var(--hairline) solid var(--line-soft);
   display: flex; flex-direction: column;
   overflow: hidden;
-  transition: transform .2s;
+  transition: transform var(--dur-sm) var(--ease-standard);
 }
 /* The panel rises into place while the layer fades in (see the overlay contract in styles.css). */
 .layer-enter-from .modal { transform: translateY(2.4rem) scale(.98); }

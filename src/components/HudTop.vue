@@ -51,7 +51,7 @@ watch(() => game.count, () => {
   background: none;
   padding: 0;
   display: grid; place-items: center;
-  transition: transform .08s;
+  transition: transform var(--dur-xs) var(--ease-standard);
 }
 .menu-btn:active { transform: scale(.94); }
 .menu-btn svg { width: var(--icon); height: var(--icon); stroke: var(--ink); stroke-width: 5; stroke-linecap: round; fill: none; }
@@ -59,5 +59,5 @@ watch(() => game.count, () => {
 .hud-total .count { min-width: 3.6rem; text-align: right; }
 /* Pulse the count when it changes */
 @keyframes pop { 50% { transform: scale(1.18); } }
-.pop { animation: pop .3s; display: inline-block; }
+.pop { animation: pop var(--dur-md) var(--ease-standard); display: inline-block; }
 </style>

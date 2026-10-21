@@ -72,7 +72,7 @@ function onPress() {
   background: var(--white);
   display: grid; place-items: center;
   color: var(--ink);
-  transition: transform .12s, background .2s, color .2s;
+  transition: transform var(--dur-xs) var(--ease-standard), background var(--dur-sm) var(--ease-standard), color var(--dur-sm) var(--ease-standard);
 }
 .node:active { transform: scale(.94); }
 .node .glyph { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: .02em; }
@@ -80,7 +80,7 @@ function onPress() {
 .node[data-state="collected"] .glyph { font: 600 7.2rem/1 var(--font-body); }
 .node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
 .node[data-state="locked"] .glyph { font: 600 4rem/1 var(--font-body); color: var(--muted); }
-.node.shake { animation: shake .4s; }
+.node.shake { animation: shake var(--dur-lg) var(--ease-standard); }
 .node-label {
   position: absolute;
   width: 36rem; margin-left: -18rem;

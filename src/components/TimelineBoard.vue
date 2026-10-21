@@ -251,7 +251,7 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   right: 4.8rem;                   /* right edge of the board at scroll start */
   width: 56rem; text-align: right;
   color: var(--muted);
-  transition: opacity .3s;
+  transition: opacity var(--dur-md) var(--ease-standard);
 }
 .board[data-scrolled="true"] .swipe-hint { opacity: 0; }
 

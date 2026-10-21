@@ -23,7 +23,7 @@ defineProps({
   font: 700 var(--text-button)/var(--lh-button) var(--font-display);
   text-transform: uppercase;
   display: grid; place-items: center;
-  transition: transform .08s, background .2s, color .2s, box-shadow .08s;
+  transition: transform var(--dur-xs) var(--ease-standard), background var(--dur-sm) var(--ease-standard), color var(--dur-sm) var(--ease-standard), box-shadow var(--dur-xs) var(--ease-standard);
 }
 .btn:active { transform: translateY(0.4rem); }
 .btn--solid { background: var(--ink); color: var(--white); }
