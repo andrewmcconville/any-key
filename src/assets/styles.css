@@ -17,7 +17,7 @@
   /* Corner radii, on the 0.4rem grid. --radius is the default (buttons). */
   --radius-xs: 1.2rem;   /* images inside cards */
   --radius-sm: 1.6rem;   /* panel rows and action groups */
-  --radius-md: 2.4rem;   /* floating panels, stat cards, buttons */
+  --radius-md: 2.4rem;   /* HUD bars, floating panels, stat cards, buttons */
   --radius-lg: 3.2rem;   /* toast */
   --radius-xl: 4.8rem;   /* modal sheet */
   --radius: var(--radius-md);

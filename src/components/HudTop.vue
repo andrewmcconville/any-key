@@ -31,7 +31,7 @@ watch(() => game.count, () => {
   flex: 0 0 auto;
   height: calc(16.8rem + var(--safe-top));
   padding-top: var(--safe-top);
-  /* Inset from the stage edges by --hud-gutter; the border runs down both sides and along the bottom. */
+  /* Inset from the stage edges by --hud-gutter; the border runs down both sides and along the bottom, with rounded bottom corners. */
   width: calc(min(100%, var(--phone-w)) - 2 * var(--hud-gutter));
   margin-inline: auto;
   display: flex;
@@ -41,6 +41,7 @@ watch(() => game.count, () => {
   background: var(--bar);
   border: var(--hairline) solid var(--line-soft);
   border-top: 0;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   z-index: 3;
 }
 /* Bare glyph, no circle: same tap target as an era dot, so the two bars still line up. */

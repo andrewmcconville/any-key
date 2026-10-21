@@ -15,7 +15,7 @@ export const SHAPE_TOKENS = [
   { group: 'border', id: 'hairline',  label: 'Hairline', note: 'HUD bars, modal frame, dividers', min: 0, max: 1.2, step: 0.05, fallback: 0.2 },
   { group: 'radius', id: 'radius-xs', label: 'XS',       note: 'images inside cards',             min: 0, max: 12,  step: 0.4, fallback: 1.2 },
   { group: 'radius', id: 'radius-sm', label: 'SM',       note: 'panel rows, action groups',       min: 0, max: 12,  step: 0.4, fallback: 1.6 },
-  { group: 'radius', id: 'radius-md', label: 'MD',       note: 'floating panels, cards, buttons', min: 0, max: 12,  step: 0.4, fallback: 2.4 },
+  { group: 'radius', id: 'radius-md', label: 'MD',       note: 'HUD bars, panels, cards, buttons', min: 0, max: 12,  step: 0.4, fallback: 2.4 },
   { group: 'radius', id: 'radius-lg', label: 'LG',       note: 'toast',                           min: 0, max: 12,  step: 0.4, fallback: 3.2 },
   { group: 'radius', id: 'radius-xl', label: 'XL',       note: 'modal sheet',                     min: 0, max: 12,  step: 0.4, fallback: 4.8 },
 ];
