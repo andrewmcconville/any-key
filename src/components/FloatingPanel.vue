@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { usePanelsStore } from '../stores/panels';
 
 /**
@@ -46,13 +46,17 @@ function onPointerUp(e) {
   dragging.value = false;
 }
 
-// If the viewport shrank since the panel was last placed, pull it back on screen.
-onMounted(() => {
+// If the viewport is smaller than when the panel was last placed, pull it back on screen:
+// whenever it opens (the element only exists while open) and whenever the window resizes or rotates.
+function reclamp() {
   const s = state.value;
-  if (!s) return;
+  if (!s?.open || !el.value) return;
   const { x, y } = clamp(s.x, s.y);
   if (x !== s.x || y !== s.y) panels.move(props.id, x, y);
-});
+}
+watch(() => state.value?.open, open => { if (open) nextTick(reclamp); }, { immediate: true });
+onMounted(() => window.addEventListener('resize', reclamp));
+onUnmounted(() => window.removeEventListener('resize', reclamp));
 </script>
 
 <template>
