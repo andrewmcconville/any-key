@@ -16,16 +16,19 @@ const props = defineProps({
 const panels = usePanelsStore();
 const state = computed(() => panels.get(props.id));
 const el = ref(null);
+const bar = ref(null);
 const dragging = ref(false);
 
 let drag = null;   // { pointerId, dx, dy } — pointer offset from the panel's top-left
 
+// Where a panel may sit: up to half its width off either side, never above the top, and as low as
+// leaves its title bar fully on screen (the body may hang below the viewport; the bar stays grabbable).
 function clamp(x, y) {
   const host = el.value?.offsetParent;
   if (!host) return { x, y };
-  const maxX = Math.max(0, host.clientWidth - el.value.offsetWidth);
-  const maxY = Math.max(0, host.clientHeight - el.value.offsetHeight);
-  return { x: Math.min(maxX, Math.max(0, x)), y: Math.min(maxY, Math.max(0, y)) };
+  const half = el.value.offsetWidth / 2;
+  const maxY = Math.max(0, host.clientHeight - (bar.value?.offsetHeight ?? 0));
+  return { x: Math.min(host.clientWidth - half, Math.max(-half, x)), y: Math.min(maxY, Math.max(0, y)) };
 }
 
 function onPointerDown(e) {
@@ -71,6 +74,7 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
     @pointerdown="panels.focus(id)"
   >
     <header
+      ref="bar"
       class="panel__bar"
       @pointerdown.stop="onPointerDown"
       @pointermove="onPointerMove"
