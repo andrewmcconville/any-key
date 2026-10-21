@@ -21,7 +21,8 @@
   --radius-lg: 3.2rem;   /* toast */
   --radius-xl: 4.8rem;   /* modal sheet */
   --radius: var(--radius-md);
-  --stroke: 0.4rem;
+  --stroke: 0.4rem;       /* control outlines: buttons, era dots, panel actions */
+  --hairline: 0.2rem;     /* soft frames and dividers: HUD bars, modal, swatch rows */
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   /* Phone frame width (the Figma board). The HUD bars never grow past it; the board does. */
@@ -40,6 +41,8 @@
   /* Controls. --tap is the smallest round control (era dots; the hamburger shares its size without the circle): ≈ 41 px on a phone. */
   --tap: 14.4rem;
   --icon: 6.4rem;
+  /* The HUD bars stop this far short of the stage's left and right edges, so paper shows round them. */
+  --hud-gutter: 4.8rem;
 
   /* Safe areas. The viewport meta says viewport-fit=cover, so on phones the page is drawn behind
      the status bar, notch and gesture bar; the HUD bars, overlays and toast add these insets so
