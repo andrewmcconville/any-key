@@ -1,10 +1,34 @@
 <script setup>
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { ERAS } from '../data/content';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
 
 const game = useGameStore();
 const ui = useUiStore();
+
+// The ring is a pill that stretches to the era in view: its leading edge sets off first and the
+// trailing edge follows after --ring-lag, so it elongates toward the target and snaps shut there.
+// Which edge leads depends on the direction of travel (data-dir), compared here on every change.
+const ring = ref(null);
+const preview = ref(null);                                   // index while a replay runs
+const index = computed(() => preview.value ?? ui.eraInView - 1);
+const dir = ref('fwd');
+watch(index, (next, prev) => { dir.value = next >= prev ? 'fwd' : 'back'; });
+
+// Replay, for the Inspect tool's Play button: slide to a neighbouring era and back.
+let replayTimer = null;
+function replay() {
+  const here = ui.eraInView - 1;
+  const there = here + 1 < ERAS.length ? here + 1 : here - 1;
+  const cs = getComputedStyle(ring.value);
+  const ms = s => { const n = parseFloat(s) || 0; return /ms\s*$/.test(s) ? n : n * 1000; };
+  const travel = ms(cs.getPropertyValue('--ring-duration')) + ms(cs.getPropertyValue('--ring-lag'));
+  clearTimeout(replayTimer);
+  preview.value = there;
+  replayTimer = setTimeout(() => { preview.value = null; }, travel + 150);
+}
+onBeforeUnmount(() => clearTimeout(replayTimer));
 
 // locked → dashed, open → white, cleared → white + ✓. One ring slides to the era in view.
 function dotState(era) {
@@ -18,7 +42,15 @@ function dotState(era) {
 
 <template>
   <div class="eras" aria-label="Eras">
-    <div class="era-ring" :style="{ '--era-index': ui.eraInView - 1 }" aria-hidden="true" />
+    <div
+      ref="ring"
+      class="era-ring"
+      :style="{ '--era-index': index }"
+      :data-dir="dir"
+      data-replay
+      aria-hidden="true"
+      @motion-replay="replay"
+    />
     <button
       v-for="era in ERAS"
       :key="era.id"
@@ -46,15 +78,25 @@ function dotState(era) {
   transition: background var(--dur-sm) var(--ease-standard), color var(--dur-sm) var(--ease-standard), border-color var(--dur-sm) var(--ease-standard);
 }
 .era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
-/* One ring, 1rem outside the dot, slides along the row to the era in view (--era-index). */
+/* One ring, 1rem outside the dot, stretches along the row to the era in view (--era-index). Its two
+   edges are positioned separately (left and right insets) so they can move at different times. The
+   --ring-* properties are this component's knobs: the Inspect tool lists and tunes them. */
 .era-ring {
-  position: absolute; left: -1rem; top: -1rem;
-  width: calc(var(--dot) + 2rem); height: calc(var(--dot) + 2rem);
-  border: var(--stroke) solid var(--ink); border-radius: 50%;
+  --ring-duration: var(--dur-md);
+  --ring-lag: 0.08s;
+  --ring-ease-lead: var(--ease-emphasized);
+  --ring-ease-trail: var(--ease-standard);
+  --step: calc(var(--dot) + var(--dot-gap));
+  position: absolute; top: -1rem;
+  height: calc(var(--dot) + 2rem);
+  left: calc(var(--era-index, 0) * var(--step) - 1rem);
+  right: calc(100% - var(--era-index, 0) * var(--step) - var(--dot) - 1rem);
+  border: var(--stroke) solid var(--ink);
+  border-radius: calc(var(--dot) / 2 + 1rem);
   pointer-events: none;
-  transform: translateX(calc(var(--era-index, 0) * (var(--dot) + var(--dot-gap))));
-  transition: transform .35s cubic-bezier(.2, .7, .2, 1);
 }
+.era-ring[data-dir="fwd"]  { transition: right var(--ring-duration) var(--ring-ease-lead), left var(--ring-duration) var(--ring-ease-trail) var(--ring-lag); }
+.era-ring[data-dir="back"] { transition: left var(--ring-duration) var(--ring-ease-lead), right var(--ring-duration) var(--ring-ease-trail) var(--ring-lag); }
 .era-dot[data-state="cleared"]::after {
   content: '✓'; position: absolute; right: -0.8rem; top: -0.8rem;
   width: 4.8rem; height: 4.8rem; border-radius: 50%;
