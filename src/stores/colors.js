@@ -2,7 +2,9 @@ import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
 import { oklchCss, oklchToHex, round } from '../lib/oklch';
 
-const STORAGE_KEY = 'any-key/colors/v2';
+// Design-tool overrides are deliberately not persisted: a refresh returns to the stylesheet's
+// values, so what you see after reloading is what the code says. (Only the game state persists.)
+const LEGACY_STORAGE_KEYS = ['any-key/colors/v1', 'any-key/colors/v2'];
 
 /**
  * The colour tokens. The values live in styles.css (the oklch() custom properties on :root) and
@@ -55,19 +57,7 @@ export const useColorsStore = defineStore('colors', () => {
   const defaults = readDefaults();
   const fresh = id => ({ ...defaults[id] });
   const values = reactive(Object.fromEntries(COLOR_TOKENS.map(t => [t.id, fresh(t.id)])));
-
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    for (const t of COLOR_TOKENS) {
-      const v = saved[t.id];
-      if (!v) continue;
-      for (const ch of CHANNELS) {
-        const n = Number(v[ch.key]);
-        if (Number.isFinite(n)) values[t.id][ch.key] = clamp(n, ch.min, ch.max);
-      }
-      if (t.hasAlpha && Number.isFinite(Number(v.alpha))) values[t.id].alpha = clamp(Number(v.alpha), 0, 1);
-    }
-  } catch (_) { /* ignore */ }
+  try { LEGACY_STORAGE_KEYS.forEach(k => localStorage.removeItem(k)); } catch (_) { /* ignore */ }
 
   /** CSS value for a token as the stylesheet expects it. */
   const css = id => oklchCss(values[id]);
@@ -95,10 +85,7 @@ export const useColorsStore = defineStore('colors', () => {
     return v.l === d.l && v.c === d.c && v.h === d.h && v.alpha === d.alpha;
   };
 
-  watch(values, () => {
-    apply();
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(values)); } catch (_) { /* ignore */ }
-  }, { deep: true, immediate: true });
+  watch(values, apply, { deep: true, immediate: true });
 
   return { values, defaults, css, hex, setChannel, setAlpha, resetOne, reset, isDefault };
 });

@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
 
-const STORAGE_KEY = 'any-key/tokens/v1';
+// Design-tool overrides are deliberately not persisted: a refresh returns to the stylesheet's
+// values, so what you see after reloading is what the code says. (Only the game state persists.)
+const LEGACY_STORAGE_KEYS = ['any-key/tokens/v1'];
 
 /**
  * The type ramp. The sizes themselves live in styles.css (the --text-… and --lh-… custom properties
@@ -34,14 +36,7 @@ export const useTokensStore = defineStore('tokens', () => {
   const defaults = readDefaults();
   // Current size per token id, in rem
   const sizes = reactive(Object.fromEntries(TYPE_TOKENS.map(t => [t.id, defaults[t.id].size])));
-
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    for (const t of TYPE_TOKENS) {
-      const v = Number(saved[t.id]);
-      if (Number.isFinite(v) && v >= t.min && v <= t.max) sizes[t.id] = v;
-    }
-  } catch (_) { /* ignore */ }
+  try { LEGACY_STORAGE_KEYS.forEach(k => localStorage.removeItem(k)); } catch (_) { /* ignore */ }
 
   /** Line-height for a token at its current size: the stylesheet's ratio is kept. */
   const lineHeight = id => round(sizes[id] * (defaults[id].lh / defaults[id].size));
@@ -65,10 +60,7 @@ export const useTokensStore = defineStore('tokens', () => {
   function reset() { TYPE_TOKENS.forEach(t => resetOne(t.id)); }
   const isDefault = id => sizes[id] === defaults[id].size;
 
-  watch(sizes, () => {
-    apply();
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(sizes)); } catch (_) { /* ignore */ }
-  }, { deep: true, immediate: true });
+  watch(sizes, apply, { deep: true, immediate: true });
 
   return { sizes, defaults, lineHeight, set, resetOne, reset, isDefault };
 });

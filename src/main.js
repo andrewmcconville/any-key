@@ -7,6 +7,6 @@ import { useColorsStore } from './stores/colors';
 import './assets/styles.css';
 
 const app = createApp(App).use(createPinia()).use(router);
-useTokensStore();   // apply any saved type-token and colour overrides to :root before the first paint
+useTokensStore();   // read the stylesheet's token defaults before anything can override them
 useColorsStore();
 app.mount('#app');
