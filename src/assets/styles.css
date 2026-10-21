@@ -31,7 +31,7 @@
   --text-label:   4rem;    --lh-label:   5rem;
   --text-button:  4.4rem;  --lh-button:  5.2rem;
 
-  /* Controls. --tap is the smallest round control (era dots, hamburger): ≈ 41 px on a phone. */
+  /* Controls. --tap is the smallest round control (era dots; the hamburger shares its size without the circle): ≈ 41 px on a phone. */
   --tap: 14.4rem;
   --icon: 6.4rem;
 

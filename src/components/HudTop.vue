@@ -42,12 +42,12 @@ watch(() => game.count, () => {
   border-bottom: 0.2rem solid var(--line-soft);
   z-index: 3;
 }
-/* Same size and stroke as an era dot, so the two bars share one control language. */
+/* Bare glyph, no circle: same tap target as an era dot, so the two bars still line up. */
 .menu-btn {
   width: var(--tap); height: var(--tap);
-  border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
+  border: 0;
+  background: none;
+  padding: 0;
   display: grid; place-items: center;
   transition: transform .08s;
 }
