@@ -2,135 +2,95 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import FloatingPanel from '../components/FloatingPanel.vue';
 import PanelActions from '../components/PanelActions.vue';
-import { FAMILIES, bindingsFor, collectRules, nearestBound, unscoped } from '../lib/bindings';
+import TokenTuner from '../components/TokenTuner.vue';
+import { FAMILIES, resolve } from '../lib/bindings';
 import { elementsWithFontSize, flashElements } from '../lib/flash';
 import { useRemPx } from '../composables/useRemPx';
 import { useInspectStore } from '../stores/inspect';
-import { usePanelsStore } from '../stores/panels';
-import { CHANNELS, useColorsStore } from '../stores/colors';
-import { SHAPE_TOKENS, useShapeStore } from '../stores/shape';
-import { TYPE_TOKENS, useTokensStore } from '../stores/tokens';
+import { useColorsStore } from '../stores/colors';
+import { useMotionStore } from '../stores/motion';
+import { useShapeStore } from '../stores/shape';
+import { useTokensStore } from '../stores/tokens';
 
 const inspect = useInspectStore();
-const panels = usePanelsStore();
 const tokens = useTokensStore();
 const colors = useColorsStore();
 const shape = useShapeStore();
-const { remPx } = useRemPx();
+const motion = useMotionStore();
+const { remPx, px } = useRemPx();
 
-/* ---------- The picked element and its bindings ---------- */
+/* ---------- The picked element: its token bindings and its knobs ---------- */
 
 const bindings = ref([]);
+const knobs = ref([]);
 function refresh() {
   const el = inspect.selected;
-  bindings.value = el && el.isConnected ? bindingsFor(el) : [];
+  const r = el && el.isConnected ? resolve(el) : { bindings: [], knobs: [] };
+  bindings.value = r.bindings;
+  knobs.value = r.knobs;
 }
-// Recompute when the pick or the overrides change, and when any slider moves (the computed readouts follow).
+// Recompute when the pick or the overrides change, and when any slider moves (the readouts follow).
 watch(() => [inspect.selected, inspect.version], refresh, { immediate: true });
-watch(() => JSON.stringify([tokens.sizes, colors.values, shape.values]), refresh);
+watch(() => JSON.stringify([tokens.sizes, colors.values, shape.values, motion.durations, motion.easings]), refresh);
+onUnmounted(() => { inspect.stopPicking(); inspect.clear(); });
 
-const componentName = el => el?.__vueParentComponent?.type?.__name || el?.__vueParentComponent?.type?.name || null;
-const describe = el => {
-  if (!el) return '';
-  const classes = [...el.classList].filter(c => !c.startsWith('inspect-') && !c.startsWith('token-flash')).slice(0, 3);
-  return el.tagName.toLowerCase() + classes.map(c => `.${c}`).join('');
-};
-const name = computed(() => componentName(inspect.selected) ?? describe(inspect.selected));
-
-// Keep a dashed outline on whatever is selected.
-watch(() => inspect.selected, (el, prev) => {
-  prev?.classList.remove('inspect-selected');
-  el?.classList.add('inspect-selected');
+// The component that rendered the element (dev builds), else its tag.
+const name = computed(() => {
+  const el = inspect.selected;
+  return el?.__vueParentComponent?.type?.__name || el?.__vueParentComponent?.type?.name || el?.tagName.toLowerCase() || '';
 });
+const gone = computed(() => inspect.selected && !bindings.value.length && !knobs.value.length);
 
-/* ---------- Pick mode ---------- */
+/* ---------- Replay ---------- */
 
-let rules = null;
-let cache = null;
-let hovered = null;
-let picked = false;
+// A component that can run its motion on demand marks that element with data-replay and listens
+// for the motion-replay event (see EraDots). Play asks the picked element, or its nearest such parent.
+const replayTarget = computed(() => inspect.selected?.closest('[data-replay]') ?? null);
+function replay() { replayTarget.value?.dispatchEvent(new CustomEvent('motion-replay')); }
 
-const setHover = el => {
-  if (hovered === el) return;
-  hovered?.classList.remove('inspect-hover');
-  hovered = el;
-  hovered?.classList.add('inspect-hover');
-};
-// The bound element under the pointer; undefined when the pointer is over a panel (leave those alone).
-function targetOf(e) {
-  const t = e.target instanceof Element ? e.target : null;
-  if (!t) return undefined;
-  return nearestBound(t, rules, cache);
-}
-function onMove(e) {
-  const el = targetOf(e);
-  if (el !== undefined) setHover(el);
-}
-function onDown(e) {
-  const el = targetOf(e);
-  if (el === undefined) return;
-  e.preventDefault(); e.stopPropagation();
-  if (el) { inspect.select(el); picked = true; }
-}
-// The click that follows the pick is swallowed so the app does not act on it, then picking ends.
-function onClick(e) {
-  if (targetOf(e) === undefined) return;
-  e.preventDefault(); e.stopPropagation();
-  if (picked) stopPicking();
-}
-function onKey(e) {
-  if (e.key !== 'Escape') return;
-  e.stopPropagation();
-  stopPicking();
+/* ---------- Rows: bindings first, then knobs ---------- */
+
+const reachOf = row => (row.family === 'type' && row.tokenId
+  ? elementsWithFontSize(tokens.sizes[row.tokenId] * remPx.value)
+  : document.querySelectorAll(row.selector));
+const flashSelector = row => flashElements(document.querySelectorAll(row.selector));
+
+// What a row is currently worth, in the unit a designer reads.
+function readout(row) {
+  if (row.kind === 'time') return `${Math.round(row.num * 1000)}ms`;
+  if (row.kind === 'length') return `${row.num}${row.unit} · ${px(row.unit === 'rem' ? row.num : row.num / remPx.value)}px`;
+  if (row.kind === 'number') return String(row.num);
+  if (row.tokenId) {
+    switch (row.family) {
+      case 'color': return colors.hex(row.tokenId);
+      case 'duration': return `${motion.ms(row.tokenId)}ms`;
+      case 'easing': return motion.easingCss(row.tokenId).replace('cubic-bezier', '');
+      case 'type': return `${px(tokens.sizes[row.tokenId])}px`;
+      case 'radius': case 'border': return `${px(shape.values[row.tokenId])}px`;
+    }
+  }
+  return row.computed ?? row.raw;
 }
 
-const listeners = [['pointermove', onMove], ['pointerdown', onDown], ['click', onClick], ['keydown', onKey]];
-function startPicking() {
-  rules = collectRules();
-  cache = new WeakMap();
-  picked = false;
-  inspect.picking = true;
-  document.documentElement.classList.add('inspect-picking');
-  listeners.forEach(([type, fn]) => document.addEventListener(type, fn, true));
-}
-function stopPicking() {
-  inspect.picking = false;
-  document.documentElement.classList.remove('inspect-picking');
-  listeners.forEach(([type, fn]) => document.removeEventListener(type, fn, true));
-  setHover(null);
-  rules = cache = null;
-}
-const togglePicking = () => (inspect.picking ? stopPicking() : startPicking());
-
-function clearSelection() { inspect.clear(); }
-
-// Closing the panel ends the session: no stray outlines, no capture listeners.
-watch(() => panels.isOpen('inspect'), open => { if (!open) { stopPicking(); inspect.clear(); } });
-onUnmounted(() => { stopPicking(); inspect.clear(); });
-
-/* ---------- Retune and rebind ---------- */
-
-const typeToken = id => TYPE_TOKENS.find(t => t.id === id);
-const shapeToken = id => SHAPE_TOKENS.find(t => t.id === id);
-const fmt = (ch, v) => (ch.key === 'h' ? `${Math.round(v)}°` : v.toFixed(ch.dp));
-// Chrome reports computed colours in oklch, so a colour token's readout is its nearest hex from the store.
-const readout = b => (b.family === 'color' && b.tokenId ? colors.hex(b.tokenId) : b.computed);
-
-// Grabbing a slider flashes the token's reach; grabbing a dropdown flashes the selector's reach.
-const flashToken = b => flashElements(b.family === 'type'
-  ? elementsWithFontSize(tokens.sizes[b.tokenId] * remPx.value)
-  : document.querySelectorAll(b.selector));
-const flashSelector = b => flashElements(document.querySelectorAll(b.selector));
-
-function onRebind(b, e) {
+function onRebind(row, e) {
   const id = e.target.value;
-  if (id && id !== '__literal') inspect.rebind(b, id);
+  if (id && id !== '__literal') inspect.rebind(row, id);
+}
+// Numeric knobs: slider bounds from the current value, written back as a literal in the knob's unit.
+const knobRange = k => {
+  if (k.kind === 'time') return { min: 0, max: 1, step: 0.01 };
+  const max = Math.max(1, Math.ceil(Math.abs(k.num) * 4));
+  return { min: 0, max, step: max > 2 ? 0.1 : 0.01 };
+};
+function onKnob(k, e) {
+  const v = Number(e.target.value);
+  inspect.setKnob(k, k.kind === 'time' ? `${v}s` : k.kind === 'length' ? `${v}${k.unit}` : String(v));
 }
 </script>
 
 <template>
   <FloatingPanel id="inspect" title="Inspect" width="112rem">
-    <button class="pick t-label" :class="{ 'pick--on': inspect.picking }" type="button" @click="togglePicking">
+    <button class="pick t-label" :class="{ 'pick--on': inspect.picking }" type="button" @click="inspect.togglePicking()">
       {{ inspect.picking ? 'Picking · tap an element, Esc to stop' : 'Pick an element' }}
     </button>
 
@@ -140,20 +100,20 @@ function onRebind(b, e) {
 
     <template v-else>
       <div class="target">
-        <span class="target__text">
-          <span class="target__name t-strong">{{ name }}</span>
-          <span class="target__desc t-label t-label--lc muted">{{ describe(inspect.selected) }}</span>
+        <span class="target__name t-strong">{{ name }}</span>
+        <span class="target__actions">
+          <button v-if="replayTarget" class="play t-label" type="button" @click="replay">Play</button>
+          <button class="link t-label t-label--lc" type="button" @click="inspect.clear()">clear</button>
         </span>
-        <button class="link t-label t-label--lc" type="button" @click="clearSelection">clear</button>
       </div>
 
-      <p v-if="!bindings.length" class="hint t-label t-label--lc muted">This element is gone from the page.</p>
+      <p v-if="gone" class="hint t-label t-label--lc muted">This element is gone from the page.</p>
 
-      <div v-for="b in bindings" :key="b.slot" class="binding">
-        <div class="binding__head">
-          <span class="binding__label t-label">{{ b.label }}</span>
+      <div v-for="b in bindings" :key="b.slot" class="row">
+        <div class="row__head">
+          <span class="row__label t-label">{{ b.label }}</span>
           <select
-            class="binding__select"
+            class="row__select"
             :value="b.tokenId ?? '__literal'"
             :aria-label="`${b.label} token`"
             @pointerdown="flashSelector(b)"
@@ -162,53 +122,44 @@ function onRebind(b, e) {
             <option v-if="!b.tokenId" value="__literal" disabled>{{ b.raw }} · no token</option>
             <option v-for="o in FAMILIES[b.family].options" :key="o.id" :value="o.id">{{ o.label }}</option>
           </select>
-          <span class="binding__value t-label t-label--lc muted">{{ readout(b) }}</span>
+          <span class="row__value t-label t-label--lc muted">{{ readout(b) }}</span>
         </div>
-        <div class="binding__where t-label t-label--lc muted">
-          {{ unscoped(b.selector) }}<template v-if="b.alias"> · via {{ b.alias }}</template>
-        </div>
-
-        <template v-if="b.tokenId">
-          <input
-            v-if="b.family === 'type'"
-            class="slider"
-            type="range"
-            :min="typeToken(b.tokenId).min" :max="typeToken(b.tokenId).max" step="0.1"
-            :value="tokens.sizes[b.tokenId]"
-            :aria-label="`${typeToken(b.tokenId).label} size`"
-            @pointerdown="flashToken(b)"
-            @input="tokens.set(b.tokenId, $event.target.value)"
-          >
-          <input
-            v-else-if="b.family === 'radius' || b.family === 'border'"
-            class="slider"
-            type="range"
-            :min="shapeToken(b.tokenId).min" :max="shapeToken(b.tokenId).max" :step="shapeToken(b.tokenId).step"
-            :value="shape.values[b.tokenId]"
-            :aria-label="`${shapeToken(b.tokenId).label} value`"
-            @pointerdown="flashToken(b)"
-            @input="shape.set(b.tokenId, $event.target.value)"
-          >
-          <template v-else>
-            <label v-for="ch in CHANNELS" :key="ch.key" class="channel">
-              <span class="channel__key t-label">{{ ch.label }}</span>
-              <input
-                class="channel__slider"
-                type="range"
-                :min="ch.min" :max="ch.max" :step="ch.step"
-                :value="colors.values[b.tokenId][ch.key]"
-                :aria-label="`${b.tokenId} ${ch.label}`"
-                @pointerdown="flashToken(b)"
-                @input="colors.setChannel(b.tokenId, ch.key, $event.target.value)"
-              >
-              <span class="channel__value t-label t-label--lc">{{ fmt(ch, colors.values[b.tokenId][ch.key]) }}</span>
-            </label>
-          </template>
-        </template>
+        <TokenTuner v-if="b.tokenId" :family="b.family" :token-id="b.tokenId" :reach="() => reachOf(b)" />
       </div>
+
+      <template v-if="knobs.length">
+        <h3 class="knobs__title t-label muted">Knobs</h3>
+        <div v-for="k in knobs" :key="k.prop" class="row">
+          <div class="row__head">
+            <span class="row__label t-label">{{ k.label }}</span>
+            <select
+              v-if="k.kind === 'token'"
+              class="row__select"
+              :value="k.tokenId"
+              :aria-label="`${k.label} token`"
+              @pointerdown="flashSelector(k)"
+              @change="onRebind(k, $event)"
+            >
+              <option v-for="o in FAMILIES[k.family].options" :key="o.id" :value="o.id">{{ o.label }}</option>
+            </select>
+            <input
+              v-else
+              class="row__slider"
+              type="range"
+              :min="knobRange(k).min" :max="knobRange(k).max" :step="knobRange(k).step"
+              :value="k.num"
+              :aria-label="k.label"
+              @pointerdown="flashSelector(k)"
+              @input="onKnob(k, $event)"
+            >
+            <span class="row__value t-label t-label--lc muted">{{ readout(k) }}</span>
+          </div>
+          <TokenTuner v-if="k.kind === 'token'" :family="k.family" :token-id="k.tokenId" :reach="() => reachOf(k)" />
+        </div>
+      </template>
     </template>
 
-    <PanelActions :snapshot="inspect.snapshot" @reset="inspect.reset()" />
+    <template #footer><PanelActions :snapshot="inspect.snapshot" @reset="inspect.reset()" /></template>
   </FloatingPanel>
 </template>
 
@@ -228,13 +179,18 @@ function onRebind(b, e) {
   padding-bottom: 2rem; margin-bottom: 2rem;
   border-bottom: var(--hairline) solid var(--line-soft);
 }
-.target__text { display: flex; flex-direction: column; min-width: 0; }
-.target__desc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.link { color: var(--ink); text-decoration: underline; flex: 0 0 auto; }
-.binding { margin-bottom: 2.8rem; }
-.binding__head { display: flex; align-items: center; gap: 2rem; }
-.binding__label { flex: 0 0 22rem; color: var(--muted); }
-.binding__select {
+.target__actions { display: flex; align-items: center; gap: 2.4rem; flex: 0 0 auto; }
+.play {
+  height: 7.2rem; padding: 0 2.4rem;
+  border: var(--stroke) solid var(--ink); border-radius: var(--radius-sm);
+  background: var(--ink); color: var(--white);
+}
+.link { color: var(--ink); text-decoration: underline; }
+.knobs__title { margin: 3.2rem 0 1.6rem; }
+.row { margin-bottom: 2.4rem; }
+.row__head { display: flex; align-items: center; gap: 2rem; margin-bottom: 0.8rem; }
+.row__label { flex: 0 0 22rem; color: var(--muted); text-transform: uppercase; }
+.row__select {
   flex: 1 1 auto; min-width: 0;
   height: 8.8rem;
   padding: 0 2rem;
@@ -244,17 +200,6 @@ function onRebind(b, e) {
   border: var(--stroke) solid var(--ink);
   border-radius: var(--radius-sm);
 }
-.binding__value { flex: 0 0 auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.binding__where { margin: 0.6rem 0 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.slider, .channel__slider {
-  display: block;
-  width: 100%;
-  height: 6.4rem;
-  margin: 0;
-  accent-color: var(--ink);
-  touch-action: pan-y;
-}
-.channel { display: grid; grid-template-columns: 3.2rem 1fr 8.8rem; align-items: center; gap: 1.6rem; }
-.channel__key { color: var(--muted); }
-.channel__value { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.row__slider { flex: 1 1 auto; min-width: 0; height: 6.4rem; margin: 0; accent-color: var(--ink); touch-action: pan-y; }
+.row__value { flex: 0 0 auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
 </style>

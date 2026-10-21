@@ -1,6 +1,7 @@
 import { TYPE_TOKENS } from '../stores/tokens';
 import { COLOR_TOKENS } from '../stores/colors';
 import { SHAPE_TOKENS } from '../stores/shape';
+import { DURATION_TOKENS, EASING_TOKENS } from '../stores/motion';
 
 /**
  * Reads, from the stylesheets themselves, which design tokens an element is set with. Computed
@@ -21,21 +22,40 @@ const SLOTS = {
   'border-width':     { label: 'Border',        family: 'border' },
   'border-color':     { label: 'Border colour', family: 'color' },
   'border-radius':    { label: 'Radius',        family: 'radius' },
+  'transition-duration':        { label: 'Transition',      family: 'duration' },
+  'transition-timing-function': { label: 'Transition ease', family: 'easing' },
+  'animation-duration':         { label: 'Animation',       family: 'duration' },
+  'animation-timing-function':  { label: 'Animation ease',  family: 'easing' },
 };
 const SLOT_ORDER = Object.keys(SLOTS);
 
 /** The tokens a binding of each family may be switched to. */
 export const FAMILIES = {
-  type:   { options: TYPE_TOKENS.map(t => ({ id: t.id, label: t.label })), varOf: id => `--text-${id}` },
-  color:  { options: COLOR_TOKENS.map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
-  radius: { options: SHAPE_TOKENS.filter(t => t.group === 'radius').map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
-  border: { options: SHAPE_TOKENS.filter(t => t.group === 'border').map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
+  type:     { options: TYPE_TOKENS.map(t => ({ id: t.id, label: t.label })), varOf: id => `--text-${id}` },
+  color:    { options: COLOR_TOKENS.map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
+  radius:   { options: SHAPE_TOKENS.filter(t => t.group === 'radius').map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
+  border:   { options: SHAPE_TOKENS.filter(t => t.group === 'border').map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
+  duration: { options: DURATION_TOKENS.map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
+  easing:   { options: EASING_TOKENS.map(t => ({ id: t.id, label: t.label })), varOf: id => `--${id}` },
 };
 
 const COLOR_IDS = new Set(COLOR_TOKENS.map(t => t.id));
 // Custom properties that are aliases of a token in the stylesheet.
 const ALIASES = { '--line': 'ink', '--radius': 'radius-md' };
 const NON_VALUES = new Set(['inherit', 'initial', 'unset', 'currentcolor', 'none', 'transparent', '0']);
+
+/** The token a custom property names, as { family, tokenId, alias? }, or null for anything else. */
+export function tokenOf(name) {
+  if (name.startsWith('--text-')) return { family: 'type', tokenId: name.slice(7) };
+  if (name === '--line') return { family: 'color', tokenId: 'ink', alias: name };
+  if (COLOR_IDS.has(name.slice(2))) return { family: 'color', tokenId: name.slice(2) };
+  if (name === '--radius') return { family: 'radius', tokenId: 'radius-md', alias: name };
+  if (name.startsWith('--radius-')) return { family: 'radius', tokenId: name.slice(2) };
+  if (name === '--stroke' || name === '--hairline') return { family: 'border', tokenId: name.slice(2) };
+  if (name.startsWith('--dur-')) return { family: 'duration', tokenId: name.slice(2) };
+  if (name.startsWith('--ease-')) return { family: 'easing', tokenId: name.slice(2) };
+  return null;
+}
 
 /* ---------- Rules ---------- */
 
@@ -168,8 +188,45 @@ function classify(prop, value) {
     const rv = vars.find(x => x.startsWith('--radius'));
     if (rv) out.push(bind('border-radius', `var(${rv})`, ALIASES[rv] ?? rv.slice(2), ALIASES[rv] ? rv : null));
     else out.push(bind('border-radius', v, null));
+  } else if (/^(transition|animation)(-duration|-timing-function)?$/.test(prop)) {
+    // Only the first duration and easing of a list are read. A value that goes through a component
+    // knob (var(--ring-duration)) has no token here; the knob row carries it instead.
+    const kind = prop.startsWith('animation') ? 'animation' : 'transition';
+    const literalPart = v.replace(VAR, '');   // so "ease" inside var(--ring-ease-lead) is not read as a keyword
+    if (!prop.endsWith('timing-function')) {
+      const dv = vars.find(x => x.startsWith('--dur-'));
+      if (dv) out.push(bind(`${kind}-duration`, `var(${dv})`, dv.slice(2)));
+      else { const m = TIME.exec(literalPart); if (m) out.push(bind(`${kind}-duration`, m[0], null)); }
+    }
+    if (!prop.endsWith('duration')) {
+      const ev = vars.find(x => x.startsWith('--ease-'));
+      if (ev) out.push(bind(`${kind}-timing-function`, `var(${ev})`, ev.slice(2)));
+      else { const m = EASING.exec(literalPart); if (m) out.push(bind(`${kind}-timing-function`, m[0], null)); }
+    }
   }
   return out;
+}
+
+const TIME = /(\d*\.?\d+)(ms|s)\b/;
+const EASING = /cubic-bezier\([^)]*\)|\b(?:ease-in-out|ease-in|ease-out|ease|linear)\b/;
+
+/**
+ * What kind of value a component knob (a custom property declared in a matched rule) holds:
+ * a token reference, a time, a length, a bare number, or text (calc() and the like, not tunable).
+ */
+function classifyKnob(value) {
+  const v = value.trim();
+  const vars = varsIn(v);
+  if (vars.length === 1 && v === `var(${vars[0]})`) {
+    const t = tokenOf(vars[0]);
+    if (t) return { kind: 'token', ...t, ref: v };
+  }
+  if (vars.length) return { kind: 'text' };
+  let m;
+  if ((m = /^(-?\d*\.?\d+)(ms|s)$/.exec(v))) return { kind: 'time', num: m[2] === 'ms' ? Number(m[1]) / 1000 : Number(m[1]) };
+  if ((m = /^(-?\d*\.?\d+)(rem|px)$/.exec(v))) return { kind: 'length', num: Number(m[1]), unit: m[2] };
+  if (/^-?\d*\.?\d+$/.test(v)) return { kind: 'number', num: Number(v) };
+  return { kind: 'text' };
 }
 
 /* ---------- Resolution ---------- */
@@ -194,6 +251,10 @@ function computedFor(el, slot) {
       const r = [cs.borderTopLeftRadius, cs.borderTopRightRadius, cs.borderBottomRightRadius, cs.borderBottomLeftRadius];
       return r.every(x => x === r[0]) ? px(r[0]) : r.map(px).join(' ');
     }
+    case 'transition-duration': return `${Math.round(parseFloat(cs.transitionDuration) * 1000)}ms`;
+    case 'animation-duration': return `${Math.round(parseFloat(cs.animationDuration) * 1000)}ms`;
+    case 'transition-timing-function': return cs.transitionTimingFunction.split(',')[0].trim();
+    case 'animation-timing-function': return cs.animationTimingFunction.split(',')[0].trim();
     default: return '';
   }
 }
@@ -206,33 +267,49 @@ const compareRank = (a, b) => { for (let i = 0; i < a.length; i++) if (a[i] !== 
  * override written against it reaches the same elements. Pass the rules from collectRules() to
  * resolve many elements against one scan.
  */
-export function bindingsFor(el, rules = collectRules()) {
+export function resolve(el, rules = collectRules()) {
   const best = {};
+  const knobBest = {};
   for (const { rule, override, order } of rules) {
     const part = matchingPart(el, rule.selectorText);
     if (!part) continue;
     const spec = specificity(part);
     for (const d of declarations(rule)) {
+      const rank = [override ? 1 : 0, d.important ? 1 : 0, spec, order];
+      if (d.prop.startsWith('--')) {
+        if (!knobBest[d.prop] || compareRank(rank, knobBest[d.prop].rank) >= 0) {
+          knobBest[d.prop] = { prop: d.prop, raw: d.value, selector: part, rank };
+        }
+        continue;
+      }
       for (const b of classify(d.prop, d.value)) {
-        const rank = [override ? 1 : 0, d.important ? 1 : 0, spec, order];
         if (!best[b.slot] || compareRank(rank, best[b.slot].rank) >= 0) {
           best[b.slot] = { ...b, prop: d.prop, raw: d.value, selector: part, rank };
         }
       }
     }
   }
-  return SLOT_ORDER.filter(s => best[s]).map(s => {
+  const bindings = SLOT_ORDER.filter(s => best[s]).map(s => {
     const { rank, ...b } = best[s];
     return { ...b, ...SLOTS[s], computed: computedFor(el, s) };
   });
+  // Knobs: the component's own custom properties, labelled from their names (--ring-lag → "ring lag").
+  const knobs = Object.values(knobBest)
+    .map(({ rank, ...k }) => ({ ...k, label: k.prop.slice(2).replace(/-/g, ' '), ...classifyKnob(k.raw) }))
+    .filter(k => k.kind !== 'text');
+  return { bindings, knobs };
 }
 
-/** The element itself or its nearest ancestor with at least one binding; null if none, undefined inside the panels. */
+/** The winning token bindings alone (see resolve). */
+export const bindingsFor = (el, rules) => resolve(el, rules).bindings;
+
+/** The element itself or its nearest ancestor with a binding or a knob; null if none, undefined inside the panels. */
 export function nearestBound(el, rules, cache = new WeakMap()) {
   for (let node = el; node && node !== document.body; node = node.parentElement) {
     if (node.closest('.panel-host')) return undefined;
-    if (!cache.has(node)) cache.set(node, bindingsFor(node, rules));
-    if (cache.get(node).length) return node;
+    if (!cache.has(node)) cache.set(node, resolve(node, rules));
+    const r = cache.get(node);
+    if (r.bindings.length || r.knobs.length) return node;
   }
   return null;
 }

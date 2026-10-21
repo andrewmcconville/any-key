@@ -143,6 +143,9 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 .inspect-hover { outline: 0.3rem solid var(--ink); outline-offset: 1.2rem; }
 .inspect-selected { outline: 0.3rem dashed var(--ink); outline-offset: 1.2rem; }
 html.inspect-picking, html.inspect-picking * { cursor: crosshair !important; }
+/* While picking, labels and decorations that opt out of hit testing (pointer-events: none, such as the
+   timeline labels and the era ring) become targets again. The panels keep their own rules. */
+html.inspect-picking .stage *:not(.panel-host, .panel-host *) { pointer-events: auto !important; }
 
 /* Shared animation: locked keys shake when tapped. */
 @keyframes shake {
