@@ -102,7 +102,7 @@ onMounted(() => {
   gap: 2.4rem;
   height: 12rem;
   padding: 0 2.4rem 0 3.2rem;
-  background: #efefef;
+  background: var(--bar);
   border-bottom: 0.3rem solid var(--ink);
   cursor: grab;
   user-select: none;

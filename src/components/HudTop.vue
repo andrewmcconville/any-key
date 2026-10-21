@@ -38,7 +38,7 @@ watch(() => game.count, () => {
   align-items: center;
   justify-content: space-between;
   padding-inline: calc(4.8rem + var(--safe-left)) calc(4.8rem + var(--safe-right));
-  background: #efefef;
+  background: var(--bar);
   border-bottom: 0.2rem solid var(--line-soft);
   z-index: 3;
 }

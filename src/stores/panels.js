@@ -14,8 +14,11 @@ export const usePanelsStore = defineStore('panels', () => {
 
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    for (const [id, p] of Object.entries(saved)) {
-      if (p && typeof p === 'object') panels[id] = { open: !!p.open, x: Number(p.x) || 0, y: Number(p.y) || 0, z: 0 };
+    // Restore in the saved stacking order so the panel that was on top comes back on top.
+    const entries = Object.entries(saved).filter(([, p]) => p && typeof p === 'object');
+    entries.sort((a, b) => (Number(a[1].z) || 0) - (Number(b[1].z) || 0));
+    for (const [id, p] of entries) {
+      panels[id] = { open: !!p.open, x: Number(p.x) || 0, y: Number(p.y) || 0, z: ++topZ.value };
     }
   } catch (_) { /* ignore */ }
 

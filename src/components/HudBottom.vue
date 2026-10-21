@@ -20,7 +20,7 @@ import EraDots from './EraDots.vue';
   align-items: center;
   justify-content: center;
   padding-inline: calc(4.8rem + var(--safe-left)) calc(4.8rem + var(--safe-right));
-  background: #efefef;
+  background: var(--bar);
   border-top: 0.2rem solid var(--line-soft);
   z-index: 3;
 }
