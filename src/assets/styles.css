@@ -17,6 +17,20 @@
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   /* Phone frame width (the Figma board). The HUD bars never grow past it; the board does. */
   --phone-w: 144rem;
+
+  /* Type ramp. The Figma lo-fi used 160/84/44/32/26 canvas px, which on a 412-px phone (1rem ≈ 2.86 px)
+     renders Body at 9 px and Label at 7 px. These are raised so Body ≈ 15 px and Label ≈ 11.5 px there,
+     while Display and the button label (which already read well) barely move. */
+  --text-display: 16rem;   --lh-display: 16rem;
+  --text-title:   9.6rem;  --lh-title:   10.4rem;
+  --text-heading: 5.6rem;  --lh-heading: 6.8rem;
+  --text-body:    5.2rem;  --lh-body:    6.8rem;
+  --text-label:   4rem;    --lh-label:   5rem;
+  --text-button:  4.4rem;  --lh-button:  5.2rem;
+
+  /* Controls. --tap is the smallest round control (era dots, hamburger): ≈ 41 px on a phone. */
+  --tap: 14.4rem;
+  --icon: 6.4rem;
 }
 
 html {
@@ -47,13 +61,13 @@ body {
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outline-offset: 0.4rem; }
 
-/* Type styles (p2.9): Display 160, Title 84/92, Heading 44/52, Body 32/46, Label 26/34 */
-.t-display { font: 700 16rem/1 var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.t-title   { font: 700 8.4rem/9.2rem var(--font-display); letter-spacing: -0.015em; }
-.t-heading { font: 700 4.4rem/5.2rem var(--font-display); font-variant-numeric: tabular-nums; }
-.t-body    { font: 400 3.2rem/4.6rem var(--font-body); }
-.t-strong  { font: 600 3.2rem/4.6rem var(--font-body); }
-.t-label   { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
+/* Type styles (p2.9 names; sizes from the tokens above) */
+.t-display { font: 700 var(--text-display)/var(--lh-display) var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.t-title   { font: 700 var(--text-title)/var(--lh-title) var(--font-display); letter-spacing: -0.015em; }
+.t-heading { font: 700 var(--text-heading)/var(--lh-heading) var(--font-display); font-variant-numeric: tabular-nums; }
+.t-body    { font: 400 var(--text-body)/var(--lh-body) var(--font-body); }
+.t-strong  { font: 600 var(--text-body)/var(--lh-body) var(--font-body); }
+.t-label   { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
 .t-label--lc { text-transform: none; }
 .muted { color: var(--muted); }
 

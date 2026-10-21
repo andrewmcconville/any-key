@@ -22,10 +22,11 @@ const connectorStyle = computed(() => props.node.above
   ? { left: rem(props.node.cx), top: rem(cy.value + R), height: rem(railY - (cy.value + R)) }
   : { left: rem(props.node.cx), top: rem(railY), height: rem((cy.value - R) - railY) });
 
-// Labels sit on the far side of the circle from the rail.
+// Labels sit on the far side of the circle from the rail: 19 canvas px above the circle (anchored by
+// their bottom edge, so the type size doesn't matter) or 21 below it.
 const labelStyle = computed(() => ({
   left: rem(props.node.cx),
-  top: rem(props.node.above ? cy.value - R - 19 - 80 : cy.value + R + 21),
+  top: rem(props.node.above ? cy.value - R - 19 : cy.value + R + 21),
 }));
 
 const shaking = ref(false);
@@ -55,7 +56,7 @@ function onPress() {
   >
     <span class="glyph">{{ glyph }}</span>
   </button>
-  <div class="node-label" :data-locked="state === 'locked'" :style="labelStyle">
+  <div class="node-label" :class="{ 'node-label--above': node.above }" :data-locked="state === 'locked'" :style="labelStyle">
     <div class="name">{{ node.name }}</div>
     <div class="year">{{ node.year }}</div>
   </div>
@@ -74,11 +75,11 @@ function onPress() {
   transition: transform .12s, background .2s, color .2s;
 }
 .node:active { transform: scale(.94); }
-.node .glyph { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em; }
+.node .glyph { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: .02em; }
 .node[data-state="collected"] { background: var(--ink); color: var(--white); }
 .node[data-state="collected"] .glyph { font: 600 7.2rem/1 var(--font-body); }
 .node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
-.node[data-state="locked"] .glyph { font: 600 2.8rem/1 var(--font-body); color: var(--muted); }
+.node[data-state="locked"] .glyph { font: 600 4rem/1 var(--font-body); color: var(--muted); }
 .node.shake { animation: shake .4s; }
 .node-label {
   position: absolute;
@@ -86,8 +87,9 @@ function onPress() {
   text-align: center;
   pointer-events: none;
 }
-.node-label .name { font: 400 3.2rem/4.6rem var(--font-body); }
-.node-label .year { font: 500 2.6rem/3.4rem var(--font-display); color: var(--muted); letter-spacing: .02em; }
+.node-label--above { transform: translateY(-100%); }
+.node-label .name { font: 400 var(--text-body)/var(--lh-body) var(--font-body); }
+.node-label .year { font: 500 var(--text-label)/var(--lh-label) var(--font-display); color: var(--muted); letter-spacing: .02em; }
 .node-label[data-locked="true"] { color: var(--muted); }
 .connector {
   position: absolute;

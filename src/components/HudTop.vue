@@ -43,7 +43,7 @@ watch(() => game.count, () => {
 }
 /* Same size and stroke as an era dot, so the two bars share one control language. */
 .menu-btn {
-  width: 9.6rem; height: 9.6rem;
+  width: var(--tap); height: var(--tap);
   border-radius: 50%;
   border: var(--stroke) solid var(--ink);
   background: var(--white);
@@ -51,9 +51,9 @@ watch(() => game.count, () => {
   transition: transform .08s;
 }
 .menu-btn:active { transform: scale(.94); }
-.menu-btn svg { width: 5.6rem; height: 5.6rem; stroke: var(--ink); stroke-width: 5; stroke-linecap: round; fill: none; }
+.menu-btn svg { width: var(--icon); height: var(--icon); stroke: var(--ink); stroke-width: 5; stroke-linecap: round; fill: none; }
 .hud-total { display: flex; gap: 1.2rem; }
-.hud-total .count { min-width: 2.9rem; text-align: right; }
+.hud-total .count { min-width: 3.6rem; text-align: right; }
 /* Pulse the count when it changes */
 @keyframes pop { 50% { transform: scale(1.18); } }
 .pop { animation: pop .3s; display: inline-block; }

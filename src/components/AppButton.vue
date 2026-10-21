@@ -20,7 +20,7 @@ defineProps({
   border: var(--stroke) solid var(--ink);
   background: var(--white);
   color: var(--ink);
-  font: 700 4.4rem/5.2rem var(--font-display);
+  font: 700 var(--text-button)/var(--lh-button) var(--font-display);
   text-transform: uppercase;
   display: grid; place-items: center;
   transition: transform .08s, background .2s, color .2s, box-shadow .08s;

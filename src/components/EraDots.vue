@@ -33,13 +33,13 @@ function dotState(era) {
 </template>
 
 <style scoped>
-.eras { --dot: 9.6rem; --dot-gap: 2.4rem; position: relative; display: flex; gap: var(--dot-gap); }
+.eras { --dot: var(--tap); --dot-gap: 2.4rem; position: relative; display: flex; gap: var(--dot-gap); }
 .era-dot {
   width: var(--dot); height: var(--dot);
   border-radius: 50%;
   border: var(--stroke) solid var(--ink);
   display: grid; place-items: center;
-  font: 500 3.2rem/1 var(--font-display);
+  font: 500 var(--text-label)/1 var(--font-display);
   color: var(--ink);
   background: var(--white);
   position: relative;
@@ -56,9 +56,9 @@ function dotState(era) {
   transition: transform .35s cubic-bezier(.2, .7, .2, 1);
 }
 .era-dot[data-state="cleared"]::after {
-  content: '✓'; position: absolute; right: -0.6rem; top: -0.6rem;
-  width: 3.6rem; height: 3.6rem; border-radius: 50%;
+  content: '✓'; position: absolute; right: -0.8rem; top: -0.8rem;
+  width: 4.8rem; height: 4.8rem; border-radius: 50%;
   background: var(--ink); color: var(--white);
-  font: 600 2.4rem/3.6rem var(--font-body); text-align: center;
+  font: 600 3.2rem/4.8rem var(--font-body); text-align: center;
 }
 </style>

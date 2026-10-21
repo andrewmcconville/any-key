@@ -34,7 +34,8 @@ src/
   stores/ui.js         toast, scroll-to-era requests, era in view
   data/content.js      the 14 keys, eras, achievements and all copy; node positions derived here
   assets/styles.css    global styles. The Figma board is 1440 canvas px wide and 1rem = 10 canvas px,
-                       so a Figma value of 192 becomes 19.2rem
+                       so a Figma value of 192 becomes 19.2rem. Type sizes and the minimum control size are
+                       tokens on :root (--text-*, --lh-*, --tap, --icon); change the ramp there, not per component
   components/          HudTop, HudBottom, TimelineBoard, TimelineNode, ToastBanner, ModalShell, AppButton, CloseButton
   views/               TimelineView (the board) and one view per overlay:
                        Start, KeyDetail, Stats, HowToPlay, About, Reset, Completion

@@ -249,7 +249,7 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   position: absolute;
   top: calc(50% + 4.8rem);         /* just under the rail, which sits at the board's vertical centre */
   right: 4.8rem;                   /* right edge of the board at scroll start */
-  width: 43.2rem; text-align: right;
+  width: 56rem; text-align: right;
   color: var(--muted);
   transition: opacity .3s;
 }
