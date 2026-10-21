@@ -85,7 +85,7 @@ function snapshot() {
 .swatch__chip {
   flex: 0 0 auto;
   width: 8rem; height: 8rem;
-  border-radius: 1.6rem;
+  border-radius: var(--radius-sm);
   border: 0.3rem solid var(--ink);
 }
 .swatch__text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }

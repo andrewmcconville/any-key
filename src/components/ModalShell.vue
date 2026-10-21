@@ -52,7 +52,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 .modal {
   max-height: 236rem;
   background: var(--white);
-  border-radius: 4.8rem;
+  border-radius: var(--radius-xl);
   border: 0.2rem solid var(--line-soft);
   display: flex; flex-direction: column;
   overflow: hidden;

@@ -94,7 +94,7 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
   max-width: calc(100% - 2.4rem);
   background: var(--white);
   border: 0.3rem solid var(--ink);
-  border-radius: 2.4rem;
+  border-radius: var(--radius-md);
   box-shadow: 0 2.4rem 6rem oklch(0 0 0 / 0.25);
   display: flex; flex-direction: column;
   overflow: hidden;

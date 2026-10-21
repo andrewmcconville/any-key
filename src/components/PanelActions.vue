@@ -23,7 +23,7 @@ const { copied, copy } = useCopyText();
   flex: 1 1 0;
   height: 11.2rem;
   border: var(--stroke) solid var(--ink);
-  border-radius: 1.6rem;
+  border-radius: var(--radius-sm);
   background: var(--white);
 }
 </style>

@@ -69,7 +69,7 @@ async function close() {
 .image {
   width: 120rem; height: 32rem;     /* shorter than the Figma 402 to give the larger type its room */
   background: var(--fill-soft);
-  border-radius: 1.2rem;
+  border-radius: var(--radius-xs);
   display: grid; place-items: center;
   text-align: center;
   padding: 0 4.8rem;

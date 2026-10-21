@@ -60,7 +60,7 @@ const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
 .ach {
   min-height: 16rem;
   border: 0.3rem solid var(--line-soft);
-  border-radius: 2.4rem;
+  border-radius: var(--radius-md);
   display: flex; align-items: center; gap: 3.2rem;
   padding: 1.6rem 3.2rem;
 }
