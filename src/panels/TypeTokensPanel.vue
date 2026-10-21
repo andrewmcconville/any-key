@@ -1,12 +1,17 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import FloatingPanel from '../components/FloatingPanel.vue';
 import { TYPE_TOKENS, useTokensStore } from '../stores/tokens';
 
 const tokens = useTokensStore();
 
-// 1rem in CSS px on this screen, so the readout shows what the visitor actually sees.
-const remPx = computed(() => parseFloat(getComputedStyle(document.documentElement).fontSize) || 0);
+// 1rem in CSS px on this screen, so the readout shows what the visitor actually sees. The root
+// font-size follows the viewport, so re-measure on resize and rotation.
+const remPx = ref(0);
+const measure = () => { remPx.value = parseFloat(getComputedStyle(document.documentElement).fontSize) || 0; };
+measure();
+onMounted(() => window.addEventListener('resize', measure));
+onUnmounted(() => window.removeEventListener('resize', measure));
 const px = rem => (rem * remPx.value).toFixed(1);
 
 // The values as they belong in styles.css (rem, with the matching line-height), plus the px they
