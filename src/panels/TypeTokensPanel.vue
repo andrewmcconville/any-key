@@ -48,7 +48,7 @@ function snapshot() {
         @input="tokens.set(t.id, $event.target.value)"
       >
     </div>
-    <PanelActions :snapshot="snapshot" @reset="tokens.reset()" />
+    <template #footer><PanelActions :snapshot="snapshot" @reset="tokens.reset()" /></template>
   </FloatingPanel>
 </template>
 

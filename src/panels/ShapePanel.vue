@@ -53,7 +53,7 @@ function snapshot() {
         >
       </div>
     </section>
-    <PanelActions :snapshot="snapshot" @reset="shape.reset()" />
+    <template #footer><PanelActions :snapshot="snapshot" @reset="shape.reset()" /></template>
   </FloatingPanel>
 </template>
 

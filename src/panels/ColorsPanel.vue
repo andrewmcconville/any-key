@@ -67,7 +67,7 @@ function snapshot() {
       </div>
     </div>
 
-    <PanelActions :snapshot="snapshot" @reset="colors.reset()" />
+    <template #footer><PanelActions :snapshot="snapshot" @reset="colors.reset()" /></template>
   </FloatingPanel>
 </template>
 

@@ -18,7 +18,7 @@ const { copied, copy } = useCopyText();
 </template>
 
 <style scoped>
-.actions { display: flex; gap: 2.4rem; margin-top: 1.6rem; }
+.actions { display: flex; gap: 2.4rem; }
 .action {
   flex: 1 1 0;
   height: 11.2rem;

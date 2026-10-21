@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useInspectStore } from '../stores/inspect';
 import { usePanelsStore } from '../stores/panels';
 
 /**
@@ -14,6 +15,7 @@ const props = defineProps({
 });
 
 const panels = usePanelsStore();
+const inspect = useInspectStore();   // every window's title bar carries a pick button for the Inspect tool
 const state = computed(() => panels.get(props.id));
 const el = ref(null);
 const bar = ref(null);
@@ -82,13 +84,29 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
       @pointercancel="onPointerUp"
     >
       <span class="panel__title t-label">{{ title }}</span>
-      <button class="panel__close" type="button" aria-label="Close panel" @pointerdown.stop @click="panels.close(id)">
-        <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M16 16 40 40M40 16 16 40" /></svg>
-      </button>
+      <span class="panel__tools">
+        <button
+          class="panel__tool"
+          :class="{ 'panel__tool--on': inspect.picking }"
+          type="button"
+          aria-label="Pick an element to inspect"
+          :aria-pressed="inspect.picking"
+          @pointerdown.stop
+          @click="inspect.togglePicking()"
+        >
+          <svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="11" /><path d="M28 6v10M28 40v10M6 28h10M40 28h10" /></svg>
+        </button>
+        <button class="panel__tool" type="button" aria-label="Close panel" @pointerdown.stop @click="panels.close(id)">
+          <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M16 16 40 40M40 16 16 40" /></svg>
+        </button>
+      </span>
     </header>
     <div class="panel__body">
       <slot />
     </div>
+    <footer v-if="$slots.footer" class="panel__footer">
+      <slot name="footer" />
+    </footer>
   </section>
 </template>
 
@@ -96,6 +114,7 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
 .panel {
   position: absolute;
   max-width: calc(100% - 2.4rem);
+  max-height: min(76vh, calc(100% - 2.4rem));   /* the body scrolls between a fixed title bar and footer */
   background: var(--white);
   border: 0.3rem solid var(--ink);
   border-radius: var(--radius-md);
@@ -117,18 +136,31 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
 }
 .panel--dragging .panel__bar { cursor: grabbing; }
 .panel__title { color: var(--ink); }
-.panel__close {
+.panel__tools { display: flex; align-items: center; gap: 1.6rem; flex: 0 0 auto; }
+.panel__tool {
   width: 8.8rem; height: 8.8rem; border-radius: 50%;
   border: var(--stroke) solid var(--ink);
   background: var(--white);
   display: grid; place-items: center;
   cursor: pointer;
 }
-.panel__close svg { width: 4rem; height: 4rem; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; fill: none; }
+.panel__tool svg { width: 4rem; height: 4rem; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; fill: none; }
+.panel__tool--on { background: var(--ink); }
+.panel__tool--on svg { stroke: var(--white); }
 .panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 3.2rem;
-  max-height: 60vh;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.panel__body::-webkit-scrollbar { display: none; }
+/* Fixed like the title bar: the actions stay put while the body scrolls. */
+.panel__footer {
+  flex: 0 0 auto;
+  padding: 2.4rem 3.2rem;
+  background: var(--bar);
+  border-top: 0.3rem solid var(--ink);
 }
 </style>
