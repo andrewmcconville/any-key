@@ -11,8 +11,8 @@ import { reactive, watch } from 'vue';
  * Like the other design tools, overrides are not persisted: a refresh returns to the stylesheet.
  */
 export const SHAPE_TOKENS = [
-  { group: 'border', id: 'stroke',    label: 'Stroke',   note: 'buttons, era dots, controls',    min: 0, max: 1.2, step: 0.1, fallback: 0.4 },
-  { group: 'border', id: 'hairline',  label: 'Hairline', note: 'HUD bars, modal frame, dividers', min: 0, max: 1.2, step: 0.1, fallback: 0.2 },
+  { group: 'border', id: 'stroke',    label: 'Stroke',   note: 'buttons, era dots, controls',    min: 0, max: 1.2, step: 0.05, fallback: 0.4 },
+  { group: 'border', id: 'hairline',  label: 'Hairline', note: 'HUD bars, modal frame, dividers', min: 0, max: 1.2, step: 0.05, fallback: 0.2 },
   { group: 'radius', id: 'radius-xs', label: 'XS',       note: 'images inside cards',             min: 0, max: 12,  step: 0.4, fallback: 1.2 },
   { group: 'radius', id: 'radius-sm', label: 'SM',       note: 'panel rows, action groups',       min: 0, max: 12,  step: 0.4, fallback: 1.6 },
   { group: 'radius', id: 'radius-md', label: 'MD',       note: 'floating panels, cards, buttons', min: 0, max: 12,  step: 0.4, fallback: 2.4 },
@@ -25,7 +25,9 @@ export const SHAPE_GROUPS = [
   { key: 'radius', label: 'Radii' },
 ];
 
-const round = n => Math.round(n * 10) / 10;
+// Round to the token's own step precision: borders go in 0.05rem steps, radii in 0.4rem.
+const decimals = t => (String(t.step).split('.')[1] || '').length;
+const round = (n, t) => Number(n.toFixed(decimals(t)));
 
 /** The stylesheet's defaults, read before any override is applied. */
 function readDefaults() {
@@ -50,7 +52,7 @@ export const useShapeStore = defineStore('shape', () => {
   function set(id, value) {
     const t = SHAPE_TOKENS.find(x => x.id === id);
     if (!t) return;
-    values[id] = round(Math.min(t.max, Math.max(t.min, Number(value))));
+    values[id] = round(Math.min(t.max, Math.max(t.min, Number(value))), t);
   }
 
   const resetOne = id => { if (id in defaults) values[id] = defaults[id]; };
