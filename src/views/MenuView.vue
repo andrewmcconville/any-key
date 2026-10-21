@@ -1,9 +1,9 @@
 <script setup>
-import { useReturnTo } from '../composables/useReturnTo';
+import { useOverlayNav } from '../composables/useOverlayNav';
 import ModalShell from '../components/ModalShell.vue';
 import AppButton from '../components/AppButton.vue';
 
-const { close, openFromHere: go } = useReturnTo();
+const { close, open: go } = useOverlayNav();
 </script>
 
 <template>

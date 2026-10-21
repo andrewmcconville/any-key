@@ -45,6 +45,8 @@ docs/                  design reviews
 
 Every overlay is a child route of the timeline, so the board stays mounted and keeps its scroll position underneath a modal.
 
+Overlays form a stack in browser history: opening one is a history push and closing it (× button, Esc, Got it, Cancel) is a history back, so you land wherever you came from, even another overlay, and the browser or phone back button does the same thing. Reset and Start over unwind the whole stack to the board. See `src/composables/useOverlayNav.js`.
+
 | Route | Screen |
 |---|---|
 | `#/` | Timeline board with HUDs |

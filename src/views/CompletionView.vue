@@ -1,6 +1,5 @@
 <script setup>
-import { useRouter } from 'vue-router';
-import { useReturnTo } from '../composables/useReturnTo';
+import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY } from '../data/content';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
@@ -9,12 +8,12 @@ import AppButton from '../components/AppButton.vue';
 
 const game = useGameStore();
 const ui = useUiStore();
-const router = useRouter();
-const { openFromHere } = useReturnTo();
+const { open, closeAll } = useOverlayNav();
 
-function startOver() {
+async function startOver() {
   game.reset();
-  router.replace({ path: '/' }).then(() => ui.scrollToEra(1));
+  await closeAll();
+  ui.scrollToEra(1);
 }
 </script>
 
@@ -24,7 +23,7 @@ function startOver() {
     <h2 class="heading t-heading" id="modal-title">{{ COPY.completion.heading }}</h2>
     <p class="ach-line t-label t-label--lc">{{ COPY.completion.achievement }}</p>
     <p class="body t-body">{{ COPY.completion.body }}</p>
-    <AppButton @click="openFromHere('stats')">VIEW STATS</AppButton>
+    <AppButton @click="open('stats')">VIEW STATS</AppButton>
     <AppButton @click="startOver">START OVER</AppButton>
   </ModalShell>
 </template>

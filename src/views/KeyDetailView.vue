@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY } from '../data/content';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
@@ -11,6 +12,7 @@ const props = defineProps({ id: { type: String, required: true } });
 const game = useGameStore();
 const ui = useUiStore();
 const router = useRouter();
+const nav = useOverlayNav();
 
 const key = computed(() => game.keyById(props.id));
 const era = computed(() => game.eraById(key.value.era));
@@ -31,20 +33,19 @@ function onCollect() {
 }
 
 // Closing is where the consequences land: the completion screen, or the era-unlock toast.
-function close() {
+async function close() {
   if (game.isComplete && !game.completionShown) {
     game.markCompletionShown();
     game.consumePendingUnlock();
-    router.replace({ name: 'complete' });
+    router.replace({ name: 'complete' });   // takes this entry's place; Start over unwinds to the board
     return;
   }
   const unlockedEra = game.consumePendingUnlock();
-  router.replace({ path: '/' }).then(() => {
-    if (unlockedEra) {
-      const e = game.eraById(unlockedEra);
-      ui.showToast(`ERA ${e.numeral} · ${e.name} UNLOCKED`, e.id);
-    }
-  });
+  await nav.close();
+  if (unlockedEra) {
+    const e = game.eraById(unlockedEra);
+    ui.showToast(`ERA ${e.numeral} · ${e.name} UNLOCKED`, e.id);
+  }
 }
 </script>
 

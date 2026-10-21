@@ -1,11 +1,11 @@
 <script setup>
-import { useReturnTo } from '../composables/useReturnTo';
+import { useOverlayNav } from '../composables/useOverlayNav';
 import { ERAS, ACHIEVEMENTS } from '../data/content';
 import { useGameStore } from '../stores/game';
 import ModalShell from '../components/ModalShell.vue';
 
 const game = useGameStore();
-const { close } = useReturnTo();
+const { close } = useOverlayNav();
 
 function statState(key) {
   if (game.isCollected(key.id)) return 'collected';
