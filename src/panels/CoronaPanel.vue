@@ -2,13 +2,17 @@
 import FloatingPanel from '../components/FloatingPanel.vue';
 import PanelActions from '../components/PanelActions.vue';
 import { CORONA_CONTROLS, useCoronaStore } from '../stores/corona';
+import { useFlightStore } from '../stores/flight';
 
 /** The Corona window: a slider per knob of the glow round the HUD's key count, live. */
 const corona = useCoronaStore();
+const flight = useFlightStore();
+// The title bar's play: a flare, as when a key lands, with the Collect window's length and strength.
+const flare = () => corona.flare(flight.settings.flareMs, flight.settings.flareStrength);
 </script>
 
 <template>
-  <FloatingPanel id="corona" title="Corona">
+  <FloatingPanel id="corona" title="Corona" :play="flare">
     <div v-for="t in CORONA_CONTROLS" :key="t.key" class="param">
       <div class="param__head">
         <span class="param__text">

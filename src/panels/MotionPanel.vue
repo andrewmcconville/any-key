@@ -2,6 +2,7 @@
 import EasingEditor from '../components/EasingEditor.vue';
 import FloatingPanel from '../components/FloatingPanel.vue';
 import PanelActions from '../components/PanelActions.vue';
+import { replayAll } from '../lib/replay';
 import { DURATION_RANGE, DURATION_TOKENS, EASING_TOKENS, useMotionStore } from '../stores/motion';
 
 const motion = useMotionStore();
@@ -15,7 +16,7 @@ function snapshot() {
 </script>
 
 <template>
-  <FloatingPanel id="motion" title="Motion" width="112rem">
+  <FloatingPanel id="motion" title="Motion" width="112rem" :play="replayAll">
     <section class="group">
       <h3 class="group__title t-label muted">Durations</h3>
       <div v-for="t in DURATION_TOKENS" :key="t.id" class="token">

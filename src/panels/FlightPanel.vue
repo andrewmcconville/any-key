@@ -9,7 +9,7 @@ const readout = c => `${flight.settings[c.key]}${c.unit === '×' || c.unit === '
 </script>
 
 <template>
-  <FloatingPanel id="flight" title="Collect">
+  <FloatingPanel id="flight" title="Collect" :play="flight.play">
     <div v-for="c in FLIGHT_CONTROLS" :key="c.key" class="param">
       <div class="param__head">
         <span class="param__text">

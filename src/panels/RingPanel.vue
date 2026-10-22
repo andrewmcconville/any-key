@@ -8,7 +8,7 @@ const ring = useRingStore();
 </script>
 
 <template>
-  <FloatingPanel id="ring" title="Era ring">
+  <FloatingPanel id="ring" title="Era ring" :play="ring.play">
     <div v-for="c in RING_CONTROLS" :key="c.key" class="param">
       <div class="param__head">
         <span class="param__text">

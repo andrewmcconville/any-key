@@ -5,7 +5,8 @@ import { usePanelsStore } from '../stores/panels';
 
 /**
  * A window that floats above the app. Drag it by its title bar; it stays inside the panel host
- * and comes to the front when touched. Drag its bottom edge to make it taller or shorter (double-tap
+ * and comes to the front when touched. Its title bar carries a pick button for the Inspect tool,
+ * a play button when the window has something to run, and close. Drag its bottom edge to make it taller or shorter (double-tap
  * the edge to fit the content again). Position, height and stacking live in the panels store, so a
  * panel keeps its place across reloads and other panels can stack with it.
  */
@@ -13,6 +14,8 @@ const props = defineProps({
   id: { type: String, required: true },
   title: { type: String, required: true },
   width: { type: String, default: '104rem' },
+  /** Runs the window's animation on demand; given, a play button (a triangle in a circle) joins the title bar. */
+  play: { type: Function, default: null },
 });
 
 const panels = usePanelsStore();
@@ -118,6 +121,9 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
     >
       <span class="panel__title t-label">{{ title }}</span>
       <span class="panel__tools">
+        <button v-if="play" class="panel__tool panel__tool--play" type="button" aria-label="Play" @pointerdown.stop @click="play()">
+          <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M21 16v24l20-12z" /></svg>
+        </button>
         <button
           class="panel__tool"
           :class="{ 'panel__tool--on': inspect.picking }"
@@ -191,6 +197,7 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
 .panel__tool svg { width: 4rem; height: 4rem; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; fill: none; }
 .panel__tool--on { background: var(--ink); }
 .panel__tool--on svg { stroke: var(--white); }
+.panel__tool--play svg { fill: var(--ink); stroke: none; }
 .panel__body {
   flex: 1 1 auto;
   min-height: 0;

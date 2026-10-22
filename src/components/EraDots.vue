@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { ERAS } from '../data/content';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
@@ -16,19 +16,15 @@ const index = computed(() => preview.value ?? ui.eraInView - 1);
 const dir = ref('fwd');
 watch(index, (next, prev) => { dir.value = next >= prev ? 'fwd' : 'back'; });
 
-// Replay, for the Play buttons (Inspect, Motion, Era ring): slide to a neighbouring era and back.
-let replayTimer = null;
+// Replay, for the Play buttons (Inspect, Motion, Era ring): slide to a neighbouring era and stay
+// there, so the stretch can be looked at; the next play slides back. Scrolling to another era
+// drops the preview, since the ring then has somewhere real to be.
 function replay() {
+  if (preview.value != null) { preview.value = null; return; }
   const here = ui.eraInView - 1;
-  const there = here + 1 < ERAS.length ? here + 1 : here - 1;
-  const cs = getComputedStyle(ring.value);
-  const ms = s => { const n = parseFloat(s) || 0; return /ms\s*$/.test(s) ? n : n * 1000; };
-  const travel = ms(cs.getPropertyValue('--ring-duration')) + ms(cs.getPropertyValue('--ring-lag'));
-  clearTimeout(replayTimer);
-  preview.value = there;
-  replayTimer = setTimeout(() => { preview.value = null; }, travel + 150);
+  preview.value = here + 1 < ERAS.length ? here + 1 : here - 1;
 }
-onBeforeUnmount(() => clearTimeout(replayTimer));
+watch(() => ui.eraInView, () => { preview.value = null; });
 
 // locked → dashed, open → white, cleared → white + ✓. One ring slides to the era in view.
 function dotState(era) {
