@@ -34,10 +34,14 @@ watch(() => [inspect.selected, inspect.version], refresh, { immediate: true });
 watch(() => JSON.stringify([tokens.sizes, colors.values, shape.values, motion.durations, motion.easings]), refresh);
 onUnmounted(() => { inspect.stopPicking(); inspect.clear(); });
 
-// The component that rendered the element (dev builds), else its tag.
+// The element's own classes as a selector (.key.key--collected), leaving out the type utilities
+// (t-label, muted) and the inspector's outline classes; an element with none shows its tag.
+const UTILITY = /^(t-|muted$|inspect-)/;
 const name = computed(() => {
   const el = inspect.selected;
-  return el?.__vueParentComponent?.type?.__name || el?.__vueParentComponent?.type?.name || el?.tagName.toLowerCase() || '';
+  if (!el) return '';
+  const own = [...el.classList].filter(c => !UTILITY.test(c));
+  return own.length ? own.map(c => `.${c}`).join('') : el.tagName.toLowerCase();
 });
 const gone = computed(() => inspect.selected && !bindings.value.length && !knobs.value.length);
 
