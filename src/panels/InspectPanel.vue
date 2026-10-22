@@ -86,6 +86,24 @@ function onKnob(k, e) {
   const v = Number(e.target.value);
   inspect.setKnob(k, k.kind === 'time' ? `${v}s` : k.kind === 'length' ? `${v}${k.unit}` : String(v));
 }
+
+/* ---------- Reset all ---------- */
+
+// The sliders in the rows retune global tokens, not the element, so Reset all puts back both: the
+// rebinds and knob values, and every token the rows show, before and after the rebinds are undone
+// (undoing a rebind brings the original token back into view, and it may have been tuned too).
+const STORE_OF = { type: tokens, color: colors, radius: shape, border: shape, duration: motion, easing: motion };
+function resetShownTokens() {
+  for (const row of [...bindings.value, ...knobs.value]) {
+    if (row.tokenId) STORE_OF[row.family]?.resetOne(row.tokenId);
+  }
+}
+function resetAll() {
+  resetShownTokens();
+  inspect.reset();
+  refresh();
+  resetShownTokens();
+}
 </script>
 
 <template>
@@ -159,7 +177,7 @@ function onKnob(k, e) {
       </template>
     </template>
 
-    <template #footer><PanelActions :snapshot="inspect.snapshot" @reset="inspect.reset()" /></template>
+    <template #footer><PanelActions :snapshot="inspect.snapshot" @reset="resetAll" /></template>
   </FloatingPanel>
 </template>
 
