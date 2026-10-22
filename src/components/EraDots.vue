@@ -16,7 +16,7 @@ const index = computed(() => preview.value ?? ui.eraInView - 1);
 const dir = ref('fwd');
 watch(index, (next, prev) => { dir.value = next >= prev ? 'fwd' : 'back'; });
 
-// Replay, for the Inspect tool's Play button: slide to a neighbouring era and back.
+// Replay, for the Play buttons (Inspect, Motion, Era ring): slide to a neighbouring era and back.
 let replayTimer = null;
 function replay() {
   const here = ui.eraInView - 1;
@@ -80,12 +80,8 @@ function dotState(era) {
 .era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
 /* One ring, 1rem outside the dot, stretches along the row to the era in view (--era-index). Its two
    edges are positioned separately (left and right insets) so they can move at different times. The
-   --ring-* properties are this component's knobs: the Inspect tool lists and tunes them. */
+   --ring-* properties are tokens on :root (styles.css); the Era ring window tunes them. */
 .era-ring {
-  --ring-duration: var(--dur-md);
-  --ring-lag: 0.08s;
-  --ring-ease-lead: var(--ease-emphasized);
-  --ring-ease-trail: var(--ease-standard);
   --step: calc(var(--dot) + var(--dot-gap));
   position: absolute; top: -1rem;
   height: calc(var(--dot) + 2rem);

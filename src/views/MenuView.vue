@@ -33,6 +33,7 @@ function openPanel(id, at) {
       <AppButton @click="openPanel('shape', { x: 48, y: 168 })">BORDERS &amp; RADII</AppButton>
       <AppButton @click="openPanel('flight', { x: 96, y: 360 })">COLLECT</AppButton>
       <AppButton @click="openPanel('inspect', { x: 72, y: 264 })">INSPECT</AppButton>
+      <AppButton @click="openPanel('ring', { x: 108, y: 408 })">ERA RING</AppButton>
     </nav>
     <p class="menu__hint t-label t-label--lc muted">Esc also opens and closes this menu</p>
   </ModalShell>

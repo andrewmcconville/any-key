@@ -32,6 +32,12 @@
   --ease-standard:   cubic-bezier(0.25, 0.1, 0.25, 1);   /* the browser's "ease" */
   --ease-emphasized: cubic-bezier(0.2, 0.7, 0.2, 1);     /* quick out, long settle: the era ring */
   --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);  /* overshoots; unused by default */
+  /* The era ring (EraDots.vue) stretching to the era in view: its leading edge sets off first and
+     the trailing edge follows after the lag. The Era ring tool edits these. */
+  --ring-duration: var(--dur-md);
+  --ring-lag: 0.08s;
+  --ring-ease-lead: var(--ease-emphasized);
+  --ring-ease-trail: var(--ease-standard);
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   /* Phone frame width (the Figma board). The HUD bars never grow past it; the board does. */
