@@ -169,13 +169,6 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
           <p class="era-region__lock t-label t-label--lc">{{ lockLine(era) }}</p>
         </section>
 
-        <div
-          v-for="era in ERAS.slice(1)"
-          :key="`break-${era.id}`"
-          class="rail-break"
-          :style="{ left: rem((era.id - 1) * ERA_WIDTH - 40) }"
-        >≈</div>
-
         <TimelineNode v-for="node in KEYS" :key="node.id" :node="node" @press="openKey" />
       </div>
     </div>
@@ -220,15 +213,6 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   top: calc(126rem - 16.8rem);   /* RAIL_Y minus HUD top */
   height: 0.6rem; margin-top: -0.3rem;
   background: var(--ink);
-}
-.rail-break {
-  position: absolute;
-  top: calc(126rem - 16.8rem);
-  width: 8rem; height: 8rem; margin-top: -4rem;
-  background: var(--paper);
-  display: grid; place-items: center;
-  font: 400 5.6rem/1 var(--font-body);
-  color: var(--ink);
 }
 .era-region {
   position: absolute; top: 0; height: 100%;
