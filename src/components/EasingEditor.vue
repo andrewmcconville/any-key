@@ -1,14 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { EASING_POINTS, EASING_PRESETS, useMotionStore } from '../stores/motion';
+import { EASING_PRESETS, useMotionStore } from '../stores/motion';
 
 /**
- * Edits one easing token: the curve, a preset menu, four control-point sliders and a Play button
- * that runs a dot along a track with the current curve at the MD duration.
+ * Edits one easing token: the curve, a preset menu and a Play button that runs a dot along a
+ * track with the current curve at the MD duration.
  */
 const props = defineProps({
   id: { type: String, required: true },
-  /** Called when a slider or the menu is grabbed, so a host can flash the token's reach. */
+  /** Called when the menu is grabbed, so a host can flash the token's reach. */
   onGrab: { type: Function, default: null },
 });
 const motion = useMotionStore();
@@ -62,24 +62,11 @@ const grab = () => props.onGrab?.();
         <button class="easing__play t-label" type="button" @click="play">Play</button>
       </div>
     </div>
-    <label v-for="p in EASING_POINTS" :key="p.key" class="point">
-      <span class="point__key t-label">{{ p.label }}</span>
-      <input
-        class="point__slider"
-        type="range"
-        :min="p.min" :max="p.max" step="0.01"
-        :value="pts[p.key]"
-        :aria-label="`${id} ${p.label}`"
-        @pointerdown="grab"
-        @input="motion.setPoint(id, p.key, $event.target.value)"
-      >
-      <span class="point__value t-label t-label--lc">{{ pts[p.key].toFixed(2) }}</span>
-    </label>
   </div>
 </template>
 
 <style scoped>
-.easing__top { display: grid; grid-template-columns: 28rem 1fr; gap: 2.4rem; align-items: stretch; margin-bottom: 1.2rem; }
+.easing__top { display: grid; grid-template-columns: 28rem 1fr; gap: 2.4rem; align-items: stretch; }
 .easing__curve { width: 28rem; height: 28rem; border: var(--hairline) solid var(--line-soft); border-radius: var(--radius-sm); background: var(--white); }
 .easing__box { fill: var(--fill-soft); }
 .easing__handle { stroke: var(--muted); stroke-width: 1; }
@@ -102,8 +89,4 @@ const grab = () => props.onGrab?.();
 .easing__track { --run: 0px; }
 .easing__runner--go { transition: transform var(--dur-md) var(--curve); transform: translateX(calc(28rem - 3.6rem)); }
 .easing__play { height: 7.2rem; border: var(--stroke) solid var(--ink); border-radius: var(--radius-sm); background: var(--white); }
-.point { display: grid; grid-template-columns: 3.2rem 1fr 8.8rem; align-items: center; gap: 1.6rem; }
-.point__key { color: var(--muted); }
-.point__slider { width: 100%; height: 6.4rem; margin: 0; accent-color: var(--ink); touch-action: pan-y; }
-.point__value { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
 </style>

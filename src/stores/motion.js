@@ -20,7 +20,7 @@ export const EASING_TOKENS = [
   { id: 'ease-emphasized', label: 'Emphasized', note: 'the era ring',          fallback: [0.2, 0.7, 0.2, 1] },
   { id: 'ease-spring',     label: 'Spring',     note: 'overshoots; spare',     fallback: [0.34, 1.56, 0.64, 1] },
 ];
-/** The four control-point sliders. x stays in [0, 1] as CSS requires; y may overshoot. */
+/** The four control points. x stays in [0, 1] as CSS requires; y may overshoot. */
 export const EASING_POINTS = [
   { key: 0, label: 'x1', min: 0,  max: 1 },
   { key: 1, label: 'y1', min: -1, max: 2 },
