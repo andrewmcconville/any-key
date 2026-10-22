@@ -27,7 +27,7 @@ function snapshot() {
 </script>
 
 <template>
-  <FloatingPanel id="type-tokens" title="Type tokens">
+  <FloatingPanel id="type-tokens" title="Typography">
     <div v-for="t in TYPE_TOKENS" :key="t.id" class="token">
       <div class="token__head">
         <span class="token__sample" :class="t.sample">{{ t.label }}</span>
