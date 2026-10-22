@@ -5,6 +5,7 @@ import PanelActions from '../components/PanelActions.vue';
 import TokenTuner from '../components/TokenTuner.vue';
 import { FAMILIES, resolve } from '../lib/bindings';
 import { elementsWithFontSize, flashElements } from '../lib/flash';
+import { replay } from '../lib/replay';
 import { useRemPx } from '../composables/useRemPx';
 import { useInspectStore } from '../stores/inspect';
 import { useColorsStore } from '../stores/colors';
@@ -47,10 +48,8 @@ const gone = computed(() => inspect.selected && !bindings.value.length && !knobs
 
 /* ---------- Replay ---------- */
 
-// A component that can run its motion on demand marks that element with data-replay and listens
-// for the motion-replay event (see EraDots). Play asks the picked element, or its nearest such parent.
+// Play asks the picked element, or its nearest replayable parent, to run its motion (see lib/replay).
 const replayTarget = computed(() => inspect.selected?.closest('[data-replay]') ?? null);
-function replay() { replayTarget.value?.dispatchEvent(new CustomEvent('motion-replay')); }
 
 /* ---------- Rows: bindings first, then knobs ---------- */
 
@@ -124,7 +123,7 @@ function resetAll() {
       <div class="target">
         <span class="target__name t-strong">{{ name }}</span>
         <span class="target__actions">
-          <button v-if="replayTarget" class="play t-label" type="button" @click="replay">Play</button>
+          <button v-if="replayTarget" class="play t-label" type="button" @click="replay(inspect.selected)">Play</button>
           <button class="link t-label t-label--lc" type="button" @click="inspect.clear()">clear</button>
         </span>
       </div>

@@ -1,10 +1,11 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { EASING_PRESETS, useMotionStore } from '../stores/motion';
+import { replayAll } from '../lib/replay';
 
 /**
  * Edits one easing token: the curve, a preset menu and a Play button that runs a dot along a
- * track with the current curve at the MD duration.
+ * track with the current curve at the MD duration, and replays the page's own motion (the era ring).
  */
 const props = defineProps({
   id: { type: String, required: true },
@@ -31,9 +32,10 @@ function onPreset(e) {
   if (p) motion.setEasing(props.id, p.pts);
 }
 
-// Play: the dot jumps back to the start without animating, then eases across.
+// Play: the dot jumps back to the start without animating, then eases across; the UI plays too.
 const playing = ref(false);
 function play() {
+  replayAll();
   playing.value = false;
   requestAnimationFrame(() => requestAnimationFrame(() => { playing.value = true; }));
 }
