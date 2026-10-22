@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { useGameStore } from '../stores/game';
 
@@ -12,17 +12,31 @@ watch(() => game.count, () => {
   pop.value = false;
   requestAnimationFrame(() => { pop.value = true; });
 });
+
+// The ring: a circle of radius R in a 100-unit box, drawn as one dash the length of the collected
+// share. It fills clockwise from the top (the svg is turned a quarter back).
+const R = 45;
+const LAP = 2 * Math.PI * R;
+const dashOffset = computed(() => LAP * (1 - game.count / game.total));
 </script>
 
 <template>
   <header class="hud-top">
-    <button class="menu-btn" type="button" aria-label="Menu" @click="nav.open('menu')">
+    <button class="hud-btn" type="button" aria-label="Menu" @click="nav.open('menu')">
       <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M12 17h32M12 28h32M12 39h32" /></svg>
     </button>
-    <div class="hud-total t-heading" aria-live="polite">
-      <span>COLLECTED</span>
-      <span><span class="count" :class="{ pop }" @animationend="pop = false">{{ game.count }}</span>/{{ game.total }}</span>
+    <!-- The gauge: the key count inside a ring that fills as keys are collected. -->
+    <div class="gauge" aria-live="polite">
+      <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="ring__track" cx="50" cy="50" :r="R" />
+        <circle class="ring__fill" :class="{ 'ring__fill--empty': !game.count }" cx="50" cy="50" :r="R" :stroke-dasharray="LAP" :stroke-dashoffset="dashOffset" />
+      </svg>
+      <span class="count t-heading" :class="{ pop }" @animationend="pop = false">{{ game.count }}</span>
+      <span class="gauge__label">of {{ game.total }} keys</span>
     </div>
+    <button class="hud-btn" type="button" aria-label="Stats" @click="nav.open('stats')">
+      <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M14 42V28M28 42V14M42 42V34" /></svg>
+    </button>
   </header>
 </template>
 
@@ -44,8 +58,8 @@ watch(() => game.count, () => {
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   z-index: 3;
 }
-/* Bare glyph, no circle: same tap target as an era dot, so the two bars still line up. */
-.menu-btn {
+/* Bare glyphs, no circle: the same tap target as an era dot, so the two bars still line up. Menu left, Stats right, so the gauge sits at centre. */
+.hud-btn {
   width: var(--tap); height: var(--tap);
   border: 0;
   background: none;
@@ -53,10 +67,22 @@ watch(() => game.count, () => {
   display: grid; place-items: center;
   transition: transform var(--dur-xs) var(--ease-standard);
 }
-.menu-btn:active { transform: scale(.94); }
-.menu-btn svg { width: var(--icon); height: var(--icon); stroke: var(--ink); stroke-width: 5; stroke-linecap: round; fill: none; }
-.hud-total { display: flex; gap: 1.2rem; }
-.hud-total .count { min-width: 3.6rem; text-align: right; }
+.hud-btn:active { transform: scale(.94); }
+.hud-btn svg { width: var(--icon); height: var(--icon); stroke: var(--ink); stroke-width: 5; stroke-linecap: round; fill: none; }
+/* The gauge is a tap-sized circle with its own stacking context. */
+.gauge {
+  position: relative; isolation: isolate;
+  width: var(--tap); height: var(--tap);
+  display: grid; place-items: center;
+}
+.ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring__track, .ring__fill { fill: none; stroke-width: 5; }
+.ring__track { stroke: var(--white); }
+.ring__fill { stroke: var(--ink); stroke-linecap: round; transition: stroke-dashoffset var(--dur-md) var(--ease-standard); }
+/* With nothing collected the round cap would still show as a dot, so the fill hides until the first key. */
+.ring__fill--empty { opacity: 0; }
+.count { position: relative; font-variant-numeric: tabular-nums; }
+.gauge__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* Pulse the count when it changes */
 @keyframes pop { 50% { transform: scale(1.18); } }
 .pop { animation: pop var(--dur-md) var(--ease-standard); display: inline-block; }
