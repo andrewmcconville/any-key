@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY } from '../data/content';
 import { useGameStore } from '../stores/game';
@@ -24,11 +24,17 @@ const caption = computed(() => {
   return justCollected.value ? game.collectedCaption(key.value) : 'Collected · tap to go back to the timeline';
 });
 
+// Pressing collects and goes back to the board after a beat, long enough to see the key turn ✓;
+// the consequences (toast, completion) land on close. A collected key's button just goes back.
+const COLLECT_BEAT_MS = 600;
+let closing = null;
 function onCollect() {
   if (collected.value) { close(); return; }
   game.collect(props.id);
   justCollected.value = true;
+  closing = setTimeout(close, COLLECT_BEAT_MS);
 }
+onUnmounted(() => clearTimeout(closing));
 
 // Closing is where the consequences land: the completion screen, or the era-unlock toast.
 async function close() {
