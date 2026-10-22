@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RAIL_Y } from '../data/content';
+import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
 
 const props = defineProps({
@@ -10,7 +11,23 @@ const props = defineProps({
 const emit = defineEmits(['press']);
 
 const game = useGameStore();
-const R = 108;                              // circle radius, canvas px
+// A key with a photo shows the keycap itself in place of the circle, a little larger since the
+// photo has white around the cap; its labels and connector keep clear of it the same way.
+const photo = computed(() => photoUrl(props.node.photo));
+const R = computed(() => (photo.value ? 170 : 108));   // the node's radius, canvas px
+// Where the node's visible top and bottom are, in canvas px: the circle's edges, or for a photo the
+// cap's own edges once the photo has loaded and been measured (until then, the box's).
+const img = ref(null);
+const bounds = ref(null);
+async function measure() {
+  const el = img.value;
+  if (!el) return;
+  try { await el.decode(); } catch (_) { return; }   // the pixels must be there to read
+  if (el.naturalWidth) bounds.value = photoBounds(el);
+}
+onMounted(measure);
+const topEdge = computed(() => cy.value - R.value * (bounds.value ? 1 - 2 * bounds.value.top : 1));
+const bottomEdge = computed(() => cy.value + R.value * (bounds.value ? 2 * bounds.value.bottom - 1 : 1));
 const rem = n => `${n / 10}rem`;
 const cy = computed(() => props.node.cy - props.hudTop);
 const railY = RAIL_Y - props.hudTop;
@@ -19,14 +36,14 @@ const state = computed(() => game.keyState(props.node));
 const glyph = computed(() => (state.value === 'collected' ? '✓' : state.value === 'locked' ? '?' : 'PRESS'));
 
 const connectorStyle = computed(() => props.node.above
-  ? { left: rem(props.node.cx), top: rem(cy.value + R), height: rem(railY - (cy.value + R)) }
-  : { left: rem(props.node.cx), top: rem(railY), height: rem((cy.value - R) - railY) });
+  ? { left: rem(props.node.cx), top: rem(bottomEdge.value), height: rem(railY - bottomEdge.value) }
+  : { left: rem(props.node.cx), top: rem(railY), height: rem(topEdge.value - railY) });
 
-// Labels sit on the far side of the circle from the rail: 19 canvas px above the circle (anchored by
-// their bottom edge, so the type size doesn't matter) or 21 below it.
+// Labels sit on the far side of the node from the rail: 19 canvas px above it (anchored by their
+// bottom edge, so the type size doesn't matter) or 21 below it.
 const labelStyle = computed(() => ({
   left: rem(props.node.cx),
-  top: rem(props.node.above ? cy.value - R - 19 : cy.value + R + 21),
+  top: rem(props.node.above ? topEdge.value - 19 : bottomEdge.value + 21),
 }));
 
 const shaking = ref(false);
@@ -42,10 +59,10 @@ function onPress() {
 
 <template>
   <div class="connector" :style="connectorStyle" />
-  <div class="rail-dot" :style="{ left: rem(node.cx) }" />
+  <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.cx) }" />
   <button
     class="node"
-    :class="{ shake: shaking }"
+    :class="{ shake: shaking, 'node--photo': photo }"
     :data-state="state"
     :style="{ left: rem(node.cx), top: rem(cy) }"
     type="button"
@@ -54,7 +71,8 @@ function onPress() {
     @click="onPress"
     @animationend="shaking = false"
   >
-    <span class="glyph">{{ glyph }}</span>
+    <img v-if="photo" ref="img" class="photo" :src="photo" alt="" draggable="false" @load="measure">
+    <span v-else class="glyph">{{ glyph }}</span>
   </button>
   <div class="node-label" :class="{ 'node-label--above': node.above }" :data-locked="state === 'locked'" :style="labelStyle">
     <div class="name">{{ node.name }}</div>
@@ -81,6 +99,21 @@ function onPress() {
 .node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
 .node[data-state="locked"] .glyph { font: 600 4rem/1 var(--font-body); color: var(--muted); }
 .node.shake { animation: shake var(--dur-lg) var(--ease-standard); }
+/* A photographed key: the cap itself, no circle; the photo is shot on paper-white so its edges vanish.
+   Locked it is grey and faint; collected, the ✓ sits where its connector meets the rail (see .rail-dot--check). */
+.node--photo {
+  width: 34rem; height: 34rem;
+  margin: -17rem 0 0 -17rem;
+  border: 0; border-radius: var(--radius-xs);
+}
+/* No fill in any state (the collected rule above would paint it ink); the rail dot carries the state. */
+.node--photo[data-state] { background: none; }
+.node--photo .photo {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  transition: filter var(--dur-sm) var(--ease-standard), opacity var(--dur-sm) var(--ease-standard);
+}
+.node--photo[data-state="locked"] .photo { filter: grayscale(1); opacity: 0.45; }
 .node-label {
   position: absolute;
   width: 36rem; margin-left: -18rem;
@@ -102,5 +135,13 @@ function onPress() {
   width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;
   border-radius: 50%; background: var(--ink);
   top: calc(126rem - 16.8rem);
+  transition: width var(--dur-sm) var(--ease-standard), height var(--dur-sm) var(--ease-standard), margin var(--dur-sm) var(--ease-standard);
 }
+/* A collected photographed key: the junction grows into the ✓ badge, the same as a cleared era dot's. */
+.rail-dot--check {
+  width: 6.4rem; height: 6.4rem; margin: -3.2rem 0 0 -3.2rem;
+  color: var(--white);
+  font: 600 4rem/6.4rem var(--font-body); text-align: center;
+}
+.rail-dot--check::after { content: '✓'; }
 </style>

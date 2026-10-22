@@ -65,7 +65,7 @@ export const KEYS = [
 
   // Era III · Computer
   { id: 'f1',       era: 3, name: 'F1',         year: '1981',    feedback: 'click',
-    image: 'F1 key on an IBM Model F keyboard, left-hand function columns',
+    image: 'F1 key on an IBM Model F keyboard, left-hand function columns', photo: 'ibm-f1-key-transparent.png',
     press: 'Sends a code the program interprets; by convention, opens help.',
     description: 'The IBM PC of 1981 put ten numbered function keys in two columns down the left of its keyboard, labeled F1 to F10. Nothing on the keycap says what they do; software decided, and F1 settled into meaning help.',
     why: 'The first key whose label is a number, not a letter — the keyboard stops describing itself.' },
@@ -75,12 +75,12 @@ export const KEYS = [
     description: 'Typewriters had a shift lock that held the carriage up; the IBM PC of 1981 renamed it Caps Lock, gave it a light, and made it affect only letters. The Happy Hacking Keyboard replaced it with Ctrl in 1996 and Google dropped it from the Chromebook in 2011.',
     why: 'The only key that changes what every later press means until you press it again.' },
   { id: 'command',  era: 3, name: '⌘ Command',  short: 'Command', year: '1984', feedback: 'none',
-    image: '⌘ key on an original Macintosh M0110 keyboard',
+    image: '⌘ key on an original Macintosh M0110 keyboard', photo: 'apple-command-key-transparent.png',
     press: 'Nothing alone. With a letter, runs a menu command — ⌘Z, ⌘S, ⌘Q — so the whole menu bar can be learned by hand.',
     description: 'The Lisa had an Apple key; when the Macintosh menus filled up with apple logos, Steve Jobs objected, and Susan Kare pulled a looped square out of a symbol dictionary — a Swedish road sign for a place of interest.',
     why: 'A key people know by its picture, not its name.' },
   { id: 'windows',  era: 3, name: '⊞ Windows',  short: 'Windows', year: '1994', feedback: 'click',
-    image: '⊞ key on a Microsoft Natural Keyboard, 1994 flag logo',
+    image: '⊞ key on a Microsoft Natural Keyboard, 1994 flag logo', photo: 'windows.png',
     press: 'Opens the Start menu. With a letter, system shortcuts — ⊞D shows the desktop, ⊞L locks the screen.',
     description: 'Microsoft put its logo on a key on the Natural Keyboard in 1994 and shipped Windows 95 to use it the next year; since then nearly every PC keyboard has carried a corporate logo as a standard key.',
     why: 'The first logo that became a key.' },
