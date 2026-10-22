@@ -34,17 +34,10 @@ const padLeft = () => tree.value.offsetLeft;
 function onScroll() {
   const el = board.value;
   ui.boardScrolled = el.scrollLeft > 20;
-  // Era in view = the era showing the most of itself; ties go to the earlier era.
-  const s = scale();
-  const viewL = (el.scrollLeft - padLeft()) / s;
-  const viewR = viewL + el.clientWidth / s;
-  let best = 1, bestW = -1;
-  for (const era of ERAS) {
-    const l = (era.id - 1) * ERA_WIDTH;
-    const w = Math.min(l + ERA_WIDTH, viewR) - Math.max(l, viewL);
-    if (w > bestW) { best = era.id; bestW = w; }
-  }
-  ui.eraInView = best;
+  // Era in view = the era whose region holds the centre of the view: an era lights up the moment
+  // its left edge crosses the centre of the screen, and stays lit until the next era's edge does.
+  const centre = (el.scrollLeft + el.clientWidth / 2 - padLeft()) / scale();
+  ui.eraInView = Math.min(ERAS.length, Math.max(1, Math.floor(centre / ERA_WIDTH) + 1));
 }
 
 // Jumping to an era centres its first key, the same spot Space bar occupies at scroll start,
