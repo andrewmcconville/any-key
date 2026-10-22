@@ -5,11 +5,11 @@ const STORAGE_KEY = 'any-key/panels/v1';
 
 /**
  * Floating panels: windows that sit above the whole app, can be dragged around, and stack like
- * desktop windows (the last one touched comes to the front). Only id, position and open state
+ * desktop windows (the last one touched comes to the front). Only id, position, height and open state
  * live here; what a panel shows is its own component's business (see components/PanelHost.vue).
  */
 export const usePanelsStore = defineStore('panels', () => {
-  const panels = reactive({});     // id → { open, x, y, z }
+  const panels = reactive({});     // id → { open, x, y, z, h }   (h: height in px, null = fit the content)
   const topZ = ref(1);
 
   try {
@@ -18,7 +18,7 @@ export const usePanelsStore = defineStore('panels', () => {
     const entries = Object.entries(saved).filter(([, p]) => p && typeof p === 'object');
     entries.sort((a, b) => (Number(a[1].z) || 0) - (Number(b[1].z) || 0));
     for (const [id, p] of entries) {
-      panels[id] = { open: !!p.open, x: Number(p.x) || 0, y: Number(p.y) || 0, z: ++topZ.value };
+      panels[id] = { open: !!p.open, x: Number(p.x) || 0, y: Number(p.y) || 0, z: ++topZ.value, h: Number(p.h) || null };
     }
   } catch (_) { /* ignore */ }
 
@@ -38,7 +38,7 @@ export const usePanelsStore = defineStore('panels', () => {
   const isOpen = id => !!panels[id]?.open;
 
   function open(id, { x = 24, y = 72 } = {}) {
-    if (!panels[id]) panels[id] = { open: false, x, y, z: 0 };
+    if (!panels[id]) panels[id] = { open: false, x, y, z: 0, h: null };
     panels[id].open = true;
     focus(id);
     save();
@@ -63,5 +63,12 @@ export const usePanelsStore = defineStore('panels', () => {
     saveSoon();
   }
 
-  return { panels, get, isOpen, open, close, focus, move };
+  /** Give a panel a height in px, or null to let it fit its content again. */
+  function resize(id, h) {
+    if (!panels[id]) return;
+    panels[id].h = h == null ? null : Math.round(h);
+    saveSoon();
+  }
+
+  return { panels, get, isOpen, open, close, focus, move, resize };
 });

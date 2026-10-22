@@ -5,7 +5,8 @@ import { usePanelsStore } from '../stores/panels';
 
 /**
  * A window that floats above the app. Drag it by its title bar; it stays inside the panel host
- * and comes to the front when touched. Position and stacking live in the panels store, so a
+ * and comes to the front when touched. Drag its bottom edge to make it taller or shorter (double-tap
+ * the edge to fit the content again). Position, height and stacking live in the panels store, so a
  * panel keeps its place across reloads and other panels can stack with it.
  */
 const props = defineProps({
@@ -20,6 +21,7 @@ const state = computed(() => panels.get(props.id));
 const el = ref(null);
 const bar = ref(null);
 const dragging = ref(false);
+const resizing = ref(false);
 
 let drag = null;   // { pointerId, dx, dy } — pointer offset from the panel's top-left
 
@@ -51,6 +53,37 @@ function onPointerUp(e) {
   dragging.value = false;
 }
 
+/* ---------- Resize: the bottom edge sets the height ---------- */
+
+let grip = null;   // { pointerId, y0, h0 } — where the drag began and how tall the panel was
+const remPx = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
+// As short as the title bar, the footer and a few rows of body; as tall as the host allows below the panel.
+function clampHeight(h) {
+  const host = el.value?.offsetParent;
+  const chrome = (bar.value?.offsetHeight ?? 0) + (el.value?.querySelector('.panel__footer')?.offsetHeight ?? 0);
+  const min = chrome + 24 * remPx();
+  const max = host ? host.clientHeight - (state.value?.y ?? 0) - 2.4 * remPx() : Infinity;
+  return Math.max(min, Math.min(max, h));
+}
+function onGripDown(e) {
+  if (e.button !== 0 && e.pointerType === 'mouse') return;
+  panels.focus(props.id);
+  grip = { pointerId: e.pointerId, y0: e.clientY, h0: el.value.offsetHeight };
+  resizing.value = true;
+  e.currentTarget.setPointerCapture(e.pointerId);
+}
+function onGripMove(e) {
+  if (!grip || e.pointerId !== grip.pointerId) return;
+  panels.resize(props.id, clampHeight(grip.h0 + (e.clientY - grip.y0)));
+}
+function onGripUp(e) {
+  if (!grip || e.pointerId !== grip.pointerId) return;
+  grip = null;
+  resizing.value = false;
+}
+const fitContent = () => panels.resize(props.id, null);
+
 // If the viewport is smaller than when the panel was last placed, pull it back on screen:
 // whenever it opens (the element only exists while open) and whenever the window resizes or rotates.
 function reclamp() {
@@ -69,8 +102,8 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
     v-if="state?.open"
     ref="el"
     class="panel"
-    :class="{ 'panel--dragging': dragging }"
-    :style="{ left: state.x + 'px', top: state.y + 'px', zIndex: 100 + state.z, width }"
+    :class="{ 'panel--dragging': dragging, 'panel--resizing': resizing, 'panel--sized': state.h }"
+    :style="{ left: state.x + 'px', top: state.y + 'px', zIndex: 100 + state.z, width, height: state.h ? state.h + 'px' : null }"
     role="dialog"
     :aria-label="title"
     @pointerdown="panels.focus(id)"
@@ -107,6 +140,15 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
     <footer v-if="$slots.footer" class="panel__footer">
       <slot name="footer" />
     </footer>
+    <div
+      class="panel__grip"
+      aria-hidden="true"
+      @pointerdown.stop="onGripDown"
+      @pointermove="onGripMove"
+      @pointerup="onGripUp"
+      @pointercancel="onGripUp"
+      @dblclick="fitContent"
+    />
   </section>
 </template>
 
@@ -124,6 +166,8 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
   touch-action: none;
 }
 .panel--dragging { box-shadow: 0 3.6rem 8rem oklch(0 0 0 / 0.3); }
+/* A set height replaces the content-fit cap; the host-edge cap still applies. */
+.panel--sized { max-height: calc(100% - 2.4rem); }
 .panel__bar {
   display: flex; align-items: center; justify-content: space-between;
   gap: 2.4rem;
@@ -163,4 +207,19 @@ onUnmounted(() => window.removeEventListener('resize', reclamp));
   background: var(--bar);
   border-top: 0.3rem solid var(--ink);
 }
+/* The resize handle: a strip along the bottom edge, over the footer's padding, with a short bar. */
+.panel__grip {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 3.2rem;
+  cursor: ns-resize;
+  touch-action: none;
+}
+.panel__grip::after {
+  content: '';
+  position: absolute; left: 50%; bottom: 0.8rem;
+  width: 9.6rem; height: 0.8rem; margin-left: -4.8rem;
+  border-radius: 0.4rem;
+  background: var(--line-soft);
+}
+.panel__grip:hover::after, .panel--resizing .panel__grip::after { background: var(--ink); }
 </style>
