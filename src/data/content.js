@@ -70,7 +70,7 @@ export const KEYS = [
     description: 'The IBM PC of 1981 put ten numbered function keys in two columns down the left of its keyboard, labeled F1 to F10. Nothing on the keycap says what they do; software decided, and F1 settled into meaning help.',
     why: 'The first key whose label is a number, not a letter — the keyboard stops describing itself.' },
   { id: 'capslock', legend: '⇪', era: 3, name: 'Caps Lock',  year: '1981',    feedback: 'click + LED',
-    image: 'Caps Lock key with its LED lit, macro',
+    image: 'Caps Lock key with its LED lit, macro', photo: 'xerox-alto-lock.png',
     press: 'Toggles a mode: every letter arrives uppercase until it is pressed again. An LED says which state you are in.',
     description: 'Typewriters had a shift lock that held the carriage up; the IBM PC of 1981 renamed it Caps Lock, gave it a light, and made it affect only letters. The Happy Hacking Keyboard replaced it with Ctrl in 1996 and Google dropped it from the Chromebook in 2011.',
     why: 'The only key that changes what every later press means until you press it again.' },
