@@ -34,6 +34,7 @@ function openPanel(id, at) {
       <AppButton @click="openPanel('flight', { x: 96, y: 360 })">COLLECT</AppButton>
       <AppButton @click="openPanel('inspect', { x: 72, y: 264 })">INSPECT</AppButton>
       <AppButton @click="openPanel('ring', { x: 108, y: 408 })">ERA RING</AppButton>
+      <AppButton @click="openPanel('swing', { x: 120, y: 456 })">SCROLL PHYSICS</AppButton>
     </nav>
     <p class="menu__hint t-label t-label--lc muted">Esc also opens and closes this menu</p>
   </ModalShell>

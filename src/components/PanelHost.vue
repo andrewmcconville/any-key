@@ -9,6 +9,7 @@ import CoronaPanel from '../panels/CoronaPanel.vue';
 import FlightPanel from '../panels/FlightPanel.vue';
 import RingPanel from '../panels/RingPanel.vue';
 import InspectPanel from '../panels/InspectPanel.vue';
+import SwingPanel from '../panels/SwingPanel.vue';
 </script>
 
 <template>
@@ -21,6 +22,7 @@ import InspectPanel from '../panels/InspectPanel.vue';
     <FlightPanel />
     <RingPanel />
     <InspectPanel />
+    <SwingPanel />
   </div>
 </template>
 

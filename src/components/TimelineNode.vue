@@ -3,14 +3,17 @@ import { computed, onMounted, ref } from 'vue';
 import { RAIL_Y } from '../data/content';
 import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
+import { useSwingStore } from '../stores/swing';
 
 const props = defineProps({
   node: { type: Object, required: true },   // a KEYS entry with cx / cy / above
   hudTop: { type: Number, default: 168 },   // canvas px removed from board-space y
+  lag: { type: Number, default: 0 },        // canvas px the key trails the rail by while the board scrolls
 });
 const emit = defineEmits(['press']);
 
 const game = useGameStore();
+const swing = useSwingStore();
 // A key with a photo shows the keycap itself in place of the circle, a little larger since the
 // photo has white around the cap; its labels and connector keep clear of it the same way.
 const photo = computed(() => photoUrl(props.node.photo));
@@ -35,16 +38,51 @@ const railY = RAIL_Y - props.hudTop;
 const state = computed(() => game.keyState(props.node));
 const glyph = computed(() => (state.value === 'collected' ? '✓' : state.value === 'locked' ? '?' : 'PRESS'));
 
-const connectorStyle = computed(() => props.node.above
-  ? { left: rem(props.node.cx), top: rem(bottomEdge.value), height: rem(railY - bottomEdge.value) }
-  : { left: rem(props.node.cx), top: rem(railY), height: rem(topEdge.value - railY) });
+// The key hangs from (or stands on) the rail by its connector, a flexible rod rooted at the rail
+// dot. While the board scrolls the key trails the rail by `lag` and the rod bends to reach it: it
+// leaves the rail vertically and meets the key square to the key's face, which is tilted by the
+// rod's angle at the key's centre (a hanging key turns the opposite way from a standing one).
+// The name and year trail the key in turn, a little further each, like a chain. The tilt, bend
+// and trail factors are the Scroll physics window's knobs (stores/swing.js).
+const rod = computed(() => (props.node.above ? railY - bottomEdge.value : topEdge.value - railY));
+const tilt = computed(() => (props.node.above ? 1 : -1) * swing.settings.tilt * Math.atan2(props.lag, Math.abs(railY - cy.value)));
+// The connector as an SVG in canvas px. Its box runs from the rail to the key's edge and is wide
+// enough for the key's whole swing (Safari clips an SVG to its box whatever its overflow), with
+// x = W/2 at the key's rest position; the path is a cubic whose handles reach `bend` of the way.
+const connector = computed(() => {
+  const H = Math.max(1, rod.value);
+  const W = 2 * (swing.settings.maxLag + 12);
+  const h = swing.settings.bend * H;
+  const x0 = W / 2;
+  const x = x0 + props.lag;
+  const t = tilt.value;
+  const d = props.node.above
+    // rail at the bottom (x0, H), key edge at the top (x, 0); into the key along its local up
+    ? `M ${x0} ${H} C ${x0} ${H - h}, ${x - h * Math.sin(t)} ${h * Math.cos(t)}, ${x} 0`
+    // rail at the top (x0, 0), key edge at the bottom (x, H); into the key along its local down
+    : `M ${x0} 0 C ${x0} ${h}, ${x + h * Math.sin(t)} ${H - h * Math.cos(t)}, ${x} ${H}`;
+  return { W, H, d };
+});
+const connectorStyle = computed(() => ({
+  left: rem(props.node.cx - connector.value.W / 2),
+  top: rem(props.node.above ? bottomEdge.value : railY),
+  width: rem(connector.value.W),
+  height: rem(connector.value.H),
+}));
+const nodeStyle = computed(() => ({
+  left: rem(props.node.cx + props.lag),
+  top: rem(cy.value),
+  rotate: `${tilt.value}rad`,
+}));
 
 // Labels sit on the far side of the node from the rail: 19 canvas px above it (anchored by their
 // bottom edge, so the type size doesn't matter) or 21 below it.
 const labelStyle = computed(() => ({
-  left: rem(props.node.cx),
+  left: rem(props.node.cx + props.lag),
   top: rem(props.node.above ? topEdge.value - 19 : bottomEdge.value + 21),
 }));
+const nameStyle = computed(() => ({ translate: rem(props.lag * swing.settings.nameTrail) }));
+const yearStyle = computed(() => ({ translate: rem(props.lag * swing.settings.yearTrail) }));
 
 const shaking = ref(false);
 function onPress() {
@@ -58,13 +96,15 @@ function onPress() {
 </script>
 
 <template>
-  <div class="connector" :style="connectorStyle" />
+  <svg class="connector" :style="connectorStyle" :viewBox="`0 0 ${connector.W} ${connector.H}`" aria-hidden="true">
+    <path :d="connector.d" />
+  </svg>
   <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.cx) }" />
   <button
     class="node"
     :class="{ shake: shaking, 'node--photo': photo }"
     :data-state="state"
-    :style="{ left: rem(node.cx), top: rem(cy) }"
+    :style="nodeStyle"
     type="button"
     :aria-label="`${node.name}, ${node.year}`"
     :aria-disabled="state === 'locked'"
@@ -75,8 +115,8 @@ function onPress() {
     <span v-else class="glyph">{{ glyph }}</span>
   </button>
   <div class="node-label" :class="{ 'node-label--above': node.above }" :data-locked="state === 'locked'" :style="labelStyle">
-    <div class="name">{{ node.name }}</div>
-    <div class="year">{{ node.year }}</div>
+    <div class="name" :style="nameStyle">{{ node.name }}</div>
+    <div class="year" :style="yearStyle">{{ node.year }}</div>
   </div>
 </template>
 
@@ -126,10 +166,11 @@ function onPress() {
 .node-label[data-locked="true"] { color: var(--muted); }
 .connector {
   position: absolute;
-  width: 0; margin-left: -0.15rem;
-  border-left: 0.3rem dashed var(--muted);
+  overflow: visible;      /* a safety margin; the box already covers the key's whole swing */
   pointer-events: none;
 }
+/* Stroke in canvas px (the viewBox's units): 3 = 0.3rem, dashed like the border it replaced. */
+.connector path { fill: none; stroke: var(--muted); stroke-width: 3; stroke-dasharray: 9 9; }
 .rail-dot {
   position: absolute;
   width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;

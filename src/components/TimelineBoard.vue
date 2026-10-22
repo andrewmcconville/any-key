@@ -3,11 +3,13 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { ERAS, KEYS, ERA_WIDTH } from '../data/content';
 import { UNLOCK_AT, useGameStore } from '../stores/game';
+import { useSwingStore } from '../stores/swing';
 import { useUiStore } from '../stores/ui';
 import TimelineNode from './TimelineNode.vue';
 
 const game = useGameStore();
 const ui = useUiStore();
+const swing = useSwingStore();
 const nav = useOverlayNav();
 const board = ref(null);
 const tree = ref(null);
@@ -34,6 +36,7 @@ const padLeft = () => tree.value.offsetLeft;
 function onScroll() {
   const el = board.value;
   ui.boardScrolled = el.scrollLeft > 20;
+  swingBy(el.scrollLeft);
   // Era in view = the era whose region holds the centre of the view: an era lights up the moment
   // its left edge crosses the centre of the screen, and stays lit until the next era's edge does.
   const centre = (el.scrollLeft + el.clientWidth / 2 - padLeft()) / scale();
@@ -53,6 +56,16 @@ function scrollToEra(eraId, behavior = 'smooth') {
 
 watch(() => ui.scrollRequest, req => scrollToEra(req.eraId));
 onMounted(onScroll);
+
+// Scroll physics: the rail moves with the user's hand and the keys trail it on springs (see
+// stores/swing.js). Each scroll step, in canvas px, is handed to the store as a kick.
+let lastScroll = null;
+function swingBy(scrollLeft) {
+  if (lastScroll === null) { lastScroll = scrollLeft; return; }
+  const delta = (scrollLeft - lastScroll) / scale();
+  lastScroll = scrollLeft;
+  swing.kick(delta);
+}
 
 // Click-and-drag scrolling for the mouse (touch already scrolls natively). A press only becomes
 // a drag after DRAG_PX of movement, so an ordinary click on a key still opens it; once it is a
@@ -169,7 +182,7 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
           <p class="era-region__lock t-label t-label--lc">{{ lockLine(era) }}</p>
         </section>
 
-        <TimelineNode v-for="node in KEYS" :key="node.id" :node="node" @press="openKey" />
+        <TimelineNode v-for="node in KEYS" :key="node.id" :node="node" :lag="swing.lags[node.id]" @press="openKey" />
       </div>
     </div>
 
