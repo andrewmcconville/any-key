@@ -66,6 +66,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   margin-bottom: 4.8rem;
 }
 .modal__scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; min-height: 0; }
+/* The page turns selection off for the board's drag-to-scroll; a modal's words are for reading and copying. */
+.modal__header h2, .modal__scroll { user-select: text; -webkit-user-select: text; }
+.modal__scroll button { user-select: none; -webkit-user-select: none; }
 .modal__scroll::-webkit-scrollbar { display: none; }
 .modal__footer { margin-top: 4.8rem; flex: 0 0 auto; }
 </style>
