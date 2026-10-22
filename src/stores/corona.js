@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 
 /**
  * The corona's knobs, live: `Corona` reads them every frame, and the Corona window turns them.
@@ -42,8 +42,14 @@ export const CORONA_CONTROLS = [
 
 const decimals = c => (String(c.step).split('.')[1] || '').length;
 
+/** How long a flare takes to die down, ms. */
+export const FLARE_MS = 700;
+
 export const useCoronaStore = defineStore('corona', () => {
   const settings = reactive({ ...CORONA_DEFAULTS });
+  const flareAt = ref(-Infinity);    // when the corona last flared (performance.now())
+  /** Flare: a key has landed on the gauge. The glow swells and settles over FLARE_MS. */
+  function flare() { flareAt.value = performance.now(); }
 
   function set(key, value) {
     const c = CORONA_CONTROLS.find(x => x.key === key);
@@ -60,5 +66,5 @@ export const useCoronaStore = defineStore('corona', () => {
     return ['/* Any Key corona — paste into CORONA_DEFAULTS in stores/corona.js */', '{', ...lines, '}'].join('\n');
   }
 
-  return { settings, defaults: CORONA_DEFAULTS, set, resetOne, reset, isDefault, snapshot };
+  return { settings, defaults: CORONA_DEFAULTS, flareAt, flare, set, resetOne, reset, isDefault, snapshot };
 });

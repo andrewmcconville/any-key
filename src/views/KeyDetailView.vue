@@ -16,6 +16,7 @@ const key = computed(() => game.keyById(props.id));
 const era = computed(() => game.eraById(key.value.era));
 const collected = computed(() => game.isCollected(props.id));
 const justCollected = ref(false);
+const collectBtn = ref(null);
 
 const titleCase = s => s.charAt(0) + s.slice(1).toLowerCase();
 const meta = computed(() => `${key.value.year} · Era ${era.value.numeral} · ${titleCase(era.value.name)} · Feedback: ${key.value.feedback}`);
@@ -30,6 +31,9 @@ const COLLECT_BEAT_MS = 600;
 let closing = null;
 function onCollect() {
   if (collected.value) { close(); return; }
+  // The cap lifts off the button towards the HUD gauge; the gauge counts it when it lands.
+  const el = collectBtn.value?.$el;
+  if (el) ui.launchFlight(el.getBoundingClientRect(), key.value.legend ?? key.value.name, game.count);
   game.collect(props.id);
   justCollected.value = true;
   closing = setTimeout(close, COLLECT_BEAT_MS);
@@ -62,7 +66,7 @@ async function close() {
     <div class="section"><p class="t-label">Why it belongs</p><p class="t-body">{{ key.why }}</p></div>
 
     <template #footer>
-      <AppButton keycap :solid="collected" @click="onCollect">
+      <AppButton ref="collectBtn" keycap :solid="collected" @click="onCollect">
         {{ collected ? '✓  COLLECTED' : 'PRESS TO COLLECT' }}
       </AppButton>
       <p class="btn-caption t-label t-label--lc">{{ caption }}</p>

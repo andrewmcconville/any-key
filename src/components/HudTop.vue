@@ -2,14 +2,20 @@
 import { computed, ref, watch } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { useGameStore } from '../stores/game';
+import { useUiStore } from '../stores/ui';
 import Corona from './Corona.vue';
 
 const game = useGameStore();
+const ui = useUiStore();
 const nav = useOverlayNav();
 const pop = ref(false);
 
+// The count the gauge shows: the real one, except while a collected key's cap is still flying up
+// from its modal (see KeyFlight.vue), when it holds the old count until the cap lands.
+const shown = computed(() => (ui.flight ? ui.flight.countBefore : game.count));
+
 // Pulse the counter whenever it changes
-watch(() => game.count, () => {
+watch(shown, () => {
   pop.value = false;
   requestAnimationFrame(() => { pop.value = true; });
 });
@@ -18,7 +24,7 @@ watch(() => game.count, () => {
 // share. It fills clockwise from the top (the svg is turned a quarter back).
 const R = 45;
 const LAP = 2 * Math.PI * R;
-const dashOffset = computed(() => LAP * (1 - game.count / game.total));
+const dashOffset = computed(() => LAP * (1 - shown.value / game.total));
 </script>
 
 <template>
@@ -31,9 +37,9 @@ const dashOffset = computed(() => LAP * (1 - game.count / game.total));
       <Corona />
       <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
         <circle class="ring__track" cx="50" cy="50" :r="R" />
-        <circle class="ring__fill" :class="{ 'ring__fill--empty': !game.count }" cx="50" cy="50" :r="R" :stroke-dasharray="LAP" :stroke-dashoffset="dashOffset" />
+        <circle class="ring__fill" :class="{ 'ring__fill--empty': !shown }" cx="50" cy="50" :r="R" :stroke-dasharray="LAP" :stroke-dashoffset="dashOffset" />
       </svg>
-      <span class="count t-heading" :class="{ pop }" @animationend="pop = false">{{ game.count }}</span>
+      <span class="count t-heading" :class="{ pop }" @animationend="pop = false">{{ shown }}</span>
       <span class="gauge__label">of {{ game.total }} keys</span>
     </div>
     <button class="hud-btn" type="button" aria-label="Stats" @click="nav.open('stats')">

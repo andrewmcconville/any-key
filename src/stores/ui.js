@@ -8,7 +8,9 @@ export const useUiStore = defineStore('ui', () => {
   const scrollRequest = ref({ eraId: 1, n: 0 });   // n bumps so repeated requests re-trigger watchers
   const eraInView = ref(1);
   const boardScrolled = ref(false);
+  const flight = ref(null);        // a key's cap on its way to the HUD gauge (see KeyFlight.vue), or null
   let timer = null;
+  let flights = 0;
 
   function scrollToEra(eraId) {
     scrollRequest.value = { eraId, n: scrollRequest.value.n + 1 };
@@ -33,5 +35,14 @@ export const useUiStore = defineStore('ui', () => {
     toast.value = { ...toast.value, open: false };
   }
 
-  return { toast, scrollRequest, eraInView, boardScrolled, scrollToEra, showToast, dismissToast, hideToast };
+  /**
+   * Send a key's cap from `from` (the collect button's DOMRect) up to the gauge. The gauge keeps
+   * showing `countBefore` until the cap lands, so the count moves on the strike, not the press.
+   */
+  function launchFlight(from, legend, countBefore) {
+    flight.value = { n: ++flights, from: { x: from.left, y: from.top, w: from.width, h: from.height }, legend, countBefore };
+  }
+  function landFlight(n) { if (flight.value?.n === n) flight.value = null; }
+
+  return { toast, scrollRequest, eraInView, boardScrolled, flight, scrollToEra, showToast, dismissToast, hideToast, launchFlight, landFlight };
 });
