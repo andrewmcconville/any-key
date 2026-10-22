@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { useGameStore } from '../stores/game';
+import Corona from './Corona.vue';
 
 const game = useGameStore();
 const nav = useOverlayNav();
@@ -25,8 +26,9 @@ const dashOffset = computed(() => LAP * (1 - game.count / game.total));
     <button class="hud-btn" type="button" aria-label="Menu" @click="nav.open('menu')">
       <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M12 17h32M12 28h32M12 39h32" /></svg>
     </button>
-    <!-- The gauge: the key count inside a ring that fills as keys are collected. -->
+    <!-- The gauge: the key count inside a ring that fills as keys are collected, in a corona. -->
     <div class="gauge" aria-live="polite">
+      <Corona />
       <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
         <circle class="ring__track" cx="50" cy="50" :r="R" />
         <circle class="ring__fill" :class="{ 'ring__fill--empty': !game.count }" cx="50" cy="50" :r="R" :stroke-dasharray="LAP" :stroke-dashoffset="dashOffset" />
@@ -69,7 +71,7 @@ const dashOffset = computed(() => LAP * (1 - game.count / game.total));
 }
 .hud-btn:active { transform: scale(.94); }
 .hud-btn svg { width: var(--icon); height: var(--icon); stroke: var(--ink); stroke-width: 5; stroke-linecap: round; fill: none; }
-/* The gauge is a tap-sized circle with its own stacking context. */
+/* The gauge is a tap-sized circle; its stacking is isolated so the corona can sit behind the ring and the count. */
 .gauge {
   position: relative; isolation: isolate;
   width: var(--tap); height: var(--tap);
