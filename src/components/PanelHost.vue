@@ -6,6 +6,7 @@ import ColorsPanel from '../panels/ColorsPanel.vue';
 import ShapePanel from '../panels/ShapePanel.vue';
 import MotionPanel from '../panels/MotionPanel.vue';
 import CoronaPanel from '../panels/CoronaPanel.vue';
+import FlightPanel from '../panels/FlightPanel.vue';
 import InspectPanel from '../panels/InspectPanel.vue';
 </script>
 
@@ -16,6 +17,7 @@ import InspectPanel from '../panels/InspectPanel.vue';
     <ShapePanel />
     <MotionPanel />
     <CoronaPanel />
+    <FlightPanel />
     <InspectPanel />
   </div>
 </template>

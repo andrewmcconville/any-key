@@ -2,6 +2,7 @@
 import { computed, onUnmounted, ref } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY } from '../data/content';
+import { useFlightStore } from '../stores/flight';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
 import ModalShell from '../components/ModalShell.vue';
@@ -10,6 +11,7 @@ import AppButton from '../components/AppButton.vue';
 const props = defineProps({ id: { type: String, required: true } });
 const game = useGameStore();
 const ui = useUiStore();
+const flight = useFlightStore();
 const nav = useOverlayNav();
 
 const key = computed(() => game.keyById(props.id));
@@ -25,9 +27,9 @@ const caption = computed(() => {
   return justCollected.value ? game.collectedCaption(key.value) : 'Collected · tap to go back to the timeline';
 });
 
-// Pressing collects and goes back to the board after a beat, long enough to see the key turn ✓;
-// the consequences (toast, completion) land on close. A collected key's button just goes back.
-const COLLECT_BEAT_MS = 600;
+// Pressing collects and goes back to the board after a beat (a knob in the flight store), long
+// enough to see the key turn ✓; the consequences (toast, completion) land on close. A collected
+// key's button just goes back.
 let closing = null;
 function onCollect() {
   if (collected.value) { close(); return; }
@@ -36,7 +38,7 @@ function onCollect() {
   if (el) ui.launchFlight(el.getBoundingClientRect(), key.value.legend ?? key.value.name, game.count);
   game.collect(props.id);
   justCollected.value = true;
-  closing = setTimeout(close, COLLECT_BEAT_MS);
+  closing = setTimeout(close, flight.settings.beat);
 }
 onUnmounted(() => clearTimeout(closing));
 

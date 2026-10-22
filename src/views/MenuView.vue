@@ -31,6 +31,7 @@ function openPanel(id, at) {
       <AppButton @click="openPanel('colors', { x: 36, y: 120 })">COLOURS</AppButton>
       <AppButton @click="openPanel('corona', { x: 84, y: 312 })">CORONA</AppButton>
       <AppButton @click="openPanel('shape', { x: 48, y: 168 })">BORDERS &amp; RADII</AppButton>
+      <AppButton @click="openPanel('flight', { x: 96, y: 360 })">COLLECT</AppButton>
       <AppButton @click="openPanel('inspect', { x: 72, y: 264 })">INSPECT</AppButton>
     </nav>
     <p class="menu__hint t-label t-label--lc muted">Esc also opens and closes this menu</p>

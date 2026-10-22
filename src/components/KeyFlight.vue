@@ -1,6 +1,7 @@
 <script setup>
 import { onUnmounted, ref, watch } from 'vue';
 import { useCoronaStore } from '../stores/corona';
+import { useFlightStore } from '../stores/flight';
 import { useUiStore } from '../stores/ui';
 
 /**
@@ -10,14 +11,11 @@ import { useUiStore } from '../stores/ui';
  * new count (the ring advances and the number pops, see HudTop) and the corona flares. It runs in
  * its own layer above the modal scrim, so the cap carries the eye back to the board as the modal
  * closes beneath it. With reduced motion there is no flight: the gauge counts the key at once.
+ * Every number is a knob in the flight store; the Collect window turns them.
  */
-const FLIGHT_MS = 800;
-const TRAIL_EVERY_MS = 45;
-const TRAIL_MS = 520;
-const BULGE_PX = 56;        // how far the arc bows out from the straight line
-
 const ui = useUiStore();
 const corona = useCoronaStore();
+const flight = useFlightStore();
 const layer = ref(null);
 const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const easing = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || 'ease';
@@ -30,28 +28,30 @@ function fly(f) {
   const sx = f.from.x + f.from.w / 2, sy = f.from.y + f.from.h / 2;
   const ex = gauge.left + gauge.width / 2, ey = gauge.top + gauge.height / 2;
 
+  const k = { ...flight.settings };   // this flight's knobs, as they were at lift-off
   const cap = document.createElement('div');
   cap.className = 'cap t-label';
   cap.textContent = f.legend;
   cap.style.left = `${sx}px`;
   cap.style.top = `${sy}px`;
+  cap.style.width = cap.style.height = `${k.capSize}rem`;
   layer.value.append(cap);
-  const endScale = Math.max(0.2, (gauge.height * 0.7) / cap.offsetHeight);
-  const bow = ex >= sx ? -BULGE_PX : BULGE_PX;   // bow away from the direction of travel
+  const endScale = Math.max(0.1, (gauge.height * k.landScale) / cap.offsetHeight);
+  const bow = ex >= sx ? -k.bow : k.bow;   // bow away from the direction of travel
 
   // Two motions make the arc: the cap travels straight to the gauge on the emphasized curve, while
   // its face bows sideways and shrinks along the way.
   const travel = cap.animate(
     [{ translate: '0 0' }, { translate: `${ex - sx}px ${ey - sy}px` }],
-    { duration: FLIGHT_MS, easing: easing('--ease-emphasized'), fill: 'forwards' },
+    { duration: k.duration, easing: easing('--ease-emphasized'), fill: 'forwards' },
   );
   cap.animate(
     [
       { transform: 'translate(-50%, -50%) scale(1) rotate(0deg)' },
-      { transform: `translate(calc(-50% + ${bow}px), -50%) scale(${(1 + endScale) / 2}) rotate(${bow > 0 ? 8 : -8}deg)`, offset: 0.5 },
+      { transform: `translate(calc(-50% + ${bow}px), -50%) scale(${(1 + endScale) / 2}) rotate(${bow > 0 ? k.tilt : -k.tilt}deg)`, offset: 0.5 },
       { transform: `translate(-50%, -50%) scale(${endScale}) rotate(0deg)` },
     ],
-    { duration: FLIGHT_MS, easing: easing('--ease-standard'), fill: 'forwards' },
+    { duration: k.duration, easing: easing('--ease-standard'), fill: 'forwards' },
   );
 
   // The trail: the legend, shed where the cap is, drifting down and fading.
@@ -63,12 +63,12 @@ function fly(f) {
     mote.style.left = `${r.left + r.width / 2}px`;
     mote.style.top = `${r.top + r.height / 2}px`;
     layer.value?.append(mote);
-    const dx = (Math.random() - 0.5) * 16, dy = 14 + Math.random() * 10;
+    const dx = (Math.random() - 0.5) * k.trailScatter, dy = k.trailDrift * (0.6 + 0.4 * Math.random());
     mote.animate(
-      [{ transform: 'translate(-50%, -50%) scale(0.9)', opacity: 0.8 }, { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.5)`, opacity: 0 }],
-      { duration: TRAIL_MS, easing: 'ease-out', fill: 'forwards' },
+      [{ transform: 'translate(-50%, -50%) scale(0.9)', opacity: k.trailOpacity }, { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.5)`, opacity: 0 }],
+      { duration: k.trailLife, easing: 'ease-out', fill: 'forwards' },
     ).finished.then(() => mote.remove(), () => mote.remove());
-  }, TRAIL_EVERY_MS);
+  }, k.trailEvery);
 
   const entry = { cap, trail };
   active.push(entry);
@@ -77,7 +77,7 @@ function fly(f) {
     cap.remove();
     active = active.filter(e => e !== entry);
     ui.landFlight(f.n);
-    corona.flare();
+    corona.flare(k.flareMs, k.flareStrength);
   };
   travel.finished.then(land, land);
 }
@@ -99,7 +99,6 @@ onUnmounted(() => { active.forEach(e => { clearInterval(e.trail); e.cap.remove()
 .flight { position: fixed; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
 .flight :deep(.cap) {
   position: absolute;
-  width: 12rem; height: 12rem;
   border: var(--stroke) solid var(--ink);
   border-radius: var(--radius-sm);
   background: var(--white);

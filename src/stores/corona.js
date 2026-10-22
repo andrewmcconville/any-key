@@ -42,14 +42,13 @@ export const CORONA_CONTROLS = [
 
 const decimals = c => (String(c.step).split('.')[1] || '').length;
 
-/** How long a flare takes to die down, ms. */
-export const FLARE_MS = 700;
-
 export const useCoronaStore = defineStore('corona', () => {
   const settings = reactive({ ...CORONA_DEFAULTS });
   const flareAt = ref(-Infinity);    // when the corona last flared (performance.now())
-  /** Flare: a key has landed on the gauge. The glow swells and settles over FLARE_MS. */
-  function flare() { flareAt.value = performance.now(); }
+  const flareMs = ref(700);          // how long that flare takes to settle
+  const flareStrength = ref(1);      // how hard it flares, × the built-in swell
+  /** Flare: a key has landed on the gauge. The glow swells and settles over `ms`. */
+  function flare(ms = 700, strength = 1) { flareAt.value = performance.now(); flareMs.value = ms; flareStrength.value = strength; }
 
   function set(key, value) {
     const c = CORONA_CONTROLS.find(x => x.key === key);
@@ -66,5 +65,5 @@ export const useCoronaStore = defineStore('corona', () => {
     return ['/* Any Key corona — paste into CORONA_DEFAULTS in stores/corona.js */', '{', ...lines, '}'].join('\n');
   }
 
-  return { settings, defaults: CORONA_DEFAULTS, flareAt, flare, set, resetOne, reset, isDefault, snapshot };
+  return { settings, defaults: CORONA_DEFAULTS, flareAt, flareMs, flareStrength, flare, set, resetOne, reset, isDefault, snapshot };
 });

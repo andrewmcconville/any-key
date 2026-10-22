@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { perlin3 } from '../lib/noise';
-import { FLARE_MS, useCoronaStore } from '../stores/corona';
+import { useCoronaStore } from '../stores/corona';
 
 /**
  * The corona round the HUD's key gauge: a glow behind the ring like the corona round an eclipse,
@@ -70,9 +70,9 @@ function draw(t) {
   if (!ctx || !image) return;
   const { hole, lobes, ripples, drift, rippleSpeed, ripple, outerOpacity, falloff, blur } = settings;
   // A flare (a key landing on the gauge): the glow swells and the lobes reach further, settling
-  // back over FLARE_MS on a quadratic so the strike is sharp and the fade is soft.
+  // back over the flare's length on a quadratic so the strike is sharp and the fade is soft.
   const since = performance.now() - corona.flareAt;
-  const boost = since >= 0 && since < FLARE_MS ? (1 - since / FLARE_MS) ** 2 : 0;
+  const boost = (since >= 0 && since < corona.flareMs ? (1 - since / corona.flareMs) ** 2 : 0) * corona.flareStrength;
   const hug = settings.hug + 10 * boost;
   const flare = settings.flare + 70 * boost;
   const innerOpacity = Math.min(1, settings.innerOpacity + 0.45 * boost);

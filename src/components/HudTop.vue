@@ -2,11 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { useGameStore } from '../stores/game';
+import { useFlightStore } from '../stores/flight';
 import { useUiStore } from '../stores/ui';
 import Corona from './Corona.vue';
 
 const game = useGameStore();
 const ui = useUiStore();
+const flight = useFlightStore();
 const nav = useOverlayNav();
 const pop = ref(false);
 
@@ -32,8 +34,9 @@ const dashOffset = computed(() => LAP * (1 - shown.value / game.total));
     <button class="hud-btn" type="button" aria-label="Menu" @click="nav.open('menu')">
       <svg viewBox="0 0 56 56" aria-hidden="true"><path d="M12 17h32M12 28h32M12 39h32" /></svg>
     </button>
-    <!-- The gauge: the key count inside a ring that fills as keys are collected, in a corona. -->
-    <div class="gauge" aria-live="polite">
+    <!-- The gauge: the key count inside a ring that fills as keys are collected, in a corona.
+         Play (Inspect, Motion, the Collect window) sends a demo cap up to it. -->
+    <div class="gauge" aria-live="polite" data-replay @motion-replay="flight.play()">
       <Corona />
       <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
         <circle class="ring__track" cx="50" cy="50" :r="R" />
