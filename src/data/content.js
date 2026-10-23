@@ -45,7 +45,7 @@ export const KEYS = [
   { id: 'return', legend: '↵',   era: 2, name: 'Return',     year: '1929',    feedback: 'click',
     image: 'Return key, ↵ legend, macro; IBM Selectric Return key',
     press: 'On a typewriter: carriage left, paper up one line. On a computer: send, submit, confirm.',
-    description: 'Typewriters had a lever to return the carriage. The Electromatic of 1929 put a motor behind it and gave it a key, marked CARRIAGE RETURN and set at the right of the keyboard where the lever had been; IBM bought the company in 1933 and sold the machine as the Electric Model 01. The key has kept that spot ever since.',
+    description: 'Typewriters had a lever to return the carriage. The Electromatic of 1929 put a motor behind it and gave it a key, marked CARRIAGE RETURN and set at the right of the keyboard where the lever had been.',
     why: 'A lever that moved paper became the key that means yes.' },
   { id: 'esc', legend: 'esc',      era: 2, name: 'Esc',        year: '1960',    feedback: 'click', photo: 'teletype-model-33-esc-key-transparent.png',
     image: 'ESC key, top-left corner, macro; the 2016 Touch Bar esc',
