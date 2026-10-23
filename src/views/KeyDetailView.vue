@@ -60,7 +60,7 @@ async function close() {
 </script>
 
 <template>
-  <ModalShell v-if="key" :title="key.title ?? key.name" title-id="key-title" @close="close">
+  <ModalShell v-if="key" :title="key.title ?? key.short ?? key.name" title-id="key-title" @close="close">
     <p class="meta t-label t-label--lc">{{ meta }}</p>
     <div class="image t-label t-label--lc">IMAGE — {{ key.image }}</div>
     <div class="section"><p class="t-label">What the press does</p><p class="t-body">{{ key.press }}</p></div>
