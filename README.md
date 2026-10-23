@@ -71,7 +71,7 @@ Menu → Design tools opens floating panels: small windows you can drag around b
 
 ## Rules implemented
 
-- Era I is open at start; collecting 2 keys in an era unlocks the next one and shows a toast that scrolls the board there.
+- Era I is open at start; collecting 2 keys in an era unlocks the next one and shows a toast. The board stays where the player is; tapping the toast scrolls to the new era.
 - HUD dots: dashed = locked, outlined with ✓ = cleared, filled = era in view.
 - Achievements: There is no Any key, First press, Era I–IV cleared, Full set.
 - Collecting the 14th key shows the Completion screen; Reset (or Start over) clears everything and re-locks Eras II–IV.

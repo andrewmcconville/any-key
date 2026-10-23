@@ -16,13 +16,15 @@ export const useUiStore = defineStore('ui', () => {
     scrollRequest.value = { eraId, n: scrollRequest.value.n + 1 };
   }
 
+  // The toast announces an unlock but leaves the board where the player is: when it times out
+  // nothing moves, and only a tap on it (dismissToast) goes to the era it names.
   function showToast(text, eraId) {
     clearTimeout(timer);
     toast.value = { open: true, text, eraId };
-    timer = setTimeout(dismissToast, TOAST_MS);
+    timer = setTimeout(hideToast, TOAST_MS);
   }
 
-  /** Hides the toast and scrolls the board to the era it announced. */
+  /** Hides the toast and scrolls the board to the era it announced: the response to a tap on it. */
   function dismissToast() {
     clearTimeout(timer);
     const eraId = toast.value.eraId;
