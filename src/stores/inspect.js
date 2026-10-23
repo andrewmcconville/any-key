@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
 import { OVERRIDE_SHEET_ID, collectRules, nearestBound, rebound, unscoped } from '../lib/bindings';
 import { usePanelsStore } from './panels';
+import { useUndoStore } from './undo';
 
 /**
  * The Inspect tool: pick mode, the picked element, and the rebinds made from it. Pick mode lives
@@ -129,6 +130,8 @@ export const useInspectStore = defineStore('inspect', () => {
       `${unscoped(o.selector)} { ${[o, ...o.extra].map(d => `${d.prop}: ${d.value};`).join(' ')} }`);
     return ['/* Any Key inspector rebinds — paste into the components\' <style scoped> */', ...(lines.length ? lines : ['/* none */'])].join('\n');
   }
+
+  useUndoStore().track('inspect', overrides, apply);   // ⌘Z takes a rebind back; the sheet is rewritten by hand (stores/undo.js)
 
   return {
     picking, selected, overrides, version, hasOverrides,

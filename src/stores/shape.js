@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
+import { useUndoStore } from './undo';
 
 /**
  * Border widths and corner radii. The values live in styles.css (custom properties on :root) and
@@ -60,6 +61,8 @@ export const useShapeStore = defineStore('shape', () => {
   const isDefault = id => values[id] === defaults[id];
 
   watch(values, apply, { deep: true, immediate: true });
+
+  useUndoStore().track('shape', values);   // ⌘Z (stores/undo.js)
 
   return { values, defaults, set, resetOne, reset, isDefault };
 });

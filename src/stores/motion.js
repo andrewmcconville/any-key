@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
+import { useUndoStore } from './undo';
 
 /**
  * Motion tokens: durations (seconds) and easings (cubic-bezier control points). The values live in
@@ -103,6 +104,9 @@ export const useMotionStore = defineStore('motion', () => {
     : easings[id].every((v, i) => v === defaults.easings[id][i]));
 
   watch([durations, easings], apply, { deep: true, immediate: true });
+
+  useUndoStore().track('durations', durations);   // ⌘Z (stores/undo.js)
+  useUndoStore().track('easings', easings);
 
   return { durations, easings, defaults, setDuration, setPoint, setEasing, easingCss, ms, resetOne, reset, isDefault };
 });

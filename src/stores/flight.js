@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { reactive } from 'vue';
 import { useGameStore } from './game';
 import { useUiStore } from './ui';
+import { useUndoStore } from './undo';
 
 /**
  * The collect effect's knobs, live: `KeyFlight` reads them for every flight, the corona's flare
@@ -77,6 +78,8 @@ export const useFlightStore = defineStore('flight', () => {
     const lines = FLIGHT_CONTROLS.map(c => `  ${c.key}: ${settings[c.key]},${isDefault(c.key) ? '' : '   // changed'}`);
     return ['/* Any Key collect effect — paste into FLIGHT_DEFAULTS in stores/flight.js */', '{', ...lines, '}'].join('\n');
   }
+
+  useUndoStore().track('flight', settings);   // ⌘Z (stores/undo.js)
 
   return { settings, defaults: FLIGHT_DEFAULTS, set, resetOne, reset, isDefault, play, snapshot };
 });

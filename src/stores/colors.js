@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
 import { oklchCss, oklchToHex, round } from '../lib/oklch';
+import { useUndoStore } from './undo';
 
 // Design-tool overrides are deliberately not persisted: a refresh returns to the stylesheet's
 // values, so what you see after reloading is what the code says. (Only the game state persists.)
@@ -86,6 +87,8 @@ export const useColorsStore = defineStore('colors', () => {
   };
 
   watch(values, apply, { deep: true, immediate: true });
+
+  useUndoStore().track('colors', values);   // ⌘Z takes a change back, one token at a time (stores/undo.js)
 
   return { values, defaults, css, hex, setChannel, setAlpha, resetOne, reset, isDefault };
 });

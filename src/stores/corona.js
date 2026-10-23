@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive, ref } from 'vue';
+import { useUndoStore } from './undo';
 
 /**
  * The corona's knobs, live: `Corona` reads them every frame, and the Corona window turns them.
@@ -64,6 +65,8 @@ export const useCoronaStore = defineStore('corona', () => {
     const lines = CORONA_CONTROLS.map(c => `  ${c.key}: ${settings[c.key]},${isDefault(c.key) ? '' : '   // changed'}`);
     return ['/* Any Key corona — paste into CORONA_DEFAULTS in stores/corona.js */', '{', ...lines, '}'].join('\n');
   }
+
+  useUndoStore().track('corona', settings);   // ⌘Z (stores/undo.js)
 
   return { settings, defaults: CORONA_DEFAULTS, flareAt, flareMs, flareStrength, flare, set, resetOne, reset, isDefault, snapshot };
 });

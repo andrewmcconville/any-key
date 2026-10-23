@@ -8,7 +8,9 @@
 // stylesheet declares on :root, as authored. Custom properties inherit from the nearest ancestor
 // that sets them, so everything inside the windows reads these fixed values and only the app
 // underneath changes.
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
+import { usePanelsStore } from '../stores/panels';
+import { useUndoStore } from '../stores/undo';
 import TypeTokensPanel from '../panels/TypeTokensPanel.vue';
 import ColorsPanel from '../panels/ColorsPanel.vue';
 import ShapePanel from '../panels/ShapePanel.vue';
@@ -34,6 +36,19 @@ function freezeTokens() {
   }
 }
 onMounted(freezeTokens);
+
+// ⌘Z / Ctrl+Z while any window is open takes the last change made in the windows back, one step
+// at a time (stores/undo.js). With no window open the key is left to the page.
+const panels = usePanelsStore();
+const undo = useUndoStore();
+function onKey(e) {
+  if (e.key.toLowerCase() !== 'z' || !(e.metaKey || e.ctrlKey) || e.shiftKey || e.altKey) return;
+  if (!Object.values(panels.panels).some(p => p.open)) return;
+  e.preventDefault();
+  undo.undo();
+}
+onMounted(() => window.addEventListener('keydown', onKey));
+onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>

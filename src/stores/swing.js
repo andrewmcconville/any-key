@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { reactive } from 'vue';
 import { KEYS, RAIL_Y } from '../data/content';
+import { useUndoStore } from './undo';
 
 /**
  * Scroll physics. The rail is bolted to the board and moves with the user's hand; each key hangs
@@ -116,6 +117,8 @@ export const useSwingStore = defineStore('swing', () => {
     const lines = SWING_CONTROLS.map(c => `  ${c.key}: ${settings[c.key]},${isDefault(c.key) ? '' : '   // changed'}`);
     return ['/* Any Key scroll physics — paste into SWING_DEFAULTS in stores/swing.js */', '{', ...lines, '}'].join('\n');
   }
+
+  useUndoStore().track('swing', settings);   // ⌘Z (stores/undo.js)
 
   return { settings, lags, defaults: SWING_DEFAULTS, kick, play, set, resetOne, reset, isDefault, snapshot };
 });

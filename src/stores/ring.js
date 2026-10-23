@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
 import { EASING_TOKENS } from './motion';
 import { replayAll } from '../lib/replay';
+import { useUndoStore } from './undo';
 
 /**
  * The era ring's knobs: how long its stretch takes, how far behind the trailing edge sets off,
@@ -61,6 +62,8 @@ export const useRingStore = defineStore('ring', () => {
   }
 
   watch(settings, apply, { immediate: true });
+
+  useUndoStore().track('ring', settings);   // ⌘Z (stores/undo.js)
 
   return { settings, defaults: RING_DEFAULTS, css, set, resetOne, reset, isDefault, play, snapshot };
 });

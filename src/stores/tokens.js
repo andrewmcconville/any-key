@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
+import { useUndoStore } from './undo';
 
 // Design-tool overrides are deliberately not persisted: a refresh returns to the stylesheet's
 // values, so what you see after reloading is what the code says. (Only the game state persists.)
@@ -61,6 +62,8 @@ export const useTokensStore = defineStore('tokens', () => {
   const isDefault = id => sizes[id] === defaults[id].size;
 
   watch(sizes, apply, { deep: true, immediate: true });
+
+  useUndoStore().track('tokens', sizes);   // ⌘Z takes a slider change back (stores/undo.js)
 
   return { sizes, defaults, lineHeight, set, resetOne, reset, isDefault };
 });
