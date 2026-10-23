@@ -42,8 +42,8 @@ export const KEYS = [
     why: 'The key that went from “go back” to “take it back.”' },
 
   // Era II · Electric
-  { id: 'return', legend: '↵',   era: 2, name: 'Return',     year: '1929',    feedback: 'click',
-    image: 'Return key, ↵ legend, macro; IBM Selectric Return key',
+  { id: 'return', legend: '↵',   era: 2, name: 'Return',     year: '1929',    feedback: 'click', photo: 'electromatic.png',
+    image: 'CARRIAGE RETURN key on an Electromatic typewriter, 1929, macro',
     press: 'On a typewriter: carriage left, paper up one line. On a computer: send, submit, confirm.',
     description: 'Typewriters had a lever to return the carriage. The Electromatic of 1929 put a motor behind it and gave it a key, marked CARRIAGE RETURN and set at the right of the keyboard where the lever had been.',
     why: 'A lever that moved paper became the key that means yes.' },
