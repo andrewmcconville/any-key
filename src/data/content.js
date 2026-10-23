@@ -47,7 +47,7 @@ export const KEYS = [
     press: 'On a typewriter: carriage left, paper up one line. On a computer: send, submit, confirm.',
     description: 'Typewriters had a lever to return the carriage; when they went electric the lever became a key, which gained the ↵ arrow on the IBM Selectric II in 1971 and was relabeled Enter on IBM PCs.',
     why: 'A lever that moved paper became the key that means yes.' },
-  { id: 'esc', legend: 'esc',      era: 2, name: 'Esc',        year: '1960',    feedback: 'click',
+  { id: 'esc', legend: 'esc',      era: 2, name: 'Esc',        year: '1960',    feedback: 'click', photo: 'teletype-model-33-esc-key-transparent.png',
     image: 'ESC key, top-left corner, macro; the 2016 Touch Bar esc',
     press: 'Sends character 27 and lets the program decide; almost always, stop whatever is happening.',
     description: 'Bob Bemer wrote ESC into ASCII in 1960 so a terminal could switch character sets; the Teletype Model 33 gave it a key in 1963, vi made it the way out of everything, and Apple turned it into a strip of glass in 2016 and gave the key back in 2019.',

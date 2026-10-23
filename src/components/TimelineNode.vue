@@ -149,6 +149,10 @@ function onPress() {
 /* No fill in any state (the collected rule above would paint it ink); the rail dot carries the state. */
 .node--photo[data-state] { background: none; }
 .node--photo .photo {
+  /* Pinned to the box rather than sized by percentages: the button's grid row is auto, so a
+     percentage height would fall back to the image's own aspect ratio and a portrait photo would
+     spill below the box. The box is always square; a portrait cap is letterboxed inside it. */
+  position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: contain;
   transition: filter var(--dur-sm) var(--ease-standard), opacity var(--dur-sm) var(--ease-standard);
