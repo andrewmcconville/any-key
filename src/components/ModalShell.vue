@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import CloseButton from './CloseButton.vue';
 
 const props = defineProps({
@@ -18,15 +18,19 @@ const props = defineProps({
 });
 const emit = defineEmits(['close']);
 
+// While one overlay gives way to another both shells are mounted for the length of the fade; only
+// the one that is staying answers Esc, or a single press would close two overlays.
+const layer = ref(null);
+const leaving = () => [...(layer.value?.classList ?? [])].some(c => c.endsWith('-leave-active'));
 function onKey(e) {
-  if (e.key === 'Escape' && props.closable) emit('close');
+  if (e.key === 'Escape' && props.closable && !leaving()) emit('close');
 }
 onMounted(() => window.addEventListener('keydown', onKey));
 onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>
-  <div class="layer" @click.self="closable && emit('close')">
+  <div ref="layer" class="layer" @click.self="closable && emit('close')">
     <section
       class="modal"
       :class="{ 'modal--center': align === 'center' }"
@@ -52,6 +56,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 <style scoped>
 .modal {
   height: 236rem;         /* every modal the same size, so one can take another's place without the frame moving */
+  max-height: 100%;       /* but never taller than the layer leaves inside the phone's safe areas */
   background: var(--white);
   border-radius: var(--radius-xl);
   border: var(--hairline) solid var(--line-soft);

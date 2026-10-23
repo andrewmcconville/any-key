@@ -37,6 +37,8 @@ export const SWING_CONTROLS = [
 
 const REST = 0.05;          // below this displacement and speed a key is still
 const SHORTEST_ROD = 161;   // canvas px, the shortest circle key's connector: the frequency knob refers to it
+const MAX_PHASE = 0.25;     // rad of the stiffest spring per integration step; symplectic Euler is safe well under 2
+const MAX_STEPS = 32;       // sub-steps per frame at most, so a long stall costs bounded work
 const decimals = c => (String(c.step).split('.')[1] || '').length;
 
 /** Each key's connector length, canvas px: rail to the key's edge (a photo is the larger box). */
@@ -64,16 +66,29 @@ export const useSwingStore = defineStore('swing', () => {
     last = performance.now();
     frame = requestAnimationFrame(settle);
   }
+  // One frame of the springs. A stalled frame (tab switch, a long task) arrives with a big dt, and a
+  // stiff spring (the Frequency and Length effect knobs high) would blow up if integrated in one
+  // step, so the frame is cut into sub-steps short enough for the stiffest rod, and the
+  // displacement is held within the lag limit however the numbers fall.
   function settle(now) {
-    const dt = Math.min(now - last, 50) / 1000;   // s; a stalled frame must not explode the spring
+    const dt = Math.min(now - last, 50) / 1000;   // s; the cap also bounds how far a stall is replayed
     last = now;
+    const stiffest = Math.max(...RODS.map(omega));
+    const steps = Math.min(MAX_STEPS, Math.max(1, Math.ceil(stiffest * dt / MAX_PHASE)));
+    const h = dt / steps;
+    const zeta = settings.damping;
+    const limit = settings.maxLag;
     let moving = false;
     for (const rod of RODS) {
       const w = omega(rod);
       let x = lags[rod.id];
       let v = velocities[rod.id];
-      v += (-w * w * x - 2 * settings.damping * w * v) * dt;
-      x += v * dt;
+      for (let i = 0; i < steps; i++) {
+        v += (-w * w * x - 2 * zeta * w * v) * h;
+        x += v * h;
+      }
+      if (x > limit) { x = limit; v = Math.min(v, 0); }
+      else if (x < -limit) { x = -limit; v = Math.max(v, 0); }
       if (Math.abs(x) < REST && Math.abs(v) < REST) { x = 0; v = 0; } else moving = true;
       lags[rod.id] = x;
       velocities[rod.id] = v;

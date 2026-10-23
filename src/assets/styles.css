@@ -136,6 +136,7 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
   position: absolute; inset: 0;
   z-index: 10;
   display: grid; place-items: center;
+  grid-template-rows: minmax(0, 1fr);   /* a definite row, so a sheet's max-height: 100% means the space inside the safe areas */
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   background: var(--scrim);
   transition: opacity var(--dur-sm) var(--ease-standard);
