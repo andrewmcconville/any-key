@@ -7,7 +7,6 @@ export const useUiStore = defineStore('ui', () => {
   const toast = ref({ open: false, text: '', eraId: null });
   const scrollRequest = ref({ eraId: 1, n: 0 });   // n bumps so repeated requests re-trigger watchers
   const eraInView = ref(1);
-  const boardScrolled = ref(false);
   const flight = ref(null);        // a key's cap on its way to the HUD gauge (see KeyFlight.vue), or null
   let timer = null;
   let flights = 0;
@@ -46,5 +45,5 @@ export const useUiStore = defineStore('ui', () => {
   }
   function landFlight(n) { if (flight.value?.n === n) flight.value = null; }
 
-  return { toast, scrollRequest, eraInView, boardScrolled, flight, scrollToEra, showToast, dismissToast, hideToast, launchFlight, landFlight };
+  return { toast, scrollRequest, eraInView, flight, scrollToEra, showToast, dismissToast, hideToast, launchFlight, landFlight };
 });

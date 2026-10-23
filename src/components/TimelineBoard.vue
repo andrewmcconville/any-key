@@ -33,9 +33,14 @@ const scale = () => tree.value.offsetWidth / BOARD_WIDTH;
 // CSS px of slack before the tree (the track's left padding)
 const padLeft = () => tree.value.offsetLeft;
 
+// The swipe hint fades with the scroll itself, gone by the time the board has moved HINT_FADE of
+// a screen width, and comes back the same way if the player returns to the start.
+const HINT_FADE = 0.4;
+const hintOpacity = ref(1);
+
 function onScroll() {
   const el = board.value;
-  ui.boardScrolled = el.scrollLeft > 20;
+  hintOpacity.value = Math.max(0, 1 - el.scrollLeft / (el.clientWidth * HINT_FADE));
   swingBy(el.scrollLeft);
   // Era in view = the era whose region holds the centre of the view: an era lights up the moment
   // its left edge crosses the centre of the screen, and stays lit until the next era's edge does.
@@ -157,7 +162,6 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   <main
     ref="board"
     class="board"
-    :data-scrolled="ui.boardScrolled"
     :data-dragging="dragging"
     @scroll.passive="onScroll"
     @pointerdown="onPointerDown"
@@ -186,8 +190,8 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
       </div>
     </div>
 
-    <!-- Sits at the right edge of the first screen; scrolls away with the content and fades. -->
-    <p class="swipe-hint t-label t-label--lc">swipe to explore →</p>
+    <!-- Sits at the foot of the first screen, just above the bottom HUD; scrolls away with the content and fades with it. -->
+    <p class="swipe-hint t-label t-label--lc" :style="{ opacity: hintOpacity }">swipe to explore →</p>
   </main>
 </template>
 
@@ -237,13 +241,12 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
 .era-region[data-locked="true"] .era-region__label { opacity: .7; }
 .swipe-hint {
   position: absolute;
-  top: calc(50% + 4.8rem);         /* just under the rail, which sits at the board's vertical centre */
-  right: 4.8rem;                   /* right edge of the board at scroll start */
-  width: 56rem; text-align: right;
+  bottom: 4.8rem;                  /* the board ends where the bottom HUD begins */
+  left: 50%; translate: -50%;      /* centre of the board at scroll start */
+  white-space: nowrap;
   color: var(--muted);
-  transition: opacity var(--dur-md) var(--ease-standard);
+  pointer-events: none;            /* opacity is set inline from the scroll position */
 }
-.board[data-scrolled="true"] .swipe-hint { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .board { scroll-behavior: auto; }
