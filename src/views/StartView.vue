@@ -36,17 +36,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 
 <style scoped>
 .layer--start { background: oklch(0.269 0 0 / 0.85); }
-/* The start screen is laid out on the 144 × 256 phone frame, like the Figma overlay. */
+/* The start screen fills the 144 × 256 phone frame; its words sit in a column at the frame's
+   centre, with the Figma overlay's spacing between them. */
 .start {
   width: 144rem; height: 256rem;
-  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   color: var(--white);
   text-align: center;
   cursor: pointer;
 }
-.start__title { position: absolute; left: 12rem; width: 120rem; top: 134rem; color: var(--white); }
-.start__sub   { position: absolute; left: 16rem; width: 112rem; top: 158rem; }
-.start__btn   { position: absolute; left: 27rem; width: 90rem; top: 190rem; }
-.start__cap   { position: absolute; left: 16rem; width: 112rem; top: 218rem; }
+/* Margins set outright: the h1 and p defaults would push the visible block off centre. */
+.start__title { width: 120rem; margin: 0 0 8rem; color: var(--white); }
+.start__sub   { width: 112rem; margin: 0 0 18rem; }
+.start__btn   { width: 90rem; margin: 0 0 11rem; }
+.start__cap   { width: 112rem; margin: 0; }
 .start .btn--keycap { background: var(--white); color: var(--ink); border-color: var(--ink); }
 </style>
