@@ -115,7 +115,7 @@ function onPress() {
     <span v-else class="glyph">{{ glyph }}</span>
   </button>
   <div class="node-label" :class="{ 'node-label--above': node.above }" :data-locked="state === 'locked'" :style="labelStyle">
-    <div class="name" :style="nameStyle">{{ node.name }}</div>
+    <div class="name" :style="nameStyle">{{ node.short ?? node.name }}</div>   <!-- the plain name: ⌘ Command reads Command on the board -->
     <div class="year" :style="yearStyle">{{ node.year }}</div>
   </div>
 </template>
