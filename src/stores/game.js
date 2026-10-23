@@ -105,7 +105,7 @@ export const useGameStore = defineStore('game', () => {
     achievements.value = ['anyKey'];
     completionShown.value = false;
     pendingUnlock.value = null;
-    started.value = true;
+    started.value = false;   // back to the start screen: the router's guard shows it until any key is pressed
   }
 
   /** Caption under the ✓ COLLECTED button, e.g. "+1 · 1 of 4 in Era I · one more unlocks Era II" */
