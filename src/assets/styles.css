@@ -24,7 +24,7 @@
   --stroke: 0.4rem;       /* control outlines: buttons, era dots, panel actions */
   --hairline: 0.2rem;     /* soft frames and dividers: HUD bars, modal, swatch rows */
 
-  /* Motion. Durations on a 0.1s grid; easings as cubic-bezier so the Motion tool can edit them. */
+  /* Motion. Durations on a 0.1s grid; easings as cubic-bezier so the Inspect tool can edit them. */
   --dur-xs: 0.1s;   /* press feedback */
   --dur-sm: 0.2s;   /* state colours, overlays */
   --dur-md: 0.3s;   /* toast, counter pop, board fade, the era ring */

@@ -4,7 +4,6 @@
 import TypeTokensPanel from '../panels/TypeTokensPanel.vue';
 import ColorsPanel from '../panels/ColorsPanel.vue';
 import ShapePanel from '../panels/ShapePanel.vue';
-import MotionPanel from '../panels/MotionPanel.vue';
 import CoronaPanel from '../panels/CoronaPanel.vue';
 import FlightPanel from '../panels/FlightPanel.vue';
 import RingPanel from '../panels/RingPanel.vue';
@@ -17,7 +16,6 @@ import SwingPanel from '../panels/SwingPanel.vue';
     <TypeTokensPanel />
     <ColorsPanel />
     <ShapePanel />
-    <MotionPanel />
     <CoronaPanel />
     <FlightPanel />
     <RingPanel />

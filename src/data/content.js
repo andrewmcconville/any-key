@@ -127,11 +127,6 @@ export const COPY = {
     button: 'PRESS ANY KEY',
     caption: '14 keys · 4 eras · press each one to collect it',
   },
-  howTo: [
-    { h: 'Swipe along the timeline', p: 'Keys are placed by the year they first appeared — oldest on the left.' },
-    { h: 'Press a key to collect it', p: 'Tap a key to read what it actually does, then press it for real to add it to your collection.' },
-    { h: 'Unlock the next era', p: 'Collect any 2 keys in an era and the next era opens up.' },
-  ],
   about: {
     about: 'Any Key is a collection of fourteen keyboard keys everyone has pressed, from typewriters to glass, arranged by the year each first appeared. Every key answers the same question: what actually happens when you press it?',
     madeBy: 'Andrew McConville · ART 424 UX/UI Design for Apps · University of Wisconsin–Milwaukee · Catalog & Curate exemplar #2',

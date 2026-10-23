@@ -16,7 +16,7 @@ const index = computed(() => preview.value ?? ui.eraInView - 1);
 const dir = ref('fwd');
 watch(index, (next, prev) => { dir.value = next >= prev ? 'fwd' : 'back'; });
 
-// Replay, for the Play buttons (Inspect, Motion, Era ring): slide to a neighbouring era and stay
+// Replay, for the Play buttons (Inspect, Era ring): slide to a neighbouring era and stay
 // there, so the stretch can be looked at; the next play slides back. Scrolling to another era
 // drops the preview, since the ring then has somewhere real to be.
 function replay() {

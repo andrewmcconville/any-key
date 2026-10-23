@@ -46,7 +46,7 @@ src/
   panels/              design-tool panels: TypeTokensPanel (sliders for every type token),
                        ColorsPanel (a picker per colour token, plus opacity for the scrim)
   views/               TimelineView (the board) and one view per overlay:
-                       Start, KeyDetail, Stats, HowToPlay, About, Reset, Completion
+                       Start, KeyDetail, Stats, About, Reset, Completion
 docs/                  design reviews
 ```
 
@@ -62,7 +62,7 @@ Overlays form a stack in browser history: opening one is a history push and clos
 | `#/start` | Start screen (forced until the visitor presses any key) |
 | `#/key/:id` | Key detail + Press to collect |
 | `#/stats` | Stats and achievements |
-| `#/how-to-play`, `#/about`, `#/reset` | The three HUD modals |
+| `#/menu`, `#/about`, `#/reset` | The menu and its modals |
 | `#/complete` | Completion screen after the 14th key |
 
 ## Design tools
