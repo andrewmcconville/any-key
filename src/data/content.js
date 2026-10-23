@@ -57,7 +57,7 @@ export const KEYS = [
     press: 'Nothing alone. Held with another key, sends a command instead of a character: copy, undo, cancel, reboot.',
     description: 'On the Teletype Model 33, holding CTRL stripped bits from the next key so it sent a control character instead of a letter — Ctrl-G rang the bell. In 1981 David Bradley wired Ctrl-Alt-Del into the IBM PC as a developer’s reboot shortcut, and it got out.',
     why: 'The key that turns a keyboard into a control panel.' },
-  { id: 'correct', legend: 'correct',  era: 2, name: 'Correct',    year: '1973',    feedback: 'strike',
+  { id: 'correct', legend: 'correct',  era: 2, name: 'Correct',    year: '1973',    feedback: 'strike', photo: 'selectric-ii-correcting-key-v3-transparent.png',
     image: 'IBM Correcting Selectric II, CORRECT key and lift-off tape',
     press: 'Backs the carrier up one space and switches to the lift-off tape, so the next strike removes a character instead of printing one.',
     description: 'The Correcting Selectric II of 1973 added a second tape that lifted the ink back off the paper: back up one space, strike the wrong letter again, and it was gone. The first undo you could hold in your hand.',
