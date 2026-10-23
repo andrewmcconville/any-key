@@ -152,9 +152,10 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 html.inspect-picking, html.inspect-picking * { cursor: crosshair !important; }
 /* While picking, labels and decorations that opt out of hit testing (pointer-events: none, such as the
    timeline labels and the era ring) become targets again. The panels keep their own rules, and so do
-   the two layers that would otherwise catch every pick: the collect flight (which covers the viewport)
-   and the corona canvas (which spills past the gauge). */
-html.inspect-picking .stage *:not(.panel-host, .panel-host *, .flight, .flight *, .corona) { pointer-events: auto !important; }
+   the layers that would otherwise catch every pick: the collect flight (which covers the viewport),
+   the corona canvas (which spills past the gauge) and the toast while it is hidden (it sits over the
+   era labels at the top of the board). */
+html.inspect-picking .stage *:not(.panel-host, .panel-host *, .flight, .flight *, .corona, .toast[data-open="false"]) { pointer-events: auto !important; }
 
 /* Shared animation: locked keys shake when tapped. */
 @keyframes shake {
