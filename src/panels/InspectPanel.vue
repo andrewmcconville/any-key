@@ -209,8 +209,8 @@ function resetAll() {
 .link { color: var(--ink); text-decoration: underline; }
 .knobs__title { margin: 3.2rem 0 1.6rem; }
 .row { margin-bottom: 2.4rem; }
-.row__head { display: flex; align-items: center; gap: 2rem; margin-bottom: 0.8rem; }
-.row__label { flex: 0 0 22rem; color: var(--muted); text-transform: uppercase; }
+.row__head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 2rem; margin-bottom: 0.8rem; }
+.row__label { flex: 1 0 100%; color: var(--muted); text-transform: uppercase; }   /* its own line; the select and readout share the next */
 .row__select {
   flex: 1 1 auto; min-width: 0;
   height: 8.8rem;
