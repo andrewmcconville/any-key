@@ -45,7 +45,7 @@ const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
 .stats-summary { color: var(--muted); margin-bottom: 4.8rem; }
 .stats-era { margin-bottom: 4.8rem; }
 .stats-era__label { font: 700 var(--text-heading)/var(--lh-heading) var(--font-display); color: var(--muted); margin-bottom: 2.4rem; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 26.4rem); gap: 4.8rem; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4.8rem; }   /* four across whatever the sheet's inner width */
 .stat { display: flex; flex-direction: column; align-items: center; gap: 2.4rem; }
 .stat__circle {
   width: 14.4rem; height: 14.4rem; border-radius: 50%;

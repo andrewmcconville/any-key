@@ -2,7 +2,6 @@
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY } from '../data/content';
 import ModalShell from '../components/ModalShell.vue';
-import AppButton from '../components/AppButton.vue';
 
 const { close } = useOverlayNav();
 const about = COPY.about;
@@ -20,7 +19,6 @@ const about = COPY.about;
       <p class="t-label">Figma plugins &amp; tools</p>
       <div class="bullets t-body muted"><p v-for="s in about.tools" :key="s">• {{ s }}</p></div>
     </div>
-    <template #footer><AppButton @click="close">CLOSE</AppButton></template>
   </ModalShell>
 </template>
 

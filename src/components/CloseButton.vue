@@ -5,11 +5,10 @@
 </template>
 
 <style scoped>
+/* Just the ×, no circle; the box stays 16rem so the tap target is unchanged. */
 .close {
   width: 16rem; height: 16rem; flex: 0 0 auto;
   border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
   display: grid; place-items: center;
 }
 .close svg { width: var(--icon); height: var(--icon); stroke: var(--ink); stroke-width: 6; stroke-linecap: round; fill: none; }

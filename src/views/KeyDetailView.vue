@@ -79,7 +79,7 @@ async function close() {
 <style scoped>
 .meta { color: var(--muted); margin-bottom: 4.8rem; }
 .image {
-  width: 120rem; height: 32rem;     /* shorter than the Figma 402 to give the larger type its room */
+  width: 100%; height: 32rem;       /* shorter than the Figma 402 to give the larger type its room */
   background: var(--fill-soft);
   border-radius: var(--radius-xs);
   display: grid; place-items: center;

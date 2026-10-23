@@ -19,7 +19,7 @@ async function confirm() {
 </script>
 
 <template>
-  <ModalShell width="112rem" align="center" padding="8rem" role="alertdialog" @close="close">
+  <ModalShell align="center" padding="8rem" role="alertdialog" @close="close">
     <h2 class="title t-title" id="modal-title">{{ COPY.reset.title }}</h2>
     <p class="body t-body">{{ COPY.reset.body }}</p>
     <div class="buttons">

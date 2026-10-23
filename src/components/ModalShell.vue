@@ -29,6 +29,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   <div class="layer" @click.self="closable && emit('close')">
     <section
       class="modal"
+      :class="{ 'modal--center': align === 'center' }"
       :style="{ width, padding, textAlign: align }"
       :role="role"
       aria-modal="true"
@@ -50,7 +51,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 
 <style scoped>
 .modal {
-  max-height: 236rem;
+  height: 236rem;         /* every modal the same size, so one can take another's place without the frame moving */
   background: var(--white);
   border-radius: var(--radius-xl);
   border: var(--hairline) solid var(--line-soft);
@@ -60,12 +61,23 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 }
 /* The panel rises into place while the layer fades in (see the overlay contract in styles.css). */
 .layer-enter-from .modal { transform: translateY(2.4rem) scale(.98); }
+/* Overlay to overlay (TimelineView picks the name): the frame stays, only the sheet fades. Going
+   deeper ('fwd') the new layer sits on top and its sheet fades in over the old one, which stays
+   put underneath; coming back ('back') the old layer sits on top and its sheet fades out, with the
+   one beneath already there. The layer that is on its way out drops its scrim so the two never stack. */
+.fwd-enter-active, .back-leave-active { z-index: 11; }
+.fwd-leave-active, .back-leave-active { background: transparent; }
+.fwd-enter-active .modal, .back-leave-active .modal { transition: opacity var(--dur-sm) var(--ease-standard); }
+.fwd-enter-from .modal, .back-leave-to .modal { opacity: 0; }
+/* A centred dialog (Reset, Completion) keeps its words in the middle of the fixed-height sheet. */
+.modal--center .modal__scroll { display: flex; flex-direction: column; justify-content: center; }
 .modal__header {
   display: flex; align-items: center; justify-content: space-between;
   gap: 2.4rem;
   margin-bottom: 4.8rem;
 }
-.modal__scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; min-height: 0; }
+.modal__header h2 { margin: 0; }   /* the browser's h2 margins would make the row taller than the × */
+.modal__scroll { flex: 1 1 auto; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none; }   /* fills the frame, so a footer sits at its foot; scrolls down only */
 /* The page turns selection off for the board's drag-to-scroll; a modal's words are for reading and copying. */
 .modal__header h2, .modal__scroll { user-select: text; -webkit-user-select: text; }
 .modal__scroll button { user-select: none; -webkit-user-select: none; }

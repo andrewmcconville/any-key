@@ -18,7 +18,7 @@ async function startOver() {
 </script>
 
 <template>
-  <ModalShell width="120rem" align="center" padding="8.2rem 4.8rem 6rem" :closable="false">
+  <ModalShell align="center" padding="8.2rem 4.8rem 6rem" :closable="false">
     <p class="count t-display">{{ game.total }} / {{ game.total }}</p>
     <h2 class="heading t-heading" id="modal-title">{{ COPY.completion.heading }}</h2>
     <p class="ach-line t-label t-label--lc">{{ COPY.completion.achievement }}</p>

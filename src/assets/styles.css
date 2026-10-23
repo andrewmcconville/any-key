@@ -129,8 +129,9 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 }
 
 /* ---------- Overlay contract ----------
-   Every overlay route renders a .layer as its root; TimelineView wraps the RouterView in
-   <Transition name="layer" mode="out-in">, which adds the enter/leave classes below. */
+   Every overlay route renders a .layer as its root; TimelineView wraps the RouterView in a
+   <Transition> named "layer" between the board and an overlay (the classes below), and "fwd" or
+   "back" between two overlays, where only the modal sheet changes (see ModalShell). */
 .layer {
   position: absolute; inset: 0;
   z-index: 10;
