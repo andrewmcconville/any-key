@@ -52,7 +52,7 @@ export const KEYS = [
     press: 'Sends character 27 and lets the program decide; almost always, stop whatever is happening.',
     description: 'Bob Bemer wrote ESC into ASCII in 1960 so a terminal could switch character sets; the Teletype Model 33 gave it a key in 1963, vi made it the way out of everything, and Apple turned it into a strip of glass in 2016 and gave the key back in 2019.',
     why: 'The universal “get me out of here” — and the one key people refused to let become a picture.' },
-  { id: 'ctrl', legend: 'ctrl',     era: 2, name: 'Ctrl',       year: '1963',    feedback: 'none',
+  { id: 'ctrl', legend: 'ctrl',     era: 2, name: 'Ctrl',       year: '1963',    feedback: 'none', photo: 'teletype-model-33-ctrl-key-transparent.png',
     image: 'CTRL key on a Teletype Model 33, macro',
     press: 'Nothing alone. Held with another key, sends a command instead of a character: copy, undo, cancel, reboot.',
     description: 'On the Teletype Model 33, holding CTRL stripped bits from the next key so it sent a control character instead of a letter — Ctrl-G rang the bell. In 1981 David Bradley wired Ctrl-Alt-Del into the IBM PC as a developer’s reboot shortcut, and it got out.',
