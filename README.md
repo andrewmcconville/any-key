@@ -29,7 +29,7 @@ Vitest runs in jsdom; `npm run test:watch` reruns on save. Tests sit beside the 
 
 ## Kiosk mode
 
-A gallery kiosk resets itself for the next visitor. Open the app once on that device with `?kiosk=1` before the `#` (for example `https://andrewmcconville.github.io/any-key/?kiosk=1`); the device remembers, and `?kiosk=0` turns it off. After two minutes without a touch or a key, "Still there?" counts down from 30 seconds; any key or touch keeps the visitor's place. At zero the collection resets, overlays and design windows close, and the start screen comes back. Phones and desktops never get this, so nobody loses progress for putting a phone down. See `src/lib/kiosk.js` and `src/components/IdleReset.vue`.
+A gallery kiosk resets itself for the next visitor. Open the app once on that device with `?kiosk=1` before the `#` (for example `https://andrewmcconville.github.io/any-key/?kiosk=1`); the device remembers, and `?kiosk=0` turns it off. After two minutes without a touch or a key, "Still there?" counts down from 30 seconds; any key or touch keeps the visitor's place. At zero the collection resets, overlays and design windows close, and the start screen comes back. Phones and desktops never get this, so nobody loses progress for putting a phone down. A kiosk also fills its screen even when its browser reports a mouse, where a desktop would stop at phone size (see the `html` rules in `src/assets/styles.css`). See `src/lib/kiosk.js` and `src/components/IdleReset.vue`.
 
 ## Images
 
@@ -39,7 +39,7 @@ The eight key pictures in `src/assets/images` are AI-generated with ChatGPT (Ope
 
 Every push to `main` runs `.github/workflows/deploy.yml`, which builds the app and publishes `dist/` to GitHub Pages at https://andrewmcconville.github.io/any-key/. The repo's Pages source must be set to **GitHub Actions** (Settings → Pages → Build and deployment → Source); the "deploy from a branch" mode serves the raw repo and the app will not load.
 
-The app is portrait and sized to a 9:16 stage, so on a desktop browser it sits centred; on a phone or kiosk it fills the screen.
+The app is portrait and sized to a 9:16 stage. On a phone, a tablet or a kiosk it fills the screen. With a mouse (a desktop or laptop browser) it stops at a large phone's size: the bars and cards are no wider than 432 px, centred, while the board runs the width of the window. Browser zoom makes it bigger.
 
 ## Structure
 

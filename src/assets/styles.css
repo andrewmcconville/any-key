@@ -73,6 +73,13 @@ html {
   font-size: calc(min(100vw, 100vh * 1440 / 2560) / 144);
   -webkit-text-size-adjust: 100%;
 }
+/* With a mouse (a desktop or laptop), fitting the window's height would make the app a phone half
+   again as big as a real one, so it stops at a large phone's size: 1rem = 3px, a 432 × 768 frame,
+   Body ≈ 15.6px. Browser zoom then makes it bigger, as on any other page. Touch screens still fit
+   the stage, and so does a kiosk (?kiosk=1, App.vue adds the class) whatever its pointer. */
+@media (pointer: fine) {
+  html:not(.kiosk) { font-size: min(calc(min(100vw, 100vh * 1440 / 2560) / 144), 3px); }
+}
 *, *::before, *::after { box-sizing: border-box; }
 body {
   margin: 0;
