@@ -21,17 +21,33 @@ const emit = defineEmits(['close']);
 // While one overlay gives way to another both shells are mounted for the length of the fade; only
 // the one that is staying answers Esc, or a single press would close two overlays.
 const layer = ref(null);
+const sheet = ref(null);
 const leaving = () => [...(layer.value?.classList ?? [])].some(c => c.endsWith('-leave-active'));
 function onKey(e) {
   if (e.key === 'Escape' && props.closable && !leaving()) emit('close');
 }
-onMounted(() => window.addEventListener('keydown', onKey));
+
+// A sheet takes focus as it opens, on its title (or the sheet itself when it has none), so a
+// keyboard or screen-reader user starts at the top of what just opened. The board behind is inert
+// meanwhile (TimelineView), and focus goes back to whatever opened the overlay when it closes.
+function takeFocus() {
+  const el = sheet.value;
+  if (!el) return;
+  const target = el.querySelector(`[id="${props.titleId}"]`) ?? el;
+  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus({ preventScroll: true });
+}
+onMounted(() => {
+  window.addEventListener('keydown', onKey);
+  takeFocus();
+});
 onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>
   <div ref="layer" class="layer" @click.self="closable && emit('close')">
     <section
+      ref="sheet"
       class="modal"
       :class="{ 'modal--center': align === 'center' }"
       :style="{ width, padding, textAlign: align }"

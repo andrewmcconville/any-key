@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import HudTop from '../components/HudTop.vue';
@@ -17,6 +17,24 @@ function onKey(e) {
 }
 onMounted(() => window.addEventListener('keydown', onKey));
 onUnmounted(() => window.removeEventListener('keydown', onKey));
+
+// While any overlay is up (the start screen too) the board and both HUD bars are inert: nothing
+// behind the sheet can be focused, tabbed to or clicked, so Tab stays in the overlay and Enter
+// cannot open a second card from a key behind the first.
+const covered = computed(() => !!route.name);
+
+// When the overlays close, focus goes back to whatever opened them: the key on the board, or the
+// HUD button. The opener is read before the board turns inert, which would take focus away from it.
+let opener = null;
+watch(() => route.name, (to, from) => {
+  if (to && !from) {
+    opener = document.activeElement;
+  } else if (!to && from) {
+    const el = opener;
+    opener = null;
+    if (el && el !== document.body) nextTick(() => { if (el.isConnected) el.focus({ preventScroll: true }); });
+  }
+});
 
 // How overlays change over: 'layer' fades the whole layer in or out between the board and an
 // overlay (the start screen counts as one: it has no modal sheet, so it always fades as a whole,
@@ -36,10 +54,10 @@ watch(() => route.name, (to, from) => {
 </script>
 
 <template>
-  <HudTop />
-  <TimelineBoard />
-  <ToastBanner />
-  <HudBottom />
+  <HudTop :inert="covered" />
+  <TimelineBoard :inert="covered" />
+  <ToastBanner :inert="covered" />
+  <HudBottom :inert="covered" />
 
   <!-- Overlays (start screen, key detail, stats, …) are child routes layered over the board. -->
   <RouterView v-slot="{ Component }">

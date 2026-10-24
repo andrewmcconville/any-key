@@ -96,6 +96,9 @@ body {
 #app { width: 100%; min-width: 0; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outline-offset: 0.4rem; }
+/* Titles and sheets take focus when an overlay opens (ModalShell) so reading starts there; they are
+   not controls, so they get no ring. */
+[tabindex="-1"]:focus { outline: none; }
 
 /* Type styles (p2.9 names; sizes from the tokens above) */
 .t-display { font: 700 var(--text-display)/var(--lh-display) var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }

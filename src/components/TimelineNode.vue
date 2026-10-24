@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { RAIL_Y } from '../data/content';
+import { ERAS, RAIL_Y } from '../data/content';
+import { UNLOCK_AT } from '../stores/game';
 import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
 import { useSwingStore } from '../stores/swing';
@@ -36,6 +37,13 @@ const cy = computed(() => props.node.cy - props.hudTop);
 const railY = RAIL_Y - props.hudTop;
 
 const state = computed(() => game.keyState(props.node));
+// What a screen reader hears for the key: its name and year, then where it stands.
+const label = computed(() => {
+  const { name, year, era } = props.node;
+  if (state.value === 'collected') return `${name}, ${year}, collected`;
+  if (state.value === 'press') return `${name}, ${year}, not collected yet`;
+  return `${name}, ${year}, locked: collect ${UNLOCK_AT} keys in Era ${ERAS[era - 2]?.numeral ?? ''} to unlock`;
+});
 const glyph = computed(() => (state.value === 'collected' ? '✓' : state.value === 'locked' ? '?' : 'PRESS'));
 
 // The key hangs from (or stands on) the rail by its connector, a flexible rod rooted at the rail
@@ -106,7 +114,7 @@ function onPress() {
     :data-state="state"
     :style="nodeStyle"
     type="button"
-    :aria-label="`${node.name}, ${node.year}`"
+    :aria-label="label"
     :aria-disabled="state === 'locked'"
     @click="onPress"
     @animationend="shaking = false"

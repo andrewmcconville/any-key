@@ -8,6 +8,7 @@ const ui = useUiStore();
     class="toast t-heading"
     type="button"
     :data-open="ui.toast.open"
+    :tabindex="ui.toast.open ? null : -1"
     aria-live="assertive"
     @click="ui.dismissToast()"
   >{{ ui.toast.text }}</button>
