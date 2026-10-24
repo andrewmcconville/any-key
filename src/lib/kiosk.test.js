@@ -19,7 +19,10 @@ describe('the kiosk flag', () => {
     expect(readKioskFlag('')).toBe(false);
   });
 
-  it('ignores other values', () => {
+  it('ignores other values, whichever way it was set', () => {
     expect(readKioskFlag('?kiosk=yes')).toBe(false);
+    readKioskFlag('?kiosk=1');
+    expect(readKioskFlag('?kiosk=yes')).toBe(true);
+    expect(readKioskFlag('')).toBe(true);
   });
 });

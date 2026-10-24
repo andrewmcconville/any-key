@@ -163,6 +163,7 @@ export const COPY = {
   idle: {
     title: 'Still there?',
     unit: 'seconds',
+    unitOne: 'second',
     body: 'Press any key, or touch anywhere, to keep your place. Otherwise the collection resets for the next visitor.',
     button: 'KEEP MY PLACE',
   },

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useGameStore } from './game';
 import { useUiStore } from './ui';
@@ -15,11 +15,24 @@ beforeEach(() => {
   ui = useUiStore();
 });
 
+afterEach(() => vi.useRealTimers());
+
 describe('the notice', () => {
   it('opens at once when nothing is in the air, and stays until put away', () => {
+    vi.useFakeTimers();
     ui.showToast({ text: 'ERA II · ELECTRIC UNLOCKED', eraId: 2 });
     expect(ui.toast).toMatchObject({ open: true, text: 'ERA II · ELECTRIC UNLOCKED', eraId: 2 });
+    vi.advanceTimersByTime(10 * 60_000);   // no timer puts it away
+    expect(ui.toast.open).toBe(true);
     ui.hideToast();
+    expect(ui.toast.open).toBe(false);
+  });
+
+  it('forgets a waiting notice when another cap takes off', () => {
+    ui.launchFlight(rect, '⇧', 1);
+    ui.showToast({ text: 'ERA II · ELECTRIC UNLOCKED', eraId: 2 });
+    ui.launchFlight(rect, '⇥', 2);
+    ui.landFlight(ui.flight.n);
     expect(ui.toast.open).toBe(false);
   });
 

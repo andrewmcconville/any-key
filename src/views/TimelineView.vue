@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useOverlayNav } from '../composables/useOverlayNav';
+import { useGameStore } from '../stores/game';
 import HudTop from '../components/HudTop.vue';
 import HudBottom from '../components/HudBottom.vue';
 import TimelineBoard from '../components/TimelineBoard.vue';
@@ -9,6 +10,7 @@ import ToastBanner from '../components/ToastBanner.vue';
 
 const route = useRoute();
 const nav = useOverlayNav();
+const game = useGameStore();
 
 // Esc on the bare board opens the menu. With an overlay open, ModalShell owns Esc (it closes).
 function onKey(e) {
@@ -23,16 +25,24 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
 // cannot open a second card from a key behind the first.
 const covered = computed(() => !!route.name);
 
+// The count, for screen readers, from outside the inert area: with reduced motion a key lands on
+// the gauge while its card is still open, and an inert gauge would say nothing.
+const countLine = computed(() => `${game.count} of ${game.total} keys collected`);
+
 // When the overlays close, focus goes back to whatever opened them: the key on the board, or the
 // HUD button. The opener is read before the board turns inert, which would take focus away from it.
+// The start screen ends a visit (Reset, Start over, the kiosk's idle reset), so the next visitor
+// does not inherit the last one's place.
 let opener = null;
 watch(() => route.name, (to, from) => {
-  if (to && !from) {
+  if (to === 'start') {
+    opener = null;
+  } else if (to && !from) {
     opener = document.activeElement;
   } else if (!to && from) {
     const el = opener;
     opener = null;
-    if (el && el !== document.body) nextTick(() => { if (el.isConnected) el.focus({ preventScroll: true }); });
+    if (el && el !== document.body) nextTick(() => { if (el.isConnected && !el.closest('[inert]')) el.focus({ preventScroll: true }); });
   }
 });
 
@@ -58,6 +68,7 @@ watch(() => route.name, (to, from) => {
   <TimelineBoard :inert="covered" />
   <ToastBanner :inert="covered" />
   <HudBottom :inert="covered" />
+  <p class="sr-only" role="status">{{ countLine }}</p>
 
   <!-- Overlays (start screen, key detail, stats, …) are child routes layered over the board. -->
   <RouterView v-slot="{ Component }">

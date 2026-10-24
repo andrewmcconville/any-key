@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onUnmounted, ref } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY, IMAGE_SOURCES } from '../data/content';
 import { useFlightStore } from '../stores/flight';
@@ -14,6 +14,7 @@ const game = useGameStore();
 const ui = useUiStore();
 const flight = useFlightStore();
 const nav = useOverlayNav();
+const router = useRouter();
 
 const key = computed(() => game.keyById(props.id));
 const era = computed(() => game.eraById(key.value.era));
@@ -41,6 +42,7 @@ const caption = computed(() => {
 let closing = null;
 let closed = false;
 function onCollect() {
+  if (closed) return;   // a card on its way out takes no more presses
   if (collected.value) { close(); return; }
   // The cap lifts off the button towards the HUD gauge; the gauge counts it when it lands.
   const el = collectBtn.value?.$el;
@@ -50,8 +52,33 @@ function onCollect() {
   closing = setTimeout(close, flight.settings.beat);
 }
 onUnmounted(() => clearTimeout(closing));
-// Leaving by any other way (the browser's back, a link) cancels the pending auto-close too.
-onBeforeRouteLeave(() => { clearTimeout(closing); });
+
+// Leaving any other way (the browser's or the phone's back) counts as the close: it cancels the
+// beat's timer, and what the press earned arrives once the board is back, as it would from close().
+// Not before: the notice puts itself away while an overlay route is current (ToastBanner).
+onBeforeRouteLeave(() => {
+  clearTimeout(closing);
+  if (closed) return;
+  closed = true;
+  if (!justCollected.value) return;
+  const unlockedEra = game.consumePendingUnlock();
+  const stop = router.afterEach((to, from, failure) => {
+    stop();
+    if (failure || to.name) return;
+    if (game.isComplete && !game.completionShown) {
+      game.markCompletionShown();
+      nav.open('complete');
+      return;
+    }
+    announceUnlock(unlockedEra);
+  });
+});
+
+function announceUnlock(eraId) {
+  if (!eraId) return;
+  const e = game.eraById(eraId);
+  ui.showToast({ text: `ERA ${e.numeral} · ${e.name} UNLOCKED`, eraId: e.id });   // waits for the cap to land
+}
 
 // Closing is where the consequences land: the completion screen, or the era-unlock toast.
 // It runs once: a tap on × or ✓, or Esc, during the collect beat closes the card, and the beat's
@@ -69,10 +96,7 @@ async function close() {
   }
   const unlockedEra = game.consumePendingUnlock();
   await nav.close();
-  if (unlockedEra) {
-    const e = game.eraById(unlockedEra);
-    ui.showToast({ text: `ERA ${e.numeral} · ${e.name} UNLOCKED`, eraId: e.id });   // waits for the cap to land
-  }
+  announceUnlock(unlockedEra);
 }
 </script>
 

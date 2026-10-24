@@ -1,7 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ERAS, RAIL_Y } from '../data/content';
-import { UNLOCK_AT } from '../stores/game';
+import { RAIL_Y } from '../data/content';
 import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
 import { useSwingStore } from '../stores/swing';
@@ -44,7 +43,7 @@ const label = computed(() => {
   const { name, year, era } = props.node;
   if (state.value === 'collected') return `${name}, ${year}, collected`;
   if (state.value === 'press') return `${name}, ${year}, not collected yet`;
-  return `${name}, ${year}, locked: collect ${UNLOCK_AT} keys in Era ${ERAS[era - 2]?.numeral ?? ''} to unlock`;
+  return `${name}, ${year}, locked. ${game.lockHint(era)?.sentence ?? ''}`;   // the same words as the lock notice
 });
 const glyph = computed(() => (state.value === 'collected' ? '✓' : state.value === 'locked' ? '?' : 'PRESS'));
 
@@ -111,6 +110,7 @@ function onPress() {
     class="node"
     :class="{ 'node--photo': photo }"
     :data-state="state"
+    :data-era="node.era"
     :style="nodeStyle"
     type="button"
     :aria-label="label"

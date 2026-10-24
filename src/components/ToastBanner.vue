@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { ERAS } from '../data/content';
 import { useUiStore } from '../stores/ui';
@@ -18,17 +18,39 @@ const target = computed(() => ERAS.find(e => e.id === ui.toast.eraId) ?? null);
 const showGo = computed(() => !!target.value && target.value.id !== ui.eraInView);
 const announcement = computed(() => (ui.toast.open ? [ui.toast.text, ui.toast.sub].filter(Boolean).join('. ') : ''));
 
-// The notice goes when the visitor moves on: into an overlay, or to the era it points at.
-watch([() => route.name, () => ui.toast.open], ([name, open]) => { if (name && open) ui.hideToast(); });
+// The notice goes when the visitor moves on: into an overlay (a notice still waiting for its cap
+// goes too), or to the era it points at.
+watch([() => route.name, () => ui.toast.open], ([name]) => { if (name) ui.hideToast(); });
 watch(() => ui.eraInView, id => { if (ui.toast.open && id === ui.toast.eraId) ui.hideToast(); });
+
+// When its own buttons put the notice away, focus must not vanish with them: GO TO hands it to the
+// first key of the era it scrolls to, × back to whatever had it when the notice opened.
+const box = ref(null);
+let before = null;
+watch(() => ui.toast.open, open => { before = open ? document.activeElement : null; });
+function refocus(target) {
+  if (!box.value?.contains(document.activeElement)) return;
+  const ok = target?.isConnected && !target.closest('[inert]');
+  (ok ? target : document.querySelector('.hud-top .hud-btn'))?.focus({ preventScroll: true });
+}
+function go() {
+  const first = document.querySelector(`.node[data-era="${ui.toast.eraId}"]`);
+  ui.goToToastEra();
+  refocus(first);
+}
+function dismiss() {
+  const back = before;
+  ui.hideToast();
+  refocus(back);
+}
 </script>
 
 <template>
-  <div class="toast" :data-open="ui.toast.open" v-bind="$attrs">
+  <div ref="box" class="toast" :data-open="ui.toast.open" v-bind="$attrs">
     <p class="toast__text t-heading">{{ ui.toast.text }}</p>
-    <CloseButton class="toast__close" inverse aria-label="Dismiss" @click="ui.hideToast()" />
+    <CloseButton class="toast__close" inverse aria-label="Dismiss" @click="dismiss" />
     <p v-if="ui.toast.sub" class="toast__sub t-label t-label--lc">{{ ui.toast.sub }}</p>
-    <AppButton v-if="showGo" class="toast__go" @click="ui.goToToastEra()">GO TO ERA {{ target.numeral }}</AppButton>
+    <AppButton v-if="showGo" class="toast__go" @click="go">GO TO ERA {{ target.numeral }}</AppButton>
   </div>
   <!-- What the notice says, for screen readers: a polite region of its own that is always in the
        page, so a new notice is heard however the visible one fades in. -->
@@ -53,4 +75,6 @@ watch(() => ui.eraInView, id => { if (ui.toast.open && id === ui.toast.eraId) ui
 .toast__text { margin: 0; }
 .toast__sub { grid-column: 1 / -1; margin: 0 3.2rem 0 0; color: color-mix(in oklch, var(--white) 75%, var(--ink)); }
 .toast__go { grid-column: 1 / -1; width: calc(100% - 3.2rem); margin-top: 2.4rem; }
+/* The global ring is ink, which would vanish on the ink notice. */
+.toast__close:focus-visible, .toast__go:focus-visible { outline-color: var(--white); }
 </style>

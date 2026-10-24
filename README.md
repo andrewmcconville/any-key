@@ -76,7 +76,7 @@ src/
                        Flight (Collect), Ring (Era ring), Swing (Scroll physics)
   views/               TimelineView (the board) and one view per overlay:
                        Start, KeyDetail, Stats, Menu, About, Reset, Completion
-docs/                  design reviews and feature research, each with a dated status note
+docs/                  design review, feature research and mobile app-shell research; the first two carry dated status notes
 any-key-sitemap.png    the 20 Oct sitemap; out of date (see the status note in the design review)
 ```
 
@@ -111,5 +111,5 @@ The Design tools group shows in every visitor's Menu today, kiosk or not. Hiding
 - Achievements: There is no Any key, First press, Era I–IV cleared, Full set.
 - Collecting the 14th key shows the Completion screen, with Back to board, View stats and Start over. Reset (or Start over) clears everything, re-locks Eras II–IV and brings the start screen back.
 - Any physical key press dismisses the start screen; Esc closes modals.
-- While an overlay is open the board and both bars are inert. Each overlay focuses its title as it opens, and focus returns to whatever opened it when it closes.
+- While an overlay is open the board and both bars are inert. Each modal focuses its title as it opens (the start screen takes no focus), and focus returns to whatever opened the overlays when they close. Notices hand focus on when their own buttons close them.
 - In kiosk mode only, two minutes without input brings up "Still there?" and a 30 second countdown, then the start screen (see Kiosk mode).

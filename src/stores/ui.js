@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { ERAS } from '../data/content';
-import { UNLOCK_AT, useGameStore } from './game';
+import { useGameStore } from './game';
 
 export const useUiStore = defineStore('ui', () => {
   // The notice under the top HUD (ToastBanner): an era unlocking, or why a key is locked. Nothing
@@ -43,23 +43,14 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   /**
-   * Why a key is locked, as a notice: the first locked era on the way to it, and how many more
-   * keys in the era before that open it. Its GO TO goes to the era to collect in.
+   * Why a key is locked, as a notice: what opens its era (game.lockHint). Its GO TO goes to the
+   * era to collect in.
    */
   function explainLock(eraId) {
-    const game = useGameStore();
     const era = ERAS.find(e => e.id === eraId);
-    const blocked = ERAS.find(e => e.id <= eraId && !game.isUnlocked(e.id));
-    const from = blocked && ERAS.find(e => e.id === blocked.id - 1);
-    if (!era || !from) return;
-    const have = game.eraCollectedCount(from.id);
-    const left = Math.max(1, UNLOCK_AT - have);
-    const keys = have === 0 ? `${UNLOCK_AT} keys` : left === 1 ? 'one more key' : `${left} more keys`;
-    showToast({
-      text: `ERA ${era.numeral} · LOCKED`,
-      sub: `Collect ${keys} in Era ${from.numeral} to unlock Era ${blocked.numeral}.`,
-      eraId: from.id,
-    });
+    const hint = useGameStore().lockHint(eraId);
+    if (!era || !hint) return;
+    showToast({ text: `ERA ${era.numeral} · LOCKED`, sub: hint.sentence, eraId: hint.from.id });
   }
 
   /**
@@ -67,6 +58,7 @@ export const useUiStore = defineStore('ui', () => {
    * showing `countBefore` until the cap lands, so the count moves on the strike, not the press.
    */
   function launchFlight(from, legend, countBefore) {
+    queued = null;   // a notice still waiting on an earlier cap belongs to a moment that has passed
     flight.value = { n: ++flights, from: { x: from.left, y: from.top, w: from.width, h: from.height }, legend, countBefore };
   }
   function landFlight(n) {

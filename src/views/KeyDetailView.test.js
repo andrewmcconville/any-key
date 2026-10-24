@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
@@ -65,7 +65,21 @@ describe('closing a key card during the collect beat', () => {
     expect(game.completionShown).toBe(true);
   });
 
-  it('lands on the board once and announces an unlocked era once', async () => {
+  it('still shows Completion when the beat closes the card first and the tap comes after', async () => {
+    const last = KEYS[KEYS.length - 1].id;
+    KEYS.filter(k => k.id !== last).forEach(k => game.collect(k.id));
+
+    const button = await openKey(last);
+    await button.trigger('click');   // collects; the beat (0 here) closes the card on the next task
+    await sleep(5);                  // the swap to Completion is under way, its chunk still loading
+    await button.trigger('click');   // a late tap on ✓ COLLECTED
+    await sleep(150);
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe('complete');
+  });
+
+  it('navigates once and announces an unlocked era once', async () => {
     const [a, b] = KEYS.filter(k => k.era === 1);
     game.collect(a.id);
     const ui = useUiStore();
@@ -73,12 +87,55 @@ describe('closing a key card during the collect beat', () => {
     ui.$onAction(({ name, args }) => { if (name === 'showToast') shown.push(args[0].text); });
 
     const button = await openKey(b.id);
+    const go = vi.spyOn(router, 'go');
+    const replace = vi.spyOn(router, 'replace');
     await button.trigger('click');
     await button.trigger('click');
     await sleep(150);
     await flushPromises();
 
     expect(router.currentRoute.value.fullPath).toBe('/');
+    expect(go.mock.calls.length + replace.mock.calls.length).toBe(1);
     expect(shown).toEqual(['ERA II · ELECTRIC UNLOCKED']);
+  });
+});
+
+describe('leaving a key card by the back gesture during the collect beat', () => {
+  beforeEach(() => useFlightStore().set('beat', 1000));   // long enough to go back before it fires
+
+  async function backDuringBeat(id) {
+    const button = await openKey(id);
+    await button.trigger('click');
+    const landed = new Promise(resolve => { const stop = router.afterEach(() => { stop(); resolve(); }); });
+    router.back();
+    await landed;
+    await sleep(100);
+    await flushPromises();
+  }
+
+  it('still announces the era it unlocked, once, and leaves nothing pending', async () => {
+    const [a, b] = KEYS.filter(k => k.era === 1);
+    game.collect(a.id);
+    const ui = useUiStore();
+    const shown = [];
+    ui.$onAction(({ name, args }) => { if (name === 'showToast') shown.push(args[0].text); });
+
+    await backDuringBeat(b.id);
+
+    expect(router.currentRoute.value.fullPath).toBe('/');
+    expect(shown).toEqual(['ERA II · ELECTRIC UNLOCKED']);
+    expect(game.pendingUnlock).toBeNull();
+  });
+
+  it('still shows Completion after the 14th key', async () => {
+    const last = KEYS[KEYS.length - 1].id;
+    KEYS.filter(k => k.id !== last).forEach(k => game.collect(k.id));
+
+    await backDuringBeat(last);
+    await sleep(100);
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe('complete');
+    expect(game.completionShown).toBe(true);
   });
 });

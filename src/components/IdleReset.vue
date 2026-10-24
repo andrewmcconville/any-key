@@ -28,18 +28,41 @@ let last = Date.now();          // the visitor's last input
 const deadline = ref(null);     // when the countdown runs out, or null while not counting down
 const now = ref(Date.now());
 const seconds = computed(() => (deadline.value === null ? 0 : Math.max(0, Math.ceil((deadline.value - now.value) / 1000))));
+const unit = computed(() => (seconds.value === 1 ? copy.unitOne : copy.unit));
 const button = ref(null);
+const catching = ref(false);    // the prompt has gone but the touch that dismissed it is still down
 let returnFocus = null;
+let anchor = null;              // where the last pointer move that counted was
 
-// Every input counts as the visitor being there. During the countdown a key also keeps their
-// place and goes no further (no Esc closing a card, no Tab moving focus). A touch does the same
-// through the prompt, which covers the screen (keep, below).
+// Counting only matters once a visit is under way; the start screen is where an idle kiosk belongs.
+const visiting = () => game.started && route.name !== 'start';
+
+// Past the point of no return without a tick to notice: the device slept, or the tab was frozen,
+// through the countdown. The press that wakes it must reset the board, not keep a stale one.
+function overdue(t) {
+  if (!visiting()) return false;
+  return deadline.value !== null ? t >= deadline.value : t - last >= IDLE_MS + COUNTDOWN_MS;
+}
+
+// Every input counts as the visitor being there, except a pointer drifting a few px (a resting
+// mouse or a noisy touchscreen). During the countdown any key or touch keeps their place; the key
+// goes no further (no Esc closing a card, no Tab moving focus), and the touch's click lands on the
+// prompt, or on a clear layer left for it, never on the board beneath.
 function onInput(e) {
-  last = Date.now();
-  if (deadline.value === null || e.type !== 'keydown') return;
-  e.preventDefault();
-  e.stopImmediatePropagation();
-  keep();
+  const t = Date.now();
+  if (e.type === 'pointermove') {
+    if (anchor && Math.hypot(e.clientX - anchor.x, e.clientY - anchor.y) < 8) return;
+    anchor = { x: e.clientX, y: e.clientY };
+  }
+  const swallow = () => { if (e.type === 'keydown') { e.preventDefault(); e.stopImmediatePropagation(); } };
+  if (overdue(t)) { swallow(); expire(); return; }
+  last = t;
+  if (deadline.value === null) return;
+  if (e.type === 'keydown') { swallow(); keep(); }
+  else if (e.type === 'pointerdown') { catching.value = true; keep(); }
+}
+function release() {
+  if (catching.value) setTimeout(() => { catching.value = false; }, 0);   // after the click that follows
 }
 
 function keep() {
@@ -60,7 +83,10 @@ async function expire() {
 
 function tick() {
   now.value = Date.now();
-  if (!game.started || route.name === 'start') { deadline.value = null; last = now.value; return; }
+  if (!visiting()) { deadline.value = null; last = now.value; return; }
+  // A clock set back (the kiosk syncing its time) must not stretch the wait or the countdown.
+  if (now.value < last) last = now.value;
+  if (deadline.value !== null && deadline.value - now.value > COUNTDOWN_MS) deadline.value = now.value + COUNTDOWN_MS;
   if (deadline.value === null) {
     if (now.value - last >= IDLE_MS) deadline.value = now.value + COUNTDOWN_MS;
   } else if (now.value >= deadline.value) {
@@ -82,12 +108,15 @@ watch(deadline, (d, before) => {
 
 const EVENTS = ['pointerdown', 'pointermove', 'keydown', 'wheel'];
 let timer = null;
+const RELEASES = ['pointerup', 'pointercancel'];
 onMounted(() => {
   EVENTS.forEach(t => window.addEventListener(t, onInput, { capture: true, passive: t !== 'keydown' }));
+  RELEASES.forEach(t => window.addEventListener(t, release, { capture: true, passive: true }));
   timer = setInterval(tick, 250);
 });
 onUnmounted(() => {
   EVENTS.forEach(t => window.removeEventListener(t, onInput, { capture: true }));
+  RELEASES.forEach(t => window.removeEventListener(t, release, { capture: true }));
   clearInterval(timer);
 });
 </script>
@@ -99,19 +128,20 @@ onUnmounted(() => {
     role="alertdialog"
     aria-modal="true"
     aria-labelledby="idle-title"
-    aria-describedby="idle-body"
+    aria-describedby="idle-count idle-body"
     @click="keep"
   >
     <div class="idle__sheet">
       <h2 id="idle-title" class="t-title">{{ copy.title }}</h2>
-      <p class="idle__count">
+      <p id="idle-count" class="idle__count">
         <span class="t-display">{{ seconds }}</span>
-        <span class="idle__unit t-label">{{ copy.unit }}</span>
+        <span class="idle__unit t-label">{{ unit }}</span>
       </p>
       <p id="idle-body" class="idle__body t-body">{{ copy.body }}</p>
       <AppButton ref="button" keycap @click.stop="keep">{{ copy.button }}</AppButton>
     </div>
   </div>
+  <div v-else-if="catching" class="idle idle--catch" aria-hidden="true" />
 </template>
 
 <style scoped>
@@ -124,6 +154,7 @@ onUnmounted(() => {
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   background: var(--scrim);
 }
+.idle--catch { background: transparent; }
 .idle__sheet {
   width: min(120rem, calc(100% - 9.6rem));
   background: var(--white);

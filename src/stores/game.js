@@ -56,6 +56,21 @@ export const useGameStore = defineStore('game', () => {
   const eraCleared = eraId => eraCollectedCount(eraId) === eraKeys(eraId).length;
   const hasAchievement = id => achievements.value.includes(id);
 
+  /**
+   * What opens a locked era: the first locked era on the way to it (`blocked`), the open era
+   * before that to collect in (`from`), and the sentence that says how many keys it takes. The
+   * lock notice and a locked key's screen-reader label both use it. Null for an open era.
+   */
+  function lockHint(eraId) {
+    const blocked = ERAS.find(e => e.id <= eraId && !isUnlocked(e.id));
+    const from = blocked && eraById(blocked.id - 1);
+    if (!from) return null;
+    const have = eraCollectedCount(from.id);
+    const left = Math.max(1, UNLOCK_AT - have);
+    const keys = have === 0 ? `${UNLOCK_AT} keys` : left === 1 ? 'one more key' : `${left} more keys`;
+    return { blocked, from, sentence: `Collect ${keys} in Era ${from.numeral} to unlock Era ${blocked.numeral}.` };
+  }
+
   /** 'collected' | 'press' | 'locked' */
   const keyState = key => (isCollected(key.id) ? 'collected' : isUnlocked(key.era) ? 'press' : 'locked');
   const canOpen = id => { const k = keyById(id); return !!k && isUnlocked(k.era); };
@@ -127,7 +142,7 @@ export const useGameStore = defineStore('game', () => {
   return {
     started, collected, unlocked, achievements, completionShown, pendingUnlock,
     total, count, isComplete,
-    keyById, eraById, isCollected, isUnlocked, eraKeys, eraCollectedCount, eraCleared, hasAchievement, keyState, canOpen,
+    keyById, eraById, isCollected, isUnlocked, eraKeys, eraCollectedCount, eraCleared, hasAchievement, keyState, canOpen, lockHint,
     start, collect, consumePendingUnlock, markCompletionShown, reset, collectedCaption,
   };
 });

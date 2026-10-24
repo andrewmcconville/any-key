@@ -13,6 +13,7 @@ Checked against the code after the kiosk idle reset landed. Every feature not li
 | Attract loop and idle reset | Partial | The idle reset is built for kiosks: "Still there?" after two minutes without input, a 30 second countdown, then the start screen. The attract tour is not built. |
 | The collect moment | Partial | The cap flies from the collect button to the HUD gauge and the corona flares. There is no sound, caption or catch line yet. |
 | Screen-reader-first timeline | Partial | Overlays take focus, keep it while the board is inert, and give it back; keys announce their year and state. Era headings, arrow-key movement and a single status region for the board are not built. |
+| KEEP PRESSING zen mode | Partial | Completion has a plain BACK TO BOARD, the version the fact-checker preferred. There is no post-completion mode. |
 | Sources footer | Partial | Each pictured key's card credits its picture as AI-generated, and About explains the pictures. The per-key "Dated from" and confidence lines are not built. |
 | Face-down reveal with stamp | Conflicts | Collecting now closes the card after a short beat, so a flip inside the card would barely be seen. |
 | Re-sort the board | Conflicts | Alternate layouts would break the board's swing physics and era tracking. |

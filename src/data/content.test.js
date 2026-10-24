@@ -1,16 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 import { IMAGE_SOURCES, KEYS } from './content';
-
-// Vitest runs from the project root. (import.meta.url is no help here: under jsdom it is not a file URL.)
-const imagesDir = path.resolve('src/assets/images');
+import { photoUrl } from '../lib/photos';
 
 describe('key pictures', () => {
   const withPhoto = KEYS.filter(k => k.photo);
 
-  it.each(withPhoto.map(k => [k.id, k]))('%s names a picture that exists', (_, key) => {
-    expect(fs.existsSync(path.join(imagesDir, key.photo))).toBe(true);
+  // The app's own lookup, so a name it could not load (wrong case, a format it does not glob) fails.
+  it.each(withPhoto.map(k => [k.id, k]))('%s names a picture the app can load', (_, key) => {
+    expect(photoUrl(key.photo)).toBeTruthy();
   });
 
   it.each(withPhoto.map(k => [k.id, k]))('%s says where its picture came from', (_, key) => {

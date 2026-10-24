@@ -108,6 +108,26 @@ describe('collecting', () => {
   });
 });
 
+describe('what opens a locked era', () => {
+  it('names the era to collect in and how many keys it takes', () => {
+    const game = freshStore();
+    expect(game.lockHint(2).sentence).toBe('Collect 2 keys in Era I to unlock Era II.');
+    game.collect(idsIn(1)[0]);
+    expect(game.lockHint(2).sentence).toBe('Collect one more key in Era I to unlock Era II.');
+  });
+
+  it('points at the first locked era on the way to a later one', () => {
+    const game = freshStore();
+    const hint = game.lockHint(4);
+    expect(hint.blocked.id).toBe(2);
+    expect(hint.from.id).toBe(1);
+  });
+
+  it('says nothing for an open era', () => {
+    expect(freshStore().lockHint(1)).toBeNull();
+  });
+});
+
 describe('the caption under ✓ COLLECTED', () => {
   it('counts down to the next era, then names the unlock and the clear', () => {
     const game = freshStore();

@@ -36,7 +36,7 @@ const dashOffset = computed(() => LAP * (1 - shown.value / game.total));
     </button>
     <!-- The gauge: the key count inside a ring that fills as keys are collected, in a corona.
          Play (Inspect, the Collect window) sends a demo cap up to it. -->
-    <div class="gauge" aria-live="polite" data-replay @motion-replay="flight.play()">
+    <div class="gauge" data-replay @motion-replay="flight.play()">   <!-- the count is announced by TimelineView -->
       <Corona />
       <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
         <circle class="ring__track" cx="50" cy="50" :r="R" />
