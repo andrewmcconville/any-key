@@ -12,7 +12,7 @@ export const DURATION_TOKENS = [
   { id: 'dur-xs', label: 'XS', note: 'press feedback',                       fallback: 0.1 },
   { id: 'dur-sm', label: 'SM', note: 'state colours, overlays',              fallback: 0.2 },
   { id: 'dur-md', label: 'MD', note: 'toast, counter pop, board, era ring',  fallback: 0.3 },
-  { id: 'dur-lg', label: 'LG', note: 'locked-key shake',                     fallback: 0.4 },
+  { id: 'dur-lg', label: 'LG', note: 'spare',                                fallback: 0.4 },
 ];
 export const DURATION_RANGE = { min: 0, max: 1, step: 0.05 };
 

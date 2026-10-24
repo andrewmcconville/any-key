@@ -71,7 +71,7 @@ async function close() {
   await nav.close();
   if (unlockedEra) {
     const e = game.eraById(unlockedEra);
-    ui.showToast(`ERA ${e.numeral} · ${e.name} UNLOCKED`, e.id);
+    ui.showToast({ text: `ERA ${e.numeral} · ${e.name} UNLOCKED`, eraId: e.id });   // waits for the cap to land
   }
 }
 </script>

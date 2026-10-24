@@ -70,7 +70,7 @@ describe('closing a key card during the collect beat', () => {
     game.collect(a.id);
     const ui = useUiStore();
     const shown = [];
-    ui.$onAction(({ name, args }) => { if (name === 'showToast') shown.push(args[0]); });
+    ui.$onAction(({ name, args }) => { if (name === 'showToast') shown.push(args[0].text); });
 
     const button = await openKey(b.id);
     await button.trigger('click');

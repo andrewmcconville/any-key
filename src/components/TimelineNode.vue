@@ -5,6 +5,7 @@ import { UNLOCK_AT } from '../stores/game';
 import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
 import { useSwingStore } from '../stores/swing';
+import { useUiStore } from '../stores/ui';
 
 const props = defineProps({
   node: { type: Object, required: true },   // a KEYS entry with cx / cy / above
@@ -15,6 +16,7 @@ const emit = defineEmits(['press']);
 
 const game = useGameStore();
 const swing = useSwingStore();
+const ui = useUiStore();
 // A key with a photo shows the keycap itself in place of the circle, a little larger since the
 // photo has white around the cap; its labels and connector keep clear of it the same way.
 const photo = computed(() => photoUrl(props.node.photo));
@@ -92,13 +94,10 @@ const labelStyle = computed(() => ({
 const nameStyle = computed(() => ({ translate: rem(props.lag * swing.settings.nameTrail) }));
 const yearStyle = computed(() => ({ translate: rem(props.lag * swing.settings.yearTrail) }));
 
-const shaking = ref(false);
+// A locked key answers with a notice saying what opens it, standing still (so it reads the same
+// with reduced motion), instead of opening.
 function onPress() {
-  if (state.value === 'locked') {
-    shaking.value = false;
-    requestAnimationFrame(() => { shaking.value = true; });
-    return;
-  }
+  if (state.value === 'locked') { ui.explainLock(props.node.era); return; }
   emit('press', props.node);
 }
 </script>
@@ -110,14 +109,13 @@ function onPress() {
   <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.cx) }" />
   <button
     class="node"
-    :class="{ shake: shaking, 'node--photo': photo }"
+    :class="{ 'node--photo': photo }"
     :data-state="state"
     :style="nodeStyle"
     type="button"
     :aria-label="label"
     :aria-disabled="state === 'locked'"
     @click="onPress"
-    @animationend="shaking = false"
   >
     <img v-if="photo" ref="img" class="photo" :src="photo" alt="" draggable="false" @load="measure">
     <span v-else class="glyph">{{ glyph }}</span>
@@ -146,7 +144,7 @@ function onPress() {
 .node[data-state="collected"] .glyph { font: 600 7.2rem/1 var(--font-body); }
 .node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
 .node[data-state="locked"] .glyph { font: 600 4rem/1 var(--font-body); color: var(--muted); }
-.node.shake { animation: shake var(--dur-lg) var(--ease-standard); }
+
 /* A photographed key: the cap itself, no circle; the photo is shot on paper-white so its edges vanish.
    Locked it is grey and faint; collected, the ✓ sits where its connector meets the rail (see .rail-dot--check). */
 .node--photo {
