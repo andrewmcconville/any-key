@@ -6,9 +6,11 @@ Built as the lo-fi prototype for UWM ART 424 "Catalog & Curate". The Figma file 
 
 ## Stack
 
-Vue 3 (Composition API, `<script setup>`), Vite, Pinia, Vue Router. No UI library; styles are hand-written against the Figma grid.
+Vue 3.5 (Composition API, `<script setup>`), Vite 8, Pinia 4, Vue Router 5, Vitest 5. No UI library; styles are hand-written against the Figma grid.
 
 ## Run it
+
+Needs Node 24 LTS (the `engines` field in package.json gives the full range); the deploy workflow builds on Node 24 too. Vite 8 builds for Chrome and Edge 111+, Firefox 114+ and Safari 16.4+, so a kiosk browser older than that is not supported.
 
 ```bash
 npm install
