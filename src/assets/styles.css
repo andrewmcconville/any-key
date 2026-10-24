@@ -1,21 +1,71 @@
-/* Any Key — lo-fi prototype styles.
+/* Any Key — global styles: tokens, resets, type styles, the stage and the overlay contract.
+   Everything a single component draws lives in that component's <style scoped> block.
    The Figma board is 1440 canvas px wide. 1rem = 10 canvas px, so Figma values ÷ 10 map straight onto rem. */
 
 :root {
-  --ink: #262626;
-  --paper: #f7f7f7;
-  --white: #ffffff;
-  --muted: #6b7280;
-  --line: #262626;
-  --line-soft: #c9c9c9;
-  --fill-soft: #e5e5e5;
-  --scrim: rgba(38, 38, 38, 0.72);
-  --radius: 2.4rem;
-  --stroke: 0.4rem;
+  /* Colours are authored in OKLCH (lightness 0–1, chroma, hue°); src/stores/colors.js mirrors these
+     and can override them live from the Colours panel. Nearest sRGB hex in the comments. */
+  --ink:       oklch(0.269 0 0);            /* #262626: text, strokes, filled keys */
+  --paper:     oklch(0.976 0 0);            /* #f7f7f7: board background */
+  --white:     oklch(1 0 0);                /* #ffffff: panels, buttons, open keys */
+  --bar:       oklch(0.952 0 0);            /* #efefef: HUD bars and panel title bars */
+  --muted:     oklch(0.551 0.023 264);      /* #6b7280: eyebrows, years, locked */
+  --line:      var(--ink);
+  --line-soft: oklch(0.836 0 0);            /* #c9c9c9: hairlines, card borders */
+  --fill-soft: oklch(0.922 0 0);            /* #e5e5e5: image placeholder */
+  --scrim:     oklch(0.269 0 0 / 0.72);     /* behind modals */
+  /* Corner radii, on the 0.4rem grid. --radius is the default (buttons). */
+  --radius-xs: 1.2rem;   /* images inside cards */
+  --radius-sm: 1.6rem;   /* panel rows and action groups */
+  --radius-md: 2.4rem;   /* HUD bars, floating panels, stat cards, buttons */
+  --radius-lg: 3.2rem;   /* toast */
+  --radius-xl: 4.8rem;   /* modal sheet */
+  --radius: var(--radius-md);
+  --stroke: 0.4rem;       /* control outlines: buttons, era dots, panel actions */
+  --hairline: 0.2rem;     /* soft frames and dividers: HUD bars, modal, swatch rows */
+
+  /* Motion. Durations on a 0.1s grid; easings as cubic-bezier so the Inspect tool can edit them. */
+  --dur-xs: 0.1s;   /* press feedback */
+  --dur-sm: 0.2s;   /* state colours, overlays */
+  --dur-md: 0.3s;   /* toast, counter pop, board fade, the era ring */
+  --dur-lg: 0.4s;   /* locked-key shake */
+  --ease-standard:   cubic-bezier(0.25, 0.1, 0.25, 1);   /* the browser's "ease" */
+  --ease-emphasized: cubic-bezier(0.2, 0.7, 0.2, 1);     /* quick out, long settle: the era ring */
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);  /* overshoots; unused by default */
+  /* The era ring (EraDots.vue) stretching to the era in view: its leading edge sets off first and
+     the trailing edge follows after the lag. The Era ring tool edits these. */
+  --ring-duration: var(--dur-md);
+  --ring-lag: 0.08s;
+  --ring-ease-lead: var(--ease-emphasized);
+  --ring-ease-trail: var(--ease-standard);
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   /* Phone frame width (the Figma board). The HUD bars never grow past it; the board does. */
   --phone-w: 144rem;
+
+  /* Type ramp. The Figma lo-fi used 160/84/44/32/26 canvas px, which on a 412-px phone (1rem ≈ 2.86 px)
+     renders Body at 9 px and Label at 7 px. These are raised so Body ≈ 15 px and Label ≈ 11.5 px there,
+     while Display and the button label (which already read well) barely move. */
+  --text-display: 16rem;   --lh-display: 16rem;
+  --text-title:   9.6rem;  --lh-title:   10.4rem;
+  --text-heading: 5.6rem;  --lh-heading: 6.8rem;
+  --text-body:    5.2rem;  --lh-body:    6.8rem;
+  --text-label:   4rem;    --lh-label:   5rem;
+  --text-button:  4.4rem;  --lh-button:  5.2rem;
+
+  /* Controls. --tap is the smallest round control (era dots; the hamburger shares its size without the circle): ≈ 41 px on a phone. */
+  --tap: 14.4rem;
+  --icon: 6.4rem;
+  /* The HUD bars stop this far short of the stage's left and right edges, so paper shows round them. */
+  --hud-gutter: 4.8rem;
+
+  /* Safe areas. The viewport meta says viewport-fit=cover, so on phones the page is drawn behind
+     the status bar, notch and gesture bar; the HUD bars, overlays and toast add these insets so
+     nothing sits under them. Everything reads these variables, never env() directly. */
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
 }
 
 html {
@@ -26,13 +76,17 @@ html {
 *, *::before, *::after { box-sizing: border-box; }
 body {
   margin: 0;
-  background: #111;
+  background: oklch(0.18 0 0);   /* outside the stage on wide screens */
   color: var(--ink);
   font-family: var(--font-body);
   display: grid;
   grid-template-columns: minmax(0, 1fr);   /* keep the column at viewport width; the board's 720rem tree must not widen it */
   place-items: center;
-  min-height: 100vh;
+  /* Exactly the visible viewport: dvh tracks the phone's collapsing URL bar, so the page never scrolls.
+     Deliberately no overflow: hidden here: Chrome on Android takes that as "no overscroll" and turns
+     off pull-to-refresh, which is the only way to reload the page on a phone. */
+  height: 100vh;
+  height: 100dvh;
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
   user-select: none;
@@ -43,391 +97,73 @@ body {
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outline-offset: 0.4rem; }
 
-/* Type styles (p2.9): Display 160, Title 84/92, Heading 44/52, Body 32/46, Label 26/34 */
-.t-display { font: 700 16rem/1 var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.t-title   { font: 700 8.4rem/9.2rem var(--font-display); letter-spacing: -0.015em; }
-.t-heading { font: 700 4.4rem/5.2rem var(--font-display); font-variant-numeric: tabular-nums; }
-.t-body    { font: 400 3.2rem/4.6rem var(--font-body); }
-.t-strong  { font: 600 3.2rem/4.6rem var(--font-body); }
-.t-label   { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
+/* Type styles (p2.9 names; sizes from the tokens above) */
+.t-display { font: 700 var(--text-display)/var(--lh-display) var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.t-title   { font: 700 var(--text-title)/var(--lh-title) var(--font-display); letter-spacing: -0.015em; }
+.t-heading { font: 700 var(--text-heading)/var(--lh-heading) var(--font-display); font-variant-numeric: tabular-nums; }
+.t-body    { font: 400 var(--text-body)/var(--lh-body) var(--font-body); }
+.t-strong  { font: 600 var(--text-body)/var(--lh-body) var(--font-body); }
+.t-label   { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
+.t-button  { font: 700 var(--text-button)/var(--lh-button) var(--font-display); text-transform: uppercase; }
 .t-label--lc { text-transform: none; }
 .muted { color: var(--muted); }
 
+/* Eyebrow + body block used by the content modals (Key detail, About). */
+.section { margin-bottom: 4.8rem; }
+.section:last-child { margin-bottom: 0; }
+.section .t-label { color: var(--muted); margin-bottom: 0.8rem; }
+.section .t-body { max-width: 110rem; }
+
 /* ---------- Stage ---------- */
-/* Full viewport width so the board can spread out on wide screens; height stays the phone frame. */
+/* Fills the viewport. On a landscape screen the rem scale makes 100vh = 256rem (the phone frame);
+   on a portrait phone the board simply takes whatever height is left between the HUD bars. */
 .stage {
   position: relative;
   width: 100%;
-  height: 256rem;
+  height: 100vh;
+  height: 100dvh;
   background: var(--paper);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* ---------- HUD top ---------- */
-.hud-top {
-  flex: 0 0 16.8rem;
-  height: 16.8rem;
-  width: 100%;
-  max-width: var(--phone-w);
-  margin-inline: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 4.8rem;
-  background: #efefef;
-  border-bottom: 0.2rem solid var(--line-soft);
-  z-index: 3;
-}
-.eras { --dot: 9.6rem; --dot-gap: 2.4rem; position: relative; display: flex; gap: var(--dot-gap); }
-.era-dot {
-  width: var(--dot); height: var(--dot);
-  border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  display: grid; place-items: center;
-  font: 500 3.2rem/1 var(--font-display);
-  color: var(--ink);
-  background: var(--white);
-  position: relative;
-  transition: background .2s, color .2s, border-color .2s;
-}
-.era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
-/* One ring, 1rem outside the dot, slides along the row to the era in view (--era-index). */
-.era-ring {
-  position: absolute; left: -1rem; top: -1rem;
-  width: calc(var(--dot) + 2rem); height: calc(var(--dot) + 2rem);
-  border: var(--stroke) solid var(--ink); border-radius: 50%;
-  pointer-events: none;
-  transform: translateX(calc(var(--era-index, 0) * (var(--dot) + var(--dot-gap))));
-  transition: transform .35s cubic-bezier(.2, .7, .2, 1);
-}
-.era-dot[data-state="cleared"]::after {
-  content: '✓'; position: absolute; right: -0.6rem; top: -0.6rem;
-  width: 3.6rem; height: 3.6rem; border-radius: 50%;
-  background: var(--ink); color: var(--white);
-  font: 600 2.4rem/3.6rem var(--font-body); text-align: center;
-}
-.hud-total { display: flex; gap: 1.2rem; }
-.hud-total .count { min-width: 2.9rem; text-align: right; }
-
-/* ---------- Board ---------- */
-.board {
-  position: relative;
-  flex: 1 1 auto;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  overscroll-behavior-x: contain;
-}
-.board::-webkit-scrollbar { display: none; }
-.board { cursor: grab; }
-/* While dragging: follow the pointer directly (no smooth scrolling) and show a grabbing hand everywhere. */
-.board[data-dragging="true"] { scroll-behavior: auto; }
-.board[data-dragging="true"], .board[data-dragging="true"] * { cursor: grabbing; }
-.track {
-  /* Width and left padding set inline from the key data (see TimelineBoard.vue). */
-  box-sizing: border-box;
-  height: 100%;
-  overflow: hidden;       /* fallback */
-  overflow: clip;         /* clip the tree's empty tail without becoming a scroll container */
-}
-.tree {
-  position: relative;
-  width: 720rem;          /* 4 eras × 180rem */
-  height: 100%;
-}
-.rail {
-  position: absolute;            /* left/width set inline: first key tick → last key tick */
-  top: calc(126rem - 16.8rem);   /* RAIL_Y minus HUD top */
-  height: 0.6rem; margin-top: -0.3rem;
-  background: var(--ink);
-}
-.rail-break {
-  position: absolute;
-  top: calc(126rem - 16.8rem);
-  width: 8rem; height: 8rem; margin-top: -4rem;
-  background: var(--paper);
-  display: grid; place-items: center;
-  font: 400 5.6rem/1 var(--font-body);
-  color: var(--ink);
-}
-.era-region {
-  position: absolute; top: 0; height: 100%;
-  width: 180rem;
-}
-.era-region__label { position: absolute; left: 4.8rem; top: calc(20.8rem - 16.8rem); color: var(--muted); }
-.era-region__lock  { position: absolute; left: 4.8rem; top: calc(26.4rem - 16.8rem); color: var(--muted); }
-.era-region[data-locked="false"] .era-region__lock { display: none; }
-.era-region[data-locked="true"] .era-region__label { opacity: .7; }
-
-.node {
-  position: absolute;
-  width: 21.6rem; height: 21.6rem;
-  margin: -10.8rem 0 0 -10.8rem;
-  border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  display: grid; place-items: center;
-  color: var(--ink);
-  transition: transform .12s, background .2s, color .2s;
-}
-.node:active { transform: scale(.94); }
-.node .glyph { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em; }
-.node[data-state="collected"] { background: var(--ink); color: var(--white); }
-.node[data-state="collected"] .glyph { font: 600 7.2rem/1 var(--font-body); }
-.node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
-.node[data-state="locked"] .glyph { font: 600 2.8rem/1 var(--font-body); color: var(--muted); }
-.node.shake, .era-dot.shake { animation: shake .4s; }
-@keyframes shake {
-  20%, 60% { transform: translateX(-1.2rem); }
-  40%, 80% { transform: translateX(1.2rem); }
-}
-.node-label {
-  position: absolute;
-  width: 36rem; margin-left: -18rem;
-  text-align: center;
-  pointer-events: none;
-}
-.node-label .name { font: 400 3.2rem/4.6rem var(--font-body); }
-.node-label .year { font: 500 2.6rem/3.4rem var(--font-display); color: var(--muted); letter-spacing: .02em; }
-.node-label[data-locked="true"] { color: var(--muted); }
-.connector {
-  position: absolute;
-  width: 0; margin-left: -0.15rem;
-  border-left: 0.3rem dashed var(--muted);
-  pointer-events: none;
-}
-.rail-dot {
-  position: absolute;
-  width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;
-  border-radius: 50%; background: var(--ink);
-  top: calc(126rem - 16.8rem);
-}
-.swipe-hint {
-  position: absolute;
-  top: calc(130.8rem - 16.8rem);
-  right: 4.8rem;                   /* right edge of the board at scroll start */
-  width: 43.2rem; text-align: right;
-  color: var(--muted);
-  transition: opacity .3s;
-}
-.board[data-scrolled="true"] .swipe-hint { opacity: 0; }
-
-/* ---------- HUD bottom ---------- */
-.hud-bottom {
-  flex: 0 0 19.2rem;
-  height: 19.2rem;
-  width: 100%;
-  max-width: var(--phone-w);
-  margin-inline: auto;
-  display: flex;
-  align-items: center;
-  gap: 3.2rem;
-  padding: 0 4.8rem;
-  background: #efefef;
-  border-top: 0.2rem solid var(--line-soft);
-  z-index: 3;
-}
-.hud-btn {
-  flex: 1 1 0;
-  height: 13.6rem;
-  display: grid; place-items: center;
-  text-decoration: none; color: var(--ink);
-  border-radius: 1.6rem;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em;
-  transition: transform .08s;
-}
-.hud-btn:active { transform: translateY(0.4rem); }
-.hud-btn--quiet { border-color: transparent; background: #f8f8f8; }
-
-/* ---------- Buttons ---------- */
-.btn {
-  width: 100%;
-  height: 16rem;
-  border-radius: var(--radius);
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  color: var(--ink);
-  font: 700 4.4rem/5.2rem var(--font-display);
-  text-transform: uppercase;
-  display: grid; place-items: center;
-  transition: transform .08s, background .2s, color .2s, box-shadow .08s;
-}
-.btn:active { transform: translateY(0.4rem); }
-.btn--solid { background: var(--ink); color: var(--white); }
-.btn--keycap {
-  height: 19.2rem;
-  box-shadow: 0 1.2rem 0 var(--ink);
-  margin-bottom: 1.2rem;
-}
-.btn--keycap:active { transform: translateY(1.2rem); box-shadow: 0 0 0 var(--ink); }
-.btn--keycap.btn--solid { box-shadow: none; }
-.btn--keycap.btn--solid:active { transform: none; }
-.btn-caption { text-align: center; color: var(--muted); margin-top: 2.4rem; }
-
-/* ---------- Overlays & modals ---------- */
+/* ---------- Overlay contract ----------
+   Every overlay route renders a .layer as its root; TimelineView wraps the RouterView in a
+   <Transition> named "layer" between the board and an overlay (the classes below), and "fwd" or
+   "back" between two overlays, where only the modal sheet changes (see ModalShell). */
 .layer {
   position: absolute; inset: 0;
   z-index: 10;
   display: grid; place-items: center;
+  grid-template-rows: minmax(0, 1fr);   /* a definite row, so a sheet's max-height: 100% means the space inside the safe areas */
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   background: var(--scrim);
-  transition: opacity .2s;
+  transition: opacity var(--dur-sm) var(--ease-standard);
 }
-.layer--start { background: rgba(38,38,38,.85); }
 .layer-enter-from, .layer-leave-to { opacity: 0; }
-.layer-enter-from .modal { transform: translateY(2.4rem) scale(.98); }
 
-.modal {
-  width: 129.6rem;
-  max-height: 236rem;
-  background: var(--white);
-  border-radius: 4.8rem;
-  border: 0.2rem solid var(--line-soft);
-  padding: 4.8rem;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-  transition: transform .2s;
+/* Design-tool flash: grabbing a token's slider outlines every element it will change (lib/flash.js
+   adds the class, holds it, then adds --fading so the outline melts away over 300ms). */
+.token-flash { outline: 0.3rem solid var(--ink); outline-offset: 1.2rem; transition: outline-color .3s; }
+.token-flash--fading { outline-color: transparent; }
+/* Inspect tool: the element under the pointer while picking, and the one picked (stores/inspect.js). */
+.inspect-hover { outline: 0.3rem solid var(--ink); outline-offset: 1.2rem; }
+.inspect-selected { outline: 0.3rem dashed var(--ink); outline-offset: 1.2rem; }
+html.inspect-picking, html.inspect-picking * { cursor: crosshair !important; }
+/* While picking, labels and decorations that opt out of hit testing (pointer-events: none, such as the
+   timeline labels and the era ring) become targets again. The panels keep their own rules, and so do
+   the layers that would otherwise catch every pick: the collect flight (which covers the viewport),
+   the corona canvas (which spills past the gauge) and the toast while it is hidden (it sits over the
+   era labels at the top of the board). */
+html.inspect-picking .stage *:not(.panel-host, .panel-host *, .flight, .flight *, .corona, .toast[data-open="false"]) { pointer-events: auto !important; }
+
+/* Shared animation: locked keys shake when tapped. */
+@keyframes shake {
+  20%, 60% { transform: translateX(-1.2rem); }
+  40%, 80% { transform: translateX(1.2rem); }
 }
-.modal__header {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 2.4rem;
-  margin-bottom: 4.8rem;
-}
-.modal__scroll { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; min-height: 0; }
-.modal__scroll::-webkit-scrollbar { display: none; }
-.modal__footer { margin-top: 4.8rem; flex: 0 0 auto; }
-.close {
-  width: 14.4rem; height: 14.4rem; flex: 0 0 auto;
-  border-radius: 50%;
-  border: var(--stroke) solid var(--ink);
-  background: var(--white);
-  display: grid; place-items: center;
-}
-.close svg { width: 5.6rem; height: 5.6rem; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; fill: none; }
-.close:active { transform: scale(.94); }
-
-.section { margin-bottom: 4.8rem; }
-.section:last-child { margin-bottom: 0; }
-.section .t-label { color: var(--muted); margin-bottom: 0.8rem; }
-.section .t-body { max-width: 110rem; }
-
-/* Key detail */
-.meta { color: var(--muted); margin-bottom: 4.8rem; }
-.image {
-  width: 120rem; height: 40.2rem;
-  background: var(--fill-soft);
-  border-radius: 1.2rem;
-  display: grid; place-items: center;
-  text-align: center;
-  padding: 0 4.8rem;
-  color: var(--muted);
-  margin-bottom: 4.8rem;
-}
-
-/* Start */
-.start {
-  width: 144rem; height: 256rem;
-  position: relative;
-  color: var(--white);
-  text-align: center;
-  cursor: pointer;
-}
-.start__title { position: absolute; left: 12rem; width: 120rem; top: 134rem; color: var(--white); }
-.start__sub   { position: absolute; left: 16rem; width: 112rem; top: 158rem; }
-.start__btn   { position: absolute; left: 27rem; width: 90rem; top: 190rem; }
-.start__cap   { position: absolute; left: 16rem; width: 112rem; top: 218rem; }
-.start .btn--keycap { background: var(--white); color: var(--ink); border-color: var(--ink); }
-
-/* Toast */
-.toast {
-  position: absolute;
-  left: calc(50% - 60rem); width: 120rem; height: 18rem;
-  top: 21.6rem;
-  z-index: 8;
-  border-radius: 3.2rem;
-  background: var(--ink); color: var(--white);
-  display: grid; place-items: center;
-  text-align: center;
-  transform: translateY(-4rem); opacity: 0; pointer-events: none;
-  transition: transform .25s, opacity .25s;
-}
-.toast[data-open="true"] { transform: none; opacity: 1; pointer-events: auto; }
-
-/* Stats */
-.stats-summary { color: var(--muted); margin-bottom: 4.8rem; }
-.stats-era { margin-bottom: 4.8rem; }
-.stats-era__label { font: 700 4rem/5.2rem var(--font-display); color: var(--muted); margin-bottom: 2.4rem; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 26.4rem); gap: 4.8rem; }
-.stat { display: flex; flex-direction: column; align-items: center; gap: 2.4rem; }
-.stat__circle {
-  width: 14.4rem; height: 14.4rem; border-radius: 50%;
-  border: var(--stroke) solid var(--muted);
-  display: grid; place-items: center;
-  font: 600 5rem/1 var(--font-body); color: var(--muted);
-}
-.stat[data-state="locked"] .stat__circle { border-style: dashed; }
-.stat[data-state="collected"] .stat__circle { background: var(--ink); border-color: var(--ink); color: var(--white); }
-.stat__label { font: 500 2.6rem/3.4rem var(--font-display); letter-spacing: .02em; text-align: center; }
-.ach-list { display: flex; flex-direction: column; gap: 2.4rem; margin-top: 2.4rem; }
-.ach {
-  min-height: 13.6rem;
-  border: 0.3rem solid var(--line-soft);
-  border-radius: 2.4rem;
-  display: flex; align-items: center; gap: 3.2rem;
-  padding: 1.6rem 3.2rem;
-}
-.ach__circle {
-  width: 7rem; height: 7rem; border-radius: 50%; flex: 0 0 auto;
-  border: var(--stroke) solid var(--ink);
-  display: grid; place-items: center;
-  font: 600 4rem/1 var(--font-body);
-}
-.ach[data-done="true"] .ach__circle { background: var(--ink); color: var(--white); }
-.ach[data-done="true"] { border-color: var(--ink); }
-.ach__sub { color: var(--muted); }
-
-/* How to play */
-.step { display: flex; gap: 4rem; margin-bottom: 4.8rem; }
-.step__badge {
-  width: 10rem; height: 10rem; border-radius: 50%; flex: 0 0 auto;
-  background: var(--ink); color: var(--white);
-  display: grid; place-items: center;
-  font: 700 4.4rem/1 var(--font-display);
-}
-.step__text .t-heading { margin-bottom: 0.8rem; }
-
-/* Menu */
-.menu { display: flex; flex-direction: column; gap: 3.2rem; }
-.menu__hint { text-align: center; margin-top: 4.8rem; }
-
-/* About */
-.bullets { padding-left: 2.4rem; text-indent: -2.4rem; }
-.bullets p { margin: 0 0 1.2rem; }
-
-/* Completion */
-.modal.completion { width: 120rem; text-align: center; padding: 8.2rem 4.8rem 6rem; }
-.completion .t-display { margin-bottom: 4rem; }
-.completion .t-heading { margin-bottom: 2.4rem; }
-.completion .ach-line { color: var(--muted); margin-bottom: 4rem; }
-.completion .t-body { color: var(--muted); margin-bottom: 9.6rem; }
-.completion .btn + .btn { margin-top: 3.2rem; }
-
-/* Reset */
-.modal.reset { width: 112rem; text-align: center; padding: 8rem; }
-.reset .t-title { margin-bottom: 4rem; }
-.reset .t-body { color: var(--muted); margin-bottom: 8rem; white-space: pre-line; }
-.reset__buttons { display: flex; gap: 3.6rem; }
-.reset__buttons .btn { height: 17rem; }
-
-/* Pulse the HUD count when it changes */
-@keyframes pop { 50% { transform: scale(1.18); } }
-.pop { animation: pop .3s; display: inline-block; }
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
-  .board { scroll-behavior: auto; }
 }

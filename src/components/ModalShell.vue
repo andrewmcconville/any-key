@@ -1,30 +1,41 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import CloseButton from './CloseButton.vue';
 
 const props = defineProps({
   title: { type: String, default: '' },
   titleId: { type: String, default: 'modal-title' },
-  /** 'default' | 'completion' | 'reset' */
-  variant: { type: String, default: 'default' },
+  /** Panel width, a CSS length. */
+  width: { type: String, default: '129.6rem' },
+  /** Text alignment inside the panel: 'start' | 'center'. */
+  align: { type: String, default: 'start' },
+  /** Panel padding, a CSS shorthand. */
+  padding: { type: String, default: '4.8rem' },
+  /** 'dialog' | 'alertdialog' */
+  role: { type: String, default: 'dialog' },
   /** Show the × and allow Esc / backdrop to close */
   closable: { type: Boolean, default: true },
 });
 const emit = defineEmits(['close']);
 
+// While one overlay gives way to another both shells are mounted for the length of the fade; only
+// the one that is staying answers Esc, or a single press would close two overlays.
+const layer = ref(null);
+const leaving = () => [...(layer.value?.classList ?? [])].some(c => c.endsWith('-leave-active'));
 function onKey(e) {
-  if (e.key === 'Escape' && props.closable) emit('close');
+  if (e.key === 'Escape' && props.closable && !leaving()) emit('close');
 }
 onMounted(() => window.addEventListener('keydown', onKey));
 onUnmounted(() => window.removeEventListener('keydown', onKey));
 </script>
 
 <template>
-  <div class="layer" @click.self="closable && emit('close')">
+  <div ref="layer" class="layer" @click.self="closable && emit('close')">
     <section
       class="modal"
-      :class="{ completion: variant === 'completion', reset: variant === 'reset' }"
-      :role="variant === 'reset' ? 'alertdialog' : 'dialog'"
+      :class="{ 'modal--center': align === 'center' }"
+      :style="{ width, padding, textAlign: align }"
+      :role="role"
       aria-modal="true"
       :aria-labelledby="titleId"
     >
@@ -41,3 +52,40 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
     </section>
   </div>
 </template>
+
+<style scoped>
+.modal {
+  height: 236rem;         /* every modal the same size, so one can take another's place without the frame moving */
+  max-height: 100%;       /* but never taller than the layer leaves inside the phone's safe areas */
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  border: var(--hairline) solid var(--line-soft);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: transform var(--dur-sm) var(--ease-standard);
+}
+/* The panel rises into place while the layer fades in (see the overlay contract in styles.css). */
+.layer-enter-from .modal { transform: translateY(2.4rem) scale(.98); }
+/* Overlay to overlay (TimelineView picks the name): the frame stays, only the sheet fades. Going
+   deeper ('fwd') the new layer sits on top and its sheet fades in over the old one, which stays
+   put underneath; coming back ('back') the old layer sits on top and its sheet fades out, with the
+   one beneath already there. The layer that is on its way out drops its scrim so the two never stack. */
+.fwd-enter-active, .back-leave-active { z-index: 11; }
+.fwd-leave-active, .back-leave-active { background: transparent; }
+.fwd-enter-active .modal, .back-leave-active .modal { transition: opacity var(--dur-sm) var(--ease-standard); }
+.fwd-enter-from .modal, .back-leave-to .modal { opacity: 0; }
+/* A centred dialog (Reset, Completion) keeps its words in the middle of the fixed-height sheet. */
+.modal--center .modal__scroll { display: flex; flex-direction: column; justify-content: center; }
+.modal__header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2.4rem;
+  margin-bottom: 4.8rem;
+}
+.modal__header h2 { margin: 0; }   /* the browser's h2 margins would make the row taller than the × */
+.modal__scroll { flex: 1 1 auto; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none; }   /* fills the frame, so a footer sits at its foot; scrolls down only */
+/* The page turns selection off for the board's drag-to-scroll; a modal's words are for reading and copying. */
+.modal__header h2, .modal__scroll { user-select: text; -webkit-user-select: text; }
+.modal__scroll button { user-select: none; -webkit-user-select: none; }
+.modal__scroll::-webkit-scrollbar { display: none; }
+.modal__footer { margin-top: 4.8rem; flex: 0 0 auto; }
+</style>

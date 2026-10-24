@@ -1,8 +1,29 @@
+<script setup>
+import EraDots from './EraDots.vue';
+</script>
+
 <template>
-  <nav class="hud-bottom">
-    <RouterLink class="hud-btn" :to="{ name: 'stats' }">STATS</RouterLink>
-    <RouterLink class="hud-btn" :to="{ name: 'how-to-play' }">HOW TO PLAY</RouterLink>
-    <RouterLink class="hud-btn" :to="{ name: 'about' }">ABOUT</RouterLink>
-    <RouterLink class="hud-btn hud-btn--quiet" :to="{ name: 'reset' }">RESET</RouterLink>
+  <nav class="hud-bottom" aria-label="Eras">
+    <EraDots />
   </nav>
 </template>
+
+<style scoped>
+.hud-bottom {
+  flex: 0 0 auto;
+  height: calc(19.2rem + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);   /* keeps the era dots above the phone's gesture bar */
+  /* Inset from the stage edges by --hud-gutter; the border runs down both sides and along the top, with rounded top corners. */
+  width: calc(min(100%, var(--phone-w)) - 2 * var(--hud-gutter));
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: calc(4.8rem + var(--safe-left)) calc(4.8rem + var(--safe-right));
+  background: var(--bar);
+  border: var(--hairline) solid var(--line-soft);
+  border-bottom: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  z-index: 3;
+}
+</style>
