@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onUnmounted, ref } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import { useOverlayNav } from '../composables/useOverlayNav';
 import { COPY } from '../data/content';
 import { useFlightStore } from '../stores/flight';
@@ -30,7 +31,12 @@ const caption = computed(() => {
 // Pressing collects and goes back to the board after a beat (a knob in the flight store), long
 // enough to see the key turn ✓; the consequences (toast, completion) land on close. A collected
 // key's button just goes back.
+//
+// The rule for anything added to this card later: the card closes on its own a beat after the
+// collect, so an in-card payoff (a demo, a sound, a reveal) plays when the card opens, or is
+// replayed from a collected card, never in the moment after the press.
 let closing = null;
+let closed = false;
 function onCollect() {
   if (collected.value) { close(); return; }
   // The cap lifts off the button towards the HUD gauge; the gauge counts it when it lands.
@@ -41,9 +47,17 @@ function onCollect() {
   closing = setTimeout(close, flight.settings.beat);
 }
 onUnmounted(() => clearTimeout(closing));
+// Leaving by any other way (the browser's back, a link) cancels the pending auto-close too.
+onBeforeRouteLeave(() => { clearTimeout(closing); });
 
 // Closing is where the consequences land: the completion screen, or the era-unlock toast.
+// It runs once: a tap on × or ✓, or Esc, during the collect beat closes the card, and the beat's
+// own timer must not close it a second time. The card stays mounted while it fades out, so a
+// second close would go back from whatever replaced it (on the 14th key, the Completion screen).
 async function close() {
+  if (closed) return;
+  closed = true;
+  clearTimeout(closing);
   if (game.isComplete && !game.completionShown) {
     game.markCompletionShown();
     game.consumePendingUnlock();
