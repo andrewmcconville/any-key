@@ -49,6 +49,12 @@ export const usePanelsStore = defineStore('panels', () => {
     save();
   }
 
+  /** Close every panel (the kiosk's idle reset puts the tools away for the next visitor). */
+  function closeAll() {
+    for (const p of Object.values(panels)) p.open = false;
+    save();
+  }
+
   /** Bring a panel to the front. */
   function focus(id) {
     if (!panels[id]) return;
@@ -70,5 +76,5 @@ export const usePanelsStore = defineStore('panels', () => {
     saveSoon();
   }
 
-  return { panels, get, isOpen, open, close, focus, move, resize };
+  return { panels, get, isOpen, open, close, closeAll, focus, move, resize };
 });

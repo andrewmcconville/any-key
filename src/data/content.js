@@ -160,4 +160,10 @@ export const COPY = {
     body: 'This clears all collected keys and locks Eras II, III and IV again. Press Reset to confirm.',
   },
   collectCaption: 'Press and release to add this key to your collection.',
+  idle: {
+    title: 'Still there?',
+    unit: 'seconds',
+    body: 'Press any key, or touch anywhere, to keep your place. Otherwise the collection resets for the next visitor.',
+    button: 'KEEP MY PLACE',
+  },
 };
