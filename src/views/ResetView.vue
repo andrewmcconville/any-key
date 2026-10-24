@@ -19,7 +19,7 @@ async function confirm() {
 </script>
 
 <template>
-  <ModalShell align="center" padding="8rem" role="alertdialog" @close="close">
+  <ModalShell align="center" role="alertdialog" @close="close">
     <h2 class="title t-title" id="modal-title">{{ COPY.reset.title }}</h2>
     <p class="body t-body">{{ COPY.reset.body }}</p>
     <div class="buttons">
@@ -30,8 +30,7 @@ async function confirm() {
 </template>
 
 <style scoped>
-.title { margin-bottom: 4rem; }
-.body { color: var(--muted); margin-bottom: 8rem; white-space: pre-line; }
-.buttons { display: flex; gap: 3.6rem; }
-.buttons .btn { height: 17rem; }
+.title { margin-bottom: 4.8rem; }
+.body { color: var(--muted); margin-bottom: 9.6rem; white-space: pre-line; }
+.buttons { display: flex; gap: 2.4rem; }
 </style>

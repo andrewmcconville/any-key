@@ -13,8 +13,9 @@ export const RAIL_Y = 1260;         // rail centreline, canvas px
 export const NODE_PITCH = 400;
 export const NODE_FIRST_X = 200;    // centre of the first node in each era
 
-// Circle-centre y per tier (canvas px)
-const TIER = { farAbove: 751, nearAbove: 991, nearBelow: 1543, farBelow: 1783 };
+// Circle-centre y per tier (canvas px), mirrored about the rail: a 108-radius circle's edge sits
+// 168 or 408 from it, above or below.
+const TIER = { farAbove: 744, nearAbove: 984, nearBelow: 1536, farBelow: 1776 };
 const FOUR = ['farAbove', 'nearBelow', 'nearAbove', 'farBelow'];
 const TWO  = ['nearAbove', 'nearBelow'];
 

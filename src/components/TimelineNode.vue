@@ -5,6 +5,7 @@ import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
 import { useSwingStore } from '../stores/swing';
 import { useUiStore } from '../stores/ui';
+import GlyphIcon from './GlyphIcon.vue';
 
 const props = defineProps({
   node: { type: Object, required: true },   // a KEYS entry with cx / cy / above
@@ -45,7 +46,7 @@ const label = computed(() => {
   if (state.value === 'press') return `${name}, ${year}, not collected yet`;
   return `${name}, ${year}, locked. ${game.lockHint(era)?.sentence ?? ''}`;   // the same words as the lock notice
 });
-const glyph = computed(() => (state.value === 'collected' ? '✓' : state.value === 'locked' ? '?' : 'PRESS'));
+const glyph = computed(() => (state.value === 'collected' ? 'check' : state.value === 'locked' ? 'question' : null));
 
 // The key hangs from (or stands on) the rail by its connector, a flexible rod rooted at the rail
 // dot. While the board scrolls the key trails the rail by `lag` and the rod bends to reach it: it
@@ -105,7 +106,9 @@ function onPress() {
   <svg class="connector" :style="connectorStyle" :viewBox="`0 0 ${connector.W} ${connector.H}`" aria-hidden="true">
     <path :d="connector.d" />
   </svg>
-  <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.cx) }" />
+  <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.cx) }">
+    <GlyphIcon v-if="photo && state === 'collected'" name="check" />
+  </div>
   <button
     class="node"
     :class="{ 'node--photo': photo }"
@@ -118,7 +121,8 @@ function onPress() {
     @click="onPress"
   >
     <img v-if="photo" ref="img" class="photo" :src="photo" alt="" draggable="false" @load="measure">
-    <span v-else class="glyph">{{ glyph }}</span>
+    <GlyphIcon v-else-if="glyph" class="glyph" :name="glyph" />
+    <span v-else class="glyph">PRESS</span>
   </button>
   <div class="node-label" :class="{ 'node-label--above': node.above }" :data-locked="state === 'locked'" :style="labelStyle">
     <div class="name" :style="nameStyle">{{ node.short ?? node.name }}</div>   <!-- the plain name: ⌘ Command reads Command on the board -->
@@ -141,9 +145,9 @@ function onPress() {
 .node:active { transform: scale(.94); }
 .node .glyph { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: .02em; }
 .node[data-state="collected"] { background: var(--ink); color: var(--white); }
-.node[data-state="collected"] .glyph { font: 600 7.2rem/1 var(--font-body); }
+.node[data-state="collected"] .glyph { font-size: 7.2rem; }   /* the ✓ and ? icons are 1em */
 .node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
-.node[data-state="locked"] .glyph { font: 600 4rem/1 var(--font-body); color: var(--muted); }
+.node[data-state="locked"] .glyph { font-size: 4.8rem; color: var(--muted); }
 
 /* A photographed key: the cap itself, no circle; the photo is shot on paper-white so its edges vanish.
    Locked it is grey and faint; collected, the ✓ sits where its connector meets the rail (see .rail-dot--check). */
@@ -171,7 +175,7 @@ function onPress() {
   pointer-events: none;
 }
 .node-label--above { transform: translateY(-100%); }
-.node-label .name { font: 400 var(--text-body)/var(--lh-body) var(--font-body); }
+.node-label .name { font: 600 var(--text-body)/var(--lh-body) var(--font-body); }   /* Body strong: the names are the board's wayfinding */
 .node-label .year { font: 500 var(--text-label)/var(--lh-label) var(--font-display); color: var(--muted); letter-spacing: .02em; }
 .node-label[data-locked="true"] { color: var(--muted); }
 .connector {
@@ -191,8 +195,8 @@ function onPress() {
 /* A collected photographed key: the junction grows into the ✓ badge, the same as a cleared era dot's. */
 .rail-dot--check {
   width: 6.4rem; height: 6.4rem; margin: -3.2rem 0 0 -3.2rem;
+  display: grid; place-items: center;
   color: var(--white);
-  font: 600 4rem/6.4rem var(--font-body); text-align: center;
+  font-size: 4.8rem;
 }
-.rail-dot--check::after { content: '✓'; }
 </style>

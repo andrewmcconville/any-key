@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { ERAS } from '../data/content';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
+import GlyphIcon from './GlyphIcon.vue';
 
 const game = useGameStore();
 const ui = useUiStore();
@@ -56,7 +57,10 @@ function dotState(era) {
       type="button"
       :aria-label="`Era ${era.numeral} · ${era.name}`"
       @click="ui.scrollToEra(era.id)"
-    >{{ era.numeral }}</button>
+    >
+      {{ era.numeral }}
+      <span v-if="dotState(era) === 'cleared'" class="era-dot__check"><GlyphIcon name="check" /></span>
+    </button>
   </div>
 </template>
 
@@ -72,6 +76,12 @@ function dotState(era) {
   background: var(--white);
   position: relative;
   transition: background var(--dur-sm) var(--ease-standard), color var(--dur-sm) var(--ease-standard), border-color var(--dur-sm) var(--ease-standard);
+}
+/* The touch target reaches --hit round the dot's centre; with the 2.4rem gap, neighbouring targets
+   meet without overlapping. */
+.era-dot::before {
+  content: ''; position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+  width: var(--hit); height: var(--hit); border-radius: 50%;
 }
 .era-dot[data-state="locked"] { border-style: dashed; border-color: var(--muted); color: var(--muted); background: transparent; }
 /* One ring, 1rem outside the dot, stretches along the row to the era in view (--era-index). Its two
@@ -89,10 +99,11 @@ function dotState(era) {
 }
 .era-ring[data-dir="fwd"]  { transition: right var(--ring-duration) var(--ring-ease-lead), left var(--ring-duration) var(--ring-ease-trail) var(--ring-lag); }
 .era-ring[data-dir="back"] { transition: left var(--ring-duration) var(--ring-ease-lead), right var(--ring-duration) var(--ring-ease-trail) var(--ring-lag); }
-.era-dot[data-state="cleared"]::after {
-  content: '✓'; position: absolute; right: -0.8rem; top: -0.8rem;
+.era-dot__check {
+  position: absolute; right: -0.8rem; top: -0.8rem;
   width: 4.8rem; height: 4.8rem; border-radius: 50%;
+  display: grid; place-items: center;
   background: var(--ink); color: var(--white);
-  font: 600 3.2rem/4.8rem var(--font-body); text-align: center;
+  font-size: 3.2rem;
 }
 </style>

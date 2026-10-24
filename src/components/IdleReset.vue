@@ -159,9 +159,9 @@ onUnmounted(() => {
   width: min(120rem, calc(100% - 9.6rem));
   background: var(--white);
   border-radius: var(--radius-xl);
-  padding: 8rem 4.8rem 6rem;
+  padding: 7.2rem 4.8rem 6rem;   /* 7.2rem at the foot too, counting the keycap's 1.2rem shadow */
   text-align: center;
-  display: flex; flex-direction: column; gap: 4rem;
+  display: flex; flex-direction: column; gap: 4.8rem;
 }
 .idle__sheet h2 { margin: 0; }
 .idle__count { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; font-variant-numeric: tabular-nums; }

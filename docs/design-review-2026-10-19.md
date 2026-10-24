@@ -2,10 +2,26 @@
 
 > **Status, 24 Oct 2026.** This review describes the lo-fi as it was on 19 Oct. Since then:
 >
-> - **Dropped.** How to play was removed, and the bottom bar now holds the era dots instead of STATS / HOW TO PLAY / ABOUT / RESET. Stats moved into the hamburger Menu. Findings about the How to play modal and the bottom-bar buttons, including item 10, no longer apply.
-> - **Applied.** Cancel is the solid default on Reset. Completion's achievement line sits under the heading. The ⌘ and ⊞ glyphs are gone from the board and card labels. The modal scrim is 72%. Era dots are dashed when locked and carry a ✓ when cleared, with one ring that slides to the era in view.
-> - **Overridden.** The start screen's words sit in the middle of the frame rather than lower down, and its scrim is still 85% rather than about 70%. The key-detail image is 32rem tall rather than 16:9, to make room for the larger type.
-> - **Sitemap.** any-key-sitemap.png predates all of this. It still shows How to play, the old bottom bar, a "Three-finger salute" achievement that was never added, and per-key Sound and previous / next controls that were not built.
+> - **Dropped.** How to play was removed, and the bottom bar now holds the era dots instead of STATS / HOW TO PLAY / ABOUT / RESET. Stats moved into the hamburger Menu. Findings about the How to play modal and the bottom-bar buttons, including item 10, no longer apply. The top bar holds Menu, the key gauge and Stats rather than dots and a counter.
+> - **Applied.**
+>   - Actions: PRESS TO COLLECT is the keycap, and Cancel is the solid default on Reset.
+>   - Touch: the close button is 160, keys 216 and era dots 144. The era dots and the top-bar buttons reach a 168 touch area past their drawn edge. The close button's box overhangs the modal header, so the header is only as tall as the title (104).
+>   - Grid: pads 48 and 96, gaps 24 and 48, HUD 168 / 192, Stats circles 144. Reset, Completion, the start screen and "Still there?" are resnapped.
+>   - Stats: four columns, one era per row. The achievement cards have a visible stroke and a 32 inset.
+>   - Type: the five styles plus a button style, with fixed line-heights, tabular figures and Label raised to the phone floor. Key names are Body strong, and caps labels are tracked 4%. ×, ✓ and ? are drawn icons, not text.
+>   - Timeline: the rows are mirrored about the rail (circle edges ±168 and ±408), labels sit on the far side from the rail, and the pitch is 400.
+>   - Elsewhere: Completion's achievement line sits under the heading. The ⌘ and ⊞ glyphs are gone from the board and card labels. About's bullets hang. The modal scrim is 72%. Era dots are dashed when locked and carry a ✓ when cleared, with one ring that slides to the era in view.
+> - **Overridden.**
+>   - Item 2 is reversed: every modal is one fixed frame, 236rem tall, so one can take another's place without the frame moving. Long sheets (Stats, About) scroll inside it and show their scrollbar. Reset and Completion centre their words in it.
+>   - Buttons are 168 and 192 tall, not 144 and 192, so the standard button is at least 44 px on a 375-px phone.
+>   - The swipe hint is centred at the foot of the board and fades as the board scrolls, rather than sitting on the rail end.
+>   - The start screen's words sit in the middle of the frame rather than lower down, and its scrim is still 85% rather than about 70%.
+>   - The key-detail image is 32rem tall rather than 16:9, to make room for the larger type.
+> - **Still open.**
+>   - Completion has three outlined buttons of equal weight (BACK TO BOARD, VIEW STATS, START OVER), so the "one full-width primary" under Keep is gone. START OVER clears the collection without the confirmation RESET asks for.
+>   - RESET is still a visual peer of STATS and ABOUT, now in the Menu.
+>   - Reset's two-button confirmation sits in the full-height frame, mostly empty.
+> - **Sitemap.** any-key-sitemap.png predates all of this. It still shows How to play, the old bottom bar, a "Three-finger salute" achievement that was never added, and per-key Sound and previous / next controls that were not built. The route table in the README is the current map.
 
 Three focused reviews of the Lo-Fi Wireframe page in the Any Key Figma file, run against the project's own p2.9 design-system rules. Screens reviewed: Timeline, Key detail, Stats, How to play, About, Completion, Reset, Start overlay, HUD top, HUD bottom. All measurements are canvas px (3× CSS px), read from renders, ±2 px.
 

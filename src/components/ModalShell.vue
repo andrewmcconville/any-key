@@ -97,11 +97,27 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   gap: 2.4rem;
   margin-bottom: 4.8rem;
 }
-.modal__header h2 { margin: 0; }   /* the browser's h2 margins would make the row taller than the × */
-.modal__scroll { flex: 1 1 auto; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none; }   /* fills the frame, so a footer sits at its foot; scrolls down only */
+.modal__header h2 { margin: 0; }   /* the browser's h2 margins would make the row taller than the title */
+/* The × keeps its 16rem touch target, but the row is only as tall as the title: the button's box
+   overhangs it above and below, into the sheet's padding and the gap under the header. */
+.modal__header .close { margin-block: calc((var(--lh-title) - 16rem) / 2); }
+.modal__scroll { flex: 1 1 auto; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }   /* fills the frame, so a footer sits at its foot; scrolls down only */
+/* The scrollbar shows, so a sheet with more below says so. It sits in the sheet's right padding, its
+   gutter always kept so the words line up with the header and footer whether the sheet scrolls or
+   not; the 1.6rem either side of the words leaves room for a button's focus ring. */
+.modal__scroll {
+  margin-inline: -1.6rem -3.2rem;
+  padding-inline: 1.6rem;
+  scrollbar-gutter: stable;
+}
+.modal__scroll::-webkit-scrollbar { width: 1.6rem; }
+.modal__scroll::-webkit-scrollbar-track { background: var(--fill-soft); border-radius: 0.8rem; }
+.modal__scroll::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0.8rem; }
+@supports not selector(::-webkit-scrollbar) {
+  .modal__scroll { scrollbar-width: thin; scrollbar-color: var(--muted) var(--fill-soft); }
+}
 /* The page turns selection off for the board's drag-to-scroll; a modal's words are for reading and copying. */
 .modal__header h2, .modal__scroll { user-select: text; -webkit-user-select: text; }
 .modal__scroll button { user-select: none; -webkit-user-select: none; }
-.modal__scroll::-webkit-scrollbar { display: none; }
 .modal__footer { margin-top: 4.8rem; flex: 0 0 auto; }
 </style>

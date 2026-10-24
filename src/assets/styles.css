@@ -53,8 +53,10 @@
   --text-label:   4rem;    --lh-label:   5rem;
   --text-button:  4.4rem;  --lh-button:  5.2rem;
 
-  /* Controls. --tap is the smallest round control (era dots; the hamburger shares its size without the circle): ≈ 41 px on a phone. */
+  /* Controls. --tap is the smallest round control (era dots; the hamburger shares its size without the circle): ≈ 41 px on a phone.
+     --hit is the smallest touch target, so controls drawn at --tap reach past their edge to it: ≈ 48 px on a 412-px phone, 44 on a 375. */
   --tap: 14.4rem;
+  --hit: 16.8rem;
   --icon: 6.4rem;
   /* The HUD bars stop this far short of the stage's left and right edges, so paper shows round them. */
   --hud-gutter: 4.8rem;
@@ -113,9 +115,9 @@ button:focus-visible, a:focus-visible { outline: 0.6rem solid var(--ink); outlin
 .t-heading { font: 700 var(--text-heading)/var(--lh-heading) var(--font-display); font-variant-numeric: tabular-nums; }
 .t-body    { font: 400 var(--text-body)/var(--lh-body) var(--font-body); }
 .t-strong  { font: 600 var(--text-body)/var(--lh-body) var(--font-body); }
-.t-label   { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; }
+.t-label   { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }   /* small caps need the air */
 .t-button  { font: 700 var(--text-button)/var(--lh-button) var(--font-display); text-transform: uppercase; }
-.t-label--lc { text-transform: none; }
+.t-label--lc { text-transform: none; letter-spacing: 0.02em; }
 .muted { color: var(--muted); }
 
 /* Eyebrow + body block used by the content modals (Key detail, About). */

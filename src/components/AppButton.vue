@@ -15,7 +15,7 @@ defineProps({
 <style scoped>
 .btn {
   width: 100%;
-  height: 16rem;
+  height: 16.8rem;   /* two heights on the 2.4rem grid: this, and the keycap's 19.2rem */
   border-radius: var(--radius);
   border: var(--stroke) solid var(--ink);
   background: var(--white);

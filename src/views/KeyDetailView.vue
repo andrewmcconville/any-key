@@ -8,6 +8,7 @@ import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
 import ModalShell from '../components/ModalShell.vue';
 import AppButton from '../components/AppButton.vue';
+import GlyphIcon from '../components/GlyphIcon.vue';
 
 const props = defineProps({ id: { type: String, required: true } });
 const game = useGameStore();
@@ -115,7 +116,8 @@ async function close() {
 
     <template #footer>
       <AppButton ref="collectBtn" keycap :solid="collected" @click="onCollect">
-        {{ collected ? '✓  COLLECTED' : 'PRESS TO COLLECT' }}
+        <span v-if="collected" class="collected"><GlyphIcon name="check" />COLLECTED</span>
+        <template v-else>PRESS TO COLLECT</template>
       </AppButton>
       <p class="btn-caption t-label t-label--lc">{{ caption }}</p>
     </template>
@@ -136,4 +138,6 @@ async function close() {
 .figure { margin: 0 0 4.8rem; }
 .credit { color: var(--muted); margin-top: 1.2rem; }
 .btn-caption { text-align: center; color: var(--muted); margin-top: 2.4rem; }
+.collected { display: inline-flex; align-items: center; gap: 1.2rem; }
+.collected .glyph-icon { font-size: 1.4em; }
 </style>

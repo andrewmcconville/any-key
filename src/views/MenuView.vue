@@ -38,9 +38,9 @@ function openPanel(id, at) {
 </template>
 
 <style scoped>
-.menu { display: flex; flex-direction: column; gap: 3.2rem; }
+.menu { display: flex; flex-direction: column; gap: 2.4rem; }
 /* The design tools, two to a row; a long name may take two lines. */
 .menu--tools { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, auto); grid-auto-flow: column; gap: 2.4rem; }
-.menu--tools :deep(.btn) { height: auto; min-height: 16rem; padding: 2.4rem 1.6rem; text-align: center; line-height: 1.2; }
+.menu--tools :deep(.btn) { height: auto; min-height: 16.8rem; padding: 2.4rem 1.6rem; text-align: center; line-height: 1.2; }
 .menu__group { margin: 4.8rem 0 1.6rem; }
 </style>

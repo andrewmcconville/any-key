@@ -71,12 +71,18 @@ const dashOffset = computed(() => LAP * (1 - shown.value / game.total));
 }
 /* Bare glyphs, no circle: the same tap target as an era dot, so the two bars still line up. Menu left, Stats right, so the gauge sits at centre. */
 .hud-btn {
+  position: relative;
   width: var(--tap); height: var(--tap);
   border: 0;
   background: none;
   padding: 0;
   display: grid; place-items: center;
   transition: transform var(--dur-xs) var(--ease-standard);
+}
+/* The touch target reaches --hit, the full height of the bar, without moving the glyph. */
+.hud-btn::before {
+  content: ''; position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+  width: var(--hit); height: var(--hit);
 }
 .hud-btn:active { transform: scale(.94); }
 .hud-btn svg { width: var(--icon); height: var(--icon); stroke: var(--ink); stroke-width: 5; stroke-linecap: round; fill: none; }

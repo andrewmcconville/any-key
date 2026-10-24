@@ -46,9 +46,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey));
   cursor: pointer;
 }
 /* Margins set outright: the h1 and p defaults would push the visible block off centre. */
-.start__title { width: 120rem; margin: 0 0 8rem; color: var(--white); }
-.start__sub   { width: 112rem; margin: 0 0 18rem; }
-.start__btn   { width: 90rem; margin: 0 0 11rem; }
+.start__title { width: 120rem; margin: 0 0 9.6rem; color: var(--white); }
+.start__sub   { width: 112rem; margin: 0 0 19.2rem; }
+.start__btn   { width: 90rem; margin: 0 0 10.8rem; }   /* 9.6rem below the keycap's 1.2rem shadow */
 .start__cap   { width: 112rem; margin: 0; }
 .start .btn--keycap { background: var(--white); color: var(--ink); border-color: var(--ink); }
 </style>

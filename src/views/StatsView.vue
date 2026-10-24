@@ -3,6 +3,7 @@ import { useOverlayNav } from '../composables/useOverlayNav';
 import { ERAS, ACHIEVEMENTS } from '../data/content';
 import { useGameStore } from '../stores/game';
 import ModalShell from '../components/ModalShell.vue';
+import GlyphIcon from '../components/GlyphIcon.vue';
 
 const game = useGameStore();
 const { close } = useOverlayNav();
@@ -11,7 +12,7 @@ function statState(key) {
   if (game.isCollected(key.id)) return 'collected';
   return game.isUnlocked(key.era) ? 'open' : 'locked';
 }
-const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
+const glyph = st => (st === 'collected' ? 'check' : st === 'locked' ? 'question' : null);
 </script>
 
 <template>
@@ -22,7 +23,7 @@ const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
       <p class="stats-era__label">ERA {{ era.numeral }} · {{ era.name }}</p>
       <div class="stats-row">
         <div v-for="key in game.eraKeys(era.id)" :key="key.id" class="stat" :data-state="statState(key)">
-          <div class="stat__circle">{{ glyph(statState(key)) }}</div>
+          <div class="stat__circle"><GlyphIcon v-if="glyph(statState(key))" :name="glyph(statState(key))" /></div>
           <div class="stat__label">{{ key.short ?? key.name }}</div>
         </div>
       </div>
@@ -31,7 +32,7 @@ const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
     <p class="t-label muted">Achievements</p>
     <div class="ach-list">
       <div v-for="a in ACHIEVEMENTS" :key="a.id" class="ach" :data-done="game.hasAchievement(a.id)">
-        <div class="ach__circle">{{ game.hasAchievement(a.id) ? '✓' : '' }}</div>
+        <div class="ach__circle"><GlyphIcon v-if="game.hasAchievement(a.id)" name="check" /></div>
         <div>
           <div class="t-strong">{{ a.title }}</div>
           <div class="ach__sub t-label t-label--lc">{{ a.sub }}</div>
@@ -51,7 +52,7 @@ const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
   width: 14.4rem; height: 14.4rem; border-radius: 50%;
   border: var(--stroke) solid var(--muted);
   display: grid; place-items: center;
-  font: 600 5rem/1 var(--font-body); color: var(--muted);
+  font-size: 6rem; color: var(--muted);   /* the ✓ and ? icons are 1em; off the type ramp's sizes, so the Typography window doesn't flash them */
 }
 .stat[data-state="locked"] .stat__circle { border-style: dashed; }
 .stat[data-state="collected"] .stat__circle { background: var(--ink); border-color: var(--ink); color: var(--white); }
@@ -68,7 +69,7 @@ const glyph = st => (st === 'collected' ? '✓' : st === 'locked' ? '?' : '');
   width: 8rem; height: 8rem; border-radius: 50%; flex: 0 0 auto;
   border: var(--stroke) solid var(--ink);
   display: grid; place-items: center;
-  font: 600 4.4rem/1 var(--font-body);
+  font-size: 4.8rem;
 }
 .ach[data-done="true"] .ach__circle { background: var(--ink); color: var(--white); }
 .ach[data-done="true"] { border-color: var(--ink); }

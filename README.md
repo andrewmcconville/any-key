@@ -54,7 +54,7 @@ src/
   assets/images/       the key pictures (AI-generated, see Images)
   assets/styles.css    global styles. The Figma board is 1440 canvas px wide and 1rem = 10 canvas px,
                        so a Figma value of 192 becomes 19.2rem. Type sizes and the minimum control size are
-                       tokens on :root (--text-*, --lh-*, --tap, --icon); change the ramp there, not per component
+                       tokens on :root (--text-*, --lh-*, --tap, --hit, --icon); change the ramp there, not per component
   stores/tokens.js     the type ramp as live values; writes the --text-*/--lh-* variables on :root
   stores/colors.js     the colour tokens as live OKLCH values; writes --ink, --paper, … on :root
   lib/oklch.js         OKLCH → CSS string and → sRGB hex
@@ -71,9 +71,9 @@ src/
   lib/                 kiosk (the kiosk flag and idle timings), photos, oklch, noise (the corona's edge),
                        bindings (which tokens an element uses), flash, replay (Play buttons run the real motion)
   components/          HudTop (menu, gauge, stats), HudBottom + EraDots, TimelineBoard, TimelineNode,
-                       ToastBanner (the notice), ModalShell, AppButton, CloseButton, KeyFlight (the collect flight),
-                       Corona, IdleReset (the kiosk's "Still there?"), FloatingPanel + PanelHost (design windows),
-                       TokenTuner, EasingEditor, PanelActions
+                       ToastBanner (the notice), ModalShell, AppButton, CloseButton, GlyphIcon (the ✓ and ? marks),
+                       KeyFlight (the collect flight), Corona, IdleReset (the kiosk's "Still there?"),
+                       FloatingPanel + PanelHost (design windows), TokenTuner, EasingEditor, PanelActions
   panels/              design windows: TypeTokens, Colors, Shape (borders & radii), Inspect, Corona,
                        Flight (Collect), Ring (Era ring), Swing (Scroll physics)
   views/               TimelineView (the board) and one view per overlay:
