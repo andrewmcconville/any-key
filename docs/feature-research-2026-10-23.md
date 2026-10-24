@@ -1,5 +1,31 @@
 # Any Key feature research (23 Oct 2026)
 
+Written against commit 18060cf (20 Oct 2026). The research below is unchanged; the status section says where the app stands now.
+
+## Status against the app (24 Oct 2026)
+
+Checked against the code after the kiosk idle reset landed. Every feature not listed here is not started.
+
+| Feature | Status | What exists now |
+|---|---|---|
+| Nothing hurries you | Done | The unlock notice waits for the collected key's cap to land, has no timer, and offers GO TO ERA. A tapped locked key shows a still notice saying what unlocks it, in place of the shake. |
+| Take Your Time | Done | The timeout warning is the kiosk's "Still there?" countdown, and the unlock notice stays until the visitor acts. There is no slow mode, as the panel advised. |
+| Attract loop and idle reset | Partial | The idle reset is built for kiosks: "Still there?" after two minutes without input, a 30 second countdown, then the start screen. The attract tour is not built. |
+| The collect moment | Partial | The cap flies from the collect button to the HUD gauge and the corona flares. There is no sound, caption or catch line yet. |
+| Screen-reader-first timeline | Partial | Overlays take focus, keep it while the board is inert, and give it back; keys announce their year and state. Era headings, arrow-key movement and a single status region for the board are not built. |
+| Sources footer | Partial | Each pictured key's card credits its picture as AI-generated, and About explains the pictures. The per-key "Dated from" and confidence lines are not built. |
+| Face-down reveal with stamp | Conflicts | Collecting now closes the card after a short beat, so a flip inside the card would barely be seen. |
+| Re-sort the board | Conflicts | Alternate layouts would break the board's swing physics and era tracking. |
+
+What changed under the research since it was written:
+
+- **Collecting closes the card.** The card closes itself a beat after the press, while the cap flies to the gauge. Anything that pays off inside the card has to play when the card opens, or be replayed from a collected card. This affects the live press demo, the face-down reveal, the placement bonus and read-aloud.
+- **One continuous rail.** The board no longer has breaks between eras, so the rail-break notes under Colour returns by era and Meanwhile captions no longer apply.
+- **Eight keys have pictures.** All eight are AI-generated with ChatGPT, not photographs, and the app now says so. The imagery theme's choice between photographs and drawn plates now also has to cover disclosure.
+- **The menu moved.** The Esc menu is the hamburger Menu in the top bar, Stats moved there, and How to play was removed.
+- **Reset already exists.** The hard reset the idle reset needed is the existing game reset, which now returns to the start screen.
+- **There are tests.** npm test covers the game rules, the overlay stack, the notice and the idle reset.
+
 ## Summary
 
 Thirteen research lenses (cozy collecting, field-guide apps, museum interactives, game compendia, timeline interactives, gamification and delight, keyboard culture, kiosk take-away, narrative discovery, accessibility, mechanism and imagery, keys as controls, cozy toys and companions) produced 82 feature proposals backed by about 290 exemplar citations across roughly 200 products, exhibitions, standards and papers. Each proposal went to a three-judge panel: a curator scored concept fit against the premise ("what actually happens when you press it"), the tone and the three identities; a builder scored feasibility in the Vue 3 + Pinia static site and the unattended-kiosk risks; a fact-checker fetched every cited page and ran a visitor test (would a 3 to 8 minute kiosk visitor, or a later phone visitor, use it). 71 proposals survived with at least two keeps, 11 were cut, and about 20 of the 290 exemplars could not be verified from a reachable page. The headline recommendation is the cluster that makes the press perform its own answer: pressing the real key to collect, a live press demo in the card, and travel, foley and captions at the collect moment. Behind that come the Keyboard Shelf, hand-authored cross-references (Related Keys strip, set pairings), the attract loop and idle reset (a correctness fix, since today the next visitor inherits the last visitor's board) and colour returning by era.

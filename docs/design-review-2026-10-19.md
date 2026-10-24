@@ -1,5 +1,12 @@
 # Any Key lo-fi — design review (19 Oct 2026)
 
+> **Status, 24 Oct 2026.** This review describes the lo-fi as it was on 19 Oct. Since then:
+>
+> - **Dropped.** How to play was removed, and the bottom bar now holds the era dots instead of STATS / HOW TO PLAY / ABOUT / RESET. Stats moved into the hamburger Menu. Findings about the How to play modal and the bottom-bar buttons, including item 10, no longer apply.
+> - **Applied.** Cancel is the solid default on Reset. Completion's achievement line sits under the heading. The ⌘ and ⊞ glyphs are gone from the board and card labels. The scrim is 72%. Era dots are dashed when locked and carry a ✓ when cleared, with one ring that slides to the era in view.
+> - **Overridden.** The start screen's words sit in the middle of the frame rather than lower down. The key-detail image is 32rem tall rather than 16:9, to make room for the larger type.
+> - **Sitemap.** any-key-sitemap.png predates all of this. It still shows How to play, the old bottom bar, a "Three-finger salute" achievement that was never added, and per-key Sound and previous / next controls that were not built.
+
 Three focused reviews of the Lo-Fi Wireframe page in the Any Key Figma file, run against the project's own p2.9 design-system rules. Screens reviewed: Timeline, Key detail, Stats, How to play, About, Completion, Reset, Start overlay, HUD top, HUD bottom. All measurements are canvas px (3× CSS px), read from renders, ±2 px.
 
 ## Synthesis — what to fix first
