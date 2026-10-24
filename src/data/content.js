@@ -18,6 +18,15 @@ const TIER = { farAbove: 751, nearAbove: 991, nearBelow: 1543, farBelow: 1783 };
 const FOUR = ['farAbove', 'nearBelow', 'nearAbove', 'farBelow'];
 const TWO  = ['nearAbove', 'nearBelow'];
 
+// Where each key's picture came from, by the key's `photoSource`. Every picture so far was
+// generated with ChatGPT; a real photograph would get its own entry naming the photographer,
+// the object and the licence. The card and About both say which pictures are generated.
+export const IMAGE_SOURCES = {
+  chatgpt: { credit: 'AI-generated with ChatGPT (OpenAI)', generated: true },
+};
+
+// `image` says what the key's picture shows: for a key with a `photo`, the picture as it is;
+// for a key without one, the picture it is waiting for.
 export const KEYS = [
   // Era I · Mechanical
   { id: 'space', legend: '␣',    era: 1, name: 'Space bar',  year: '1874',    feedback: 'click',
@@ -42,45 +51,45 @@ export const KEYS = [
     why: 'The key that went from “go back” to “take it back.”' },
 
   // Era II · Electric
-  { id: 'return', legend: '↵',   era: 2, name: 'Return',     year: '1929',    feedback: 'click', photo: 'electromatic.png',
-    image: 'CARRIAGE RETURN key on an Electromatic typewriter, 1929, macro',
+  { id: 'return', legend: '↵',   era: 2, name: 'Return',     year: '1929',    feedback: 'click', photo: 'electromatic.png', photoSource: 'chatgpt',
+    image: 'A round red keytop marked CARRIAGE RETURN, in the style of the 1929 Electromatic',
     press: 'On a typewriter: carriage left, paper up one line. On a computer: send, submit, confirm.',
     description: 'Typewriters had a lever to return the carriage. The Electromatic of 1929 put a motor behind it and gave it a key, marked CARRIAGE RETURN and set at the right of the keyboard where the lever had been.',
     why: 'A lever that moved paper became the key that means yes.' },
-  { id: 'esc', legend: 'esc',      era: 2, name: 'Esc',        year: '1960',    feedback: 'click', photo: 'teletype-model-33-esc-key-transparent.png',
-    image: 'ESC key, top-left corner, macro; the 2016 Touch Bar esc',
+  { id: 'esc', legend: 'esc',      era: 2, name: 'Esc',        year: '1960',    feedback: 'click', photo: 'teletype-model-33-esc-key-transparent.png', photoSource: 'chatgpt',
+    image: 'A round grey keytop marked ESC, in the style of the Teletype Model 33',
     press: 'Sends character 27 and lets the program decide; almost always, stop whatever is happening.',
     description: 'Bob Bemer wrote ESC into ASCII in 1960 so a terminal could switch character sets; the Teletype Model 33 gave it a key in 1963, vi made it the way out of everything, and Apple turned it into a strip of glass in 2016 and gave the key back in 2019.',
     why: 'The universal “get me out of here” — and the one key people refused to let become a picture.' },
-  { id: 'ctrl', legend: 'ctrl',     era: 2, name: 'Ctrl',       year: '1963',    feedback: 'none', photo: 'teletype-model-33-ctrl-key-transparent.png',
-    image: 'CTRL key on a Teletype Model 33, macro',
+  { id: 'ctrl', legend: 'ctrl',     era: 2, name: 'Ctrl',       year: '1963',    feedback: 'none', photo: 'teletype-model-33-ctrl-key-transparent.png', photoSource: 'chatgpt',
+    image: 'A round grey keytop marked CTRL, in the style of the Teletype Model 33',
     press: 'Nothing alone. Held with another key, sends a command instead of a character: copy, undo, cancel, reboot.',
     description: 'On the Teletype Model 33, holding CTRL stripped bits from the next key so it sent a control character instead of a letter — Ctrl-G rang the bell. In 1981 David Bradley wired Ctrl-Alt-Del into the IBM PC as a developer’s reboot shortcut, and it got out.',
     why: 'The key that turns a keyboard into a control panel.' },
-  { id: 'correct', legend: 'correct',  era: 2, name: 'Correct',    year: '1973',    feedback: 'strike', photo: 'selectric-ii-correcting-key-v3-transparent.png',
-    image: 'IBM Correcting Selectric II, CORRECT key and lift-off tape',
+  { id: 'correct', legend: 'correct',  era: 2, name: 'Correct',    year: '1973',    feedback: 'strike', photo: 'selectric-ii-correcting-key-v3-transparent.png', photoSource: 'chatgpt',
+    image: 'A black keycap marked with an X in a pentagon, in the style of the Correcting Selectric II',
     press: 'Backs the carrier up one space and switches to the lift-off tape, so the next strike removes a character instead of printing one.',
     description: 'The Correcting Selectric II of 1973 added a second tape that lifted the ink back off the paper: back up one space, strike the wrong letter again, and it was gone. The first undo you could hold in your hand.',
     why: 'The press that takes a press back.' },
 
   // Era III · Computer
   { id: 'f1', legend: 'F1',       era: 3, name: 'F1',         year: '1981',    feedback: 'click',
-    image: 'F1 key on an IBM Model F keyboard, left-hand function columns', photo: 'ibm-f1-key-transparent.png',
+    image: 'A beige keycap marked F1, in the style of the IBM PC keyboard', photo: 'ibm-f1-key-transparent.png', photoSource: 'chatgpt',
     press: 'Sends a code the program interprets; by convention, opens help.',
     description: 'The IBM PC of 1981 put ten numbered function keys in two columns down the left of its keyboard, labeled F1 to F10. Nothing on the keycap says what they do; software decided, and F1 settled into meaning help.',
     why: 'The first key whose label is a number, not a letter — the keyboard stops describing itself.' },
   { id: 'capslock', legend: '⇪', era: 3, name: 'Caps Lock',  year: '1981',    feedback: 'click + LED',
-    image: 'Caps Lock key with its LED lit, macro', photo: 'xerox-alto-lock.png',
+    image: 'A black keycap marked LOCK, in the style of the 1973 Xerox Alto: an earlier lock key, not the lit IBM PC key described here', photo: 'xerox-alto-lock.png', photoSource: 'chatgpt',
     press: 'Toggles a mode: every letter arrives uppercase until it is pressed again. An LED says which state you are in.',
     description: 'Typewriters had a shift lock that held the carriage up; the IBM PC of 1981 renamed it Caps Lock, gave it a light, and made it affect only letters. The Happy Hacking Keyboard replaced it with Ctrl in 1996 and Google dropped it from the Chromebook in 2011.',
     why: 'The only key that changes what every later press means until you press it again.' },
   { id: 'command', legend: '⌘',  era: 3, name: '⌘ Command',  short: 'Command', year: '1984', feedback: 'none',
-    image: '⌘ key on an original Macintosh M0110 keyboard', photo: 'apple-command-key-transparent.png',
+    image: 'A beige keycap marked ⌘, in the style of the original Macintosh keyboard', photo: 'apple-command-key-transparent.png', photoSource: 'chatgpt',
     press: 'Nothing alone. With a letter, runs a menu command — ⌘Z, ⌘S, ⌘Q — so the whole menu bar can be learned by hand.',
     description: 'The Lisa had an Apple key; when the Macintosh menus filled up with apple logos, Steve Jobs objected, and Susan Kare pulled a looped square out of a symbol dictionary — a Swedish road sign for a place of interest.',
     why: 'A key people know by its picture, not its name.' },
   { id: 'windows', legend: '⊞',  era: 3, name: '⊞ Windows',  short: 'Windows', year: '1994', feedback: 'click',
-    image: '⊞ key on a Microsoft Natural Keyboard, 1994 flag logo', photo: 'windows.png',
+    image: 'A grey keycap with the waving-flag Windows logo of the 1990s', photo: 'windows.png', photoSource: 'chatgpt',
     press: 'Opens the Start menu. With a letter, system shortcuts — ⊞D shows the desktop, ⊞L locks the screen.',
     description: 'Microsoft put its logo on a key on the Natural Keyboard in 1994 and shipped Windows 95 to use it the next year; since then nearly every PC keyboard has carried a corporate logo as a standard key.',
     why: 'The first logo that became a key.' },
@@ -137,9 +146,9 @@ export const COPY = {
       'Wikipedia — IBM Selectric; IBM — Selectric typewriter history',
       'Folklore.org — Swedish Campground (Andy Hertzfeld)',
       'Wikipedia — Microsoft Natural Keyboard; Windows 95',
-      'Image credits — to be added per key',
     ],
-    tools: ['Figma variables & conditional prototyping · Claude (research, spec, wireframe)'],
+    images: 'The key pictures on the timeline are AI-generated with ChatGPT (OpenAI). They are illustrations of how each key looked, not photographs of the objects, so legends, colours and wear may differ from the real keys. Each key’s card says what its picture shows. Keys without a picture are still waiting for one.',
+    tools: ['Figma variables & conditional prototyping · Claude (research, spec, wireframe) · ChatGPT (key pictures)'],
   },
   completion: {
     heading: 'EVERY KEY PRESSED',

@@ -15,6 +15,7 @@ const about = COPY.about;
       <p class="t-label">Sources</p>
       <div class="bullets t-body muted"><p v-for="s in about.sources" :key="s">• {{ s }}</p></div>
     </div>
+    <div class="section"><p class="t-label">Images</p><p class="t-body">{{ about.images }}</p></div>
     <div class="section">
       <p class="t-label">Figma plugins &amp; tools</p>
       <div class="bullets t-body muted"><p v-for="s in about.tools" :key="s">• {{ s }}</p></div>

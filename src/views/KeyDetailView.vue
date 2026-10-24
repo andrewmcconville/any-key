@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { useOverlayNav } from '../composables/useOverlayNav';
-import { COPY } from '../data/content';
+import { COPY, IMAGE_SOURCES } from '../data/content';
 import { useFlightStore } from '../stores/flight';
 import { useGameStore } from '../stores/game';
 import { useUiStore } from '../stores/ui';
@@ -20,6 +20,9 @@ const era = computed(() => game.eraById(key.value.era));
 const collected = computed(() => game.isCollected(props.id));
 const justCollected = ref(false);
 const collectBtn = ref(null);
+
+// Who made the key's picture on the timeline, if it has one (see IMAGE_SOURCES).
+const imageSource = computed(() => (key.value.photo ? IMAGE_SOURCES[key.value.photoSource] ?? null : null));
 
 const titleCase = s => s.charAt(0) + s.slice(1).toLowerCase();
 const meta = computed(() => `${key.value.year} · Era ${era.value.numeral} · ${titleCase(era.value.name)} · Feedback: ${key.value.feedback}`);
@@ -76,7 +79,12 @@ async function close() {
 <template>
   <ModalShell v-if="key" :title="key.title ?? key.short ?? key.name" title-id="key-title" @close="close">
     <p class="meta t-label t-label--lc">{{ meta }}</p>
-    <div class="image t-label t-label--lc">IMAGE — {{ key.image }}</div>
+    <figure class="figure">
+      <div class="image t-label t-label--lc">IMAGE — {{ key.image }}</div>
+      <figcaption v-if="imageSource" class="credit t-label t-label--lc">
+        Timeline picture: {{ imageSource.credit }}.{{ imageSource.generated ? ' An illustration, not a photograph of the object.' : '' }}
+      </figcaption>
+    </figure>
     <div class="section"><p class="t-label">What the press does</p><p class="t-body">{{ key.press }}</p></div>
     <div class="section"><p class="t-label">Description</p><p class="t-body">{{ key.description }}</p></div>
     <div class="section"><p class="t-label">Why it belongs</p><p class="t-body">{{ key.why }}</p></div>
@@ -100,7 +108,8 @@ async function close() {
   text-align: center;
   padding: 0 4.8rem;
   color: var(--muted);
-  margin-bottom: 4.8rem;
 }
+.figure { margin: 0 0 4.8rem; }
+.credit { color: var(--muted); margin-top: 1.2rem; }
 .btn-caption { text-align: center; color: var(--muted); margin-top: 2.4rem; }
 </style>
