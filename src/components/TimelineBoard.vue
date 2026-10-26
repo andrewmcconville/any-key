@@ -239,13 +239,11 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   height: 100%;
   isolation: isolate;     /* the chains, rail and keys stack among themselves (see TimelineNode), not with the HUD */
 }
-/* A steel rod: lit from above, so a highlight runs along it above its centre and its underside is in shade. */
 .rail {
   position: absolute; left: 0;   /* top and width set inline: the ruler's length, at RAIL_Y */
   z-index: 2;                    /* over the tops of the chains */
-  height: 1.2rem; margin-top: -0.6rem;
-  border-radius: 0.6rem;
-  background: linear-gradient(var(--steel) 0%, var(--steel-light) 30%, var(--steel) 65%, var(--steel-dark) 100%);
+  height: 0.6rem; margin-top: -0.3rem;
+  background: var(--ink);
 }
 .ticks {
   position: absolute; left: 0;   /* sits on the rail; the end ticks overhang the box by half a stroke */

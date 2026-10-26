@@ -34,7 +34,10 @@ onMounted(measure);
 const topEdge = computed(() => cy.value - R.value * (bounds.value ? 1 - 2 * bounds.value.top : 1));
 const bottomEdge = computed(() => cy.value + R.value * (bounds.value ? 2 * bounds.value.bottom - 1 : 1));
 const rem = n => `${n / 10}rem`;
-const cy = computed(() => props.node.cy);
+// The chain doesn't stretch, so a key that trails the rail swings on an arc about its hook,
+// rising a little as it goes out to the side.
+const reach = props.node.cy - RAIL_Y;   // hook to the key's centre
+const cy = computed(() => RAIL_Y + Math.sqrt(Math.max(0, reach ** 2 - props.lag ** 2)));
 
 const state = computed(() => game.keyState(props.node));
 // What a screen reader hears for the key: its name and year, then where it stands.
@@ -49,9 +52,10 @@ const glyph = computed(() => (state.value === 'collected' ? 'check' : state.valu
 // The key hangs straight down from its hook on the rail by a ball chain, the kind that switches a
 // light on. While the board scrolls the key trails the rail by `lag` and swings back like a
 // pendulum: the chain, held taut by the key's weight, runs straight from the hook to the top of the
-// key, and the key turns with it (by the Tilt knob × the chain's angle). The name and year trail
-// the key in turn, a little further each. Pressing the key pulls it down, chain and all (--pull in
-// the styles). The tilt and trail factors are the Scroll physics window's knobs (stores/swing.js).
+// key, and the key turns with it (by the Tilt knob × the chain's angle) as it rides the arc above.
+// The name and year trail the key in turn, a little further each. Pressing the key pulls it down,
+// chain and all (--pull in the styles). The tilt and trail factors are the Scroll physics window's
+// knobs (stores/swing.js).
 const tilt = computed(() => -swing.settings.tilt * Math.atan2(props.lag, cy.value - RAIL_Y));
 // The chain runs from the hook to the middle of the key's top edge, wherever the key's turn puts it.
 const chainStyle = computed(() => {
@@ -194,33 +198,26 @@ function onPress() {
 .node-label .name, .node-label .year { width: fit-content; margin-inline: auto; padding-inline: 0.8rem; background: var(--paper); }
 .node-label[data-locked="true"] { color: var(--muted); }
 
-/* A ball chain: steel beads on a fine wire, lit from the upper left. It hangs from its top edge at
-   the hook (left and top set inline) and swings about it; its length and angle come from the key's
-   position. The beads are laid from the key's end up, so when a press pulls more chain out they
-   travel down with the key and new ones come out from under the rail. */
+/* The chain, drawn as a dashed line 0.3rem wide. It hangs from its top edge at the hook (left and
+   top set inline) and swings about it; its length and angle come from the key's position. The
+   dashes are laid from the key's end up, so when a press pulls more chain out they travel down with
+   the key and new ones come out from under the rail. */
 .chain {
   position: absolute;
-  width: 1.6rem; margin-left: -0.8rem;
+  width: 0.3rem; margin-left: -0.15rem;
   transform-origin: 50% 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle 0.32rem at 42% 42%, var(--white), transparent) 50% 100% / 1.6rem 2.2rem repeat-y,
-    radial-gradient(circle 0.8rem, var(--steel) 35%, var(--steel-dark) 85%, transparent) 50% 100% / 1.6rem 2.2rem repeat-y,
-    linear-gradient(90deg, transparent 0.65rem, var(--steel-dark) 0 0.95rem, transparent 0);
+  background: repeating-linear-gradient(to top, var(--muted) 0 0.9rem, transparent 0 1.8rem);
 }
-/* The hook: a steel collar round the rail, shaded across like the rail is shaded down. */
 .rail-dot {
   position: absolute;
-  width: 1.6rem; height: 2.4rem; margin: -1.2rem 0 0 -0.8rem;
-  border-radius: 0.6rem;
-  background: linear-gradient(90deg, var(--steel-dark), var(--steel-light) 35%, var(--steel) 65%, var(--steel-dark));
+  width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;
+  border-radius: 50%; background: var(--ink);
   transition: width var(--dur-sm) var(--ease-standard), height var(--dur-sm) var(--ease-standard), margin var(--dur-sm) var(--ease-standard);
 }
-/* A collected photographed key: the hook grows into the ✓ badge, the same as a cleared era dot's. */
+/* A collected photographed key: the junction grows into the ✓ badge, the same as a cleared era dot's. */
 .rail-dot--check {
   width: 6.4rem; height: 6.4rem; margin: -3.2rem 0 0 -3.2rem;
-  border-radius: 50%;
-  background: var(--ink);
   display: grid; place-items: center;
   color: var(--white);
   font-size: 4.8rem;
