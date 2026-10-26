@@ -17,12 +17,16 @@ export const yearX = year => (year - YEAR_FROM) * YEAR_WIDTH;
 export const BOARD_WIDTH = yearX(YEAR_TO);
 export const RAIL_Y = 380;          // rail centreline
 
-// Every key hangs straight down from its hook, in the first row where it clears the keys already
-// hanging there; a deeper key's chain runs down behind the keys above it.
-const FIRST_ROW = 440;   // below the rail, the first row's key centres
-const ROW_PITCH = 460;   // a row's key, name and year, clear of the next row's key
-const ROW_GAP = 400;     // least distance between keys in the same row: a photo key (340 wide) and its name
+// Every key hangs straight down from its hook on a chain of its own length, so the keys don't line up
+// in rows. The lengths step through the span by the golden ratio, which keeps one key's length well
+// away from the next one's and spreads the set evenly; a key that would hang level with a key close
+// beside it takes the nearest depth clear of that key. A deeper key's chain runs down behind the keys above it.
+const MIN_DROP = 440;    // rail to a key's centre, on the shortest chain
+const MAX_DROP = 1360;   // on the longest: any deeper and the key's name hangs below a short landscape window
+const STACK_GAP = 460;   // between keys close beside each other: the upper one's key, name and year
+const NEAR = 400;        // keys closer than this side to side must stack: a photo key (340 wide) and its name
 const TIE_GAP = 72;      // hooks for keys from the same year sit this far apart about it, so each one's ✓ badge shows
+const GOLDEN = 0.618034;
 
 // Where each key's picture came from, by the key's `photoSource`. Every picture so far was
 // generated with ChatGPT; a real photograph would get its own entry naming the photographer,
@@ -113,16 +117,18 @@ export const KEYS = [
     why: 'The key you press to stop typing.' },
 ];
 
-// Derive board positions. KEYS is in year order. A key's year on the scale is the first four-digit
+// Derive board positions: `cx`, `drop` (rail to the key's centre) and `cy`. KEYS is in year order. A key's year on the scale is the first four-digit
 // year in its `year` ('c. 1900' and '1900s' are both 1900), and its hook sits there on the rail.
 for (const k of KEYS) k.at = Number(k.year.match(/\d{4}/)[0]);
 KEYS.forEach((k, i) => {
   const tied = KEYS.filter(o => o.at === k.at);
   k.cx = yearX(k.at) + (tied.indexOf(k) - (tied.length - 1) / 2) * TIE_GAP;
-  const above = KEYS.slice(0, i);
-  k.row = 0;
-  while (above.some(o => o.row === k.row && Math.abs(o.cx - k.cx) < ROW_GAP)) k.row += 1;
-  k.cy = RAIL_Y + FIRST_ROW + k.row * ROW_PITCH;
+  const near = KEYS.slice(0, i).filter(o => Math.abs(o.cx - k.cx) < NEAR);
+  const clear = drop => drop >= MIN_DROP && drop <= MAX_DROP && near.every(o => Math.abs(o.drop - drop) >= STACK_GAP);
+  const want = MIN_DROP + Math.round(((i * GOLDEN) % 1) * (MAX_DROP - MIN_DROP));
+  const fits = [want, ...near.flatMap(o => [o.drop - STACK_GAP, o.drop + STACK_GAP])].filter(clear);
+  k.drop = fits.sort((a, b) => Math.abs(a - want) - Math.abs(b - want))[0] ?? MAX_DROP;   // none fits: the layout tests fail
+  k.cy = RAIL_Y + k.drop;
 });
 
 // Each era's stretch of the board, for knowing which era is in view: it begins halfway between the

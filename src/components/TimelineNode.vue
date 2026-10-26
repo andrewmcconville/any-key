@@ -8,7 +8,7 @@ import { useUiStore } from '../stores/ui';
 import GlyphIcon from './GlyphIcon.vue';
 
 const props = defineProps({
-  node: { type: Object, required: true },   // a KEYS entry with cx / cy / row
+  node: { type: Object, required: true },   // a KEYS entry with cx / cy
   lag: { type: Number, default: 0 },        // canvas px the key trails the rail by while the board scrolls
 });
 const emit = defineEmits(['press']);

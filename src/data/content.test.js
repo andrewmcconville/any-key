@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { BOARD_WIDTH, ERAS, IMAGE_SOURCES, KEYS, YEAR_WIDTH, yearX } from './content';
+import { BOARD_WIDTH, ERAS, IMAGE_SOURCES, KEYS, RAIL_Y, YEAR_WIDTH, yearX } from './content';
 import { photoUrl } from '../lib/photos';
 
 describe('board layout', () => {
   const LABEL_W = 360;     // a key's name and year
+  const STACK_H = 460;     // a photo key, its name and year
   const pairs = KEYS.flatMap((a, i) => KEYS.slice(i + 1).map(b => [a, b]));
 
   it('keys are in year order', () => {
@@ -18,15 +19,19 @@ describe('board layout', () => {
     }
   });
 
-  it('keys in the same row keep their labels apart', () => {
-    for (const [a, b] of pairs.filter(([a, b]) => a.row === b.row)) {
-      expect(Math.abs(a.cx - b.cx), `${a.id} / ${b.id}`).toBeGreaterThanOrEqual(LABEL_W);
+  it('keys whose labels would meet hang a key, name and year apart', () => {
+    for (const [a, b] of pairs.filter(([a, b]) => Math.abs(a.cx - b.cx) < LABEL_W)) {
+      expect(Math.abs(a.cy - b.cy), `${a.id} / ${b.id}`).toBeGreaterThanOrEqual(STACK_H);
     }
   });
 
-  // The board's height is planned for three rows; a fourth would hang below a short window.
-  it('the keys hang in three rows at most', () => {
-    expect(Math.max(...KEYS.map(k => k.row))).toBeLessThanOrEqual(2);
+  it('the chains are not all one length', () => {
+    expect(new Set(KEYS.map(k => k.cy)).size).toBe(KEYS.length);
+  });
+
+  // The board's height is planned for keys down to here; deeper, a name hangs below a short window.
+  it('no key hangs more than 136rem below the rail', () => {
+    for (const k of KEYS) expect(k.cy - RAIL_Y, k.id).toBeLessThanOrEqual(1360);
   });
 
   it('every key lies in its own era’s stretch of the board', () => {

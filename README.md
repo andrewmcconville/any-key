@@ -41,7 +41,7 @@ Every push to `main` runs `.github/workflows/deploy.yml`, which builds the app a
 
 The app is portrait and sized to a 9:16 stage. On a phone, a tablet or a kiosk it fills the screen. With a mouse (a desktop or laptop browser) it stops at a large phone's size: the bars and cards are no wider than 432 px, centred, while the board runs the width of the window. Browser zoom makes it bigger. The board runs the full height of the stage and both HUD bars lie over it (`--hud-top-h` and `--hud-bottom-h`), so a key hanging beside the bottom bar shows past it.
 
-The rem size comes from the window's full height (`100vh`) but the stage is drawn at the visible height (`100dvh`), so on a phone whose address bar stays up, most of all in landscape, the stage is shorter than 256rem: about 217rem on an Android phone in landscape. The board's drawing is planned to fit that. The deepest key's name ends about 213rem from the top of the stage, so a fourth row of keys would not fit (`data/content.test.js` holds it to three).
+The rem size comes from the window's full height (`100vh`) but the stage is drawn at the visible height (`100dvh`), so on a phone whose address bar stays up, most of all in landscape, the stage is shorter than 256rem: about 217rem on an Android phone in landscape. The board's drawing is planned to fit that: no key hangs more than 136rem below the rail, where its name would end about 213rem from the top of the stage (`data/content.test.js` holds it there).
 
 ## Structure
 
@@ -108,7 +108,7 @@ The Design tools group shows in every visitor's Menu today, kiosk or not. Hiding
 
 ## Rules implemented
 
-- The board is a timeline drawn to scale: a ruler from 1870 to 2020 at 6rem a year, numbered by decade, with the era names above it. Each key hangs straight down from a hook at its year, in the first of up to three rows where it clears the keys already hanging there; keys from the same year hang side by side, and a deeper key's line runs behind the keys above it. The empty decades are real board space (1900 to 1960 holds only Return).
+- The board is a timeline drawn to scale: a ruler from 1870 to 2020 at 6rem a year, numbered by decade, with the era names above it. Each key hangs straight down from a hook at its year on a chain of its own length, so the keys don't line up in rows (`data/content.js` spreads the lengths by the golden ratio). Keys close beside each other, like two from the same year, hang at least a key, name and year apart, and a deeper key's line runs behind the keys above it. The empty decades are real board space (1900 to 1960 holds only Return).
 - Scrolling swings the keys like weights on chains: each trails the rail and swings back on an arc about its hook, turning in line with its chain. Pressing a key tugs it down, chain and all, and it springs back.
 - Era I is open at start; collecting 2 keys in an era unlocks the next one.
 - Collecting flies the key's cap to the gauge and closes the card a beat later. Anything a card adds later plays when the card opens, never in the moment after the press.
