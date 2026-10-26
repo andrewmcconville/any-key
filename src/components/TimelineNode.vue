@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { RAIL_Y } from '../data/content';
+import { BEND_DEPTH, RAIL_Y } from '../data/content';
 import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
 import { useSwingStore } from '../stores/swing';
@@ -8,8 +8,7 @@ import { useUiStore } from '../stores/ui';
 import GlyphIcon from './GlyphIcon.vue';
 
 const props = defineProps({
-  node: { type: Object, required: true },   // a KEYS entry with cx / cy / above
-  hudTop: { type: Number, default: 168 },   // canvas px removed from board-space y
+  node: { type: Object, required: true },   // a KEYS entry with hx / cx / cy / row
   lag: { type: Number, default: 0 },        // canvas px the key trails the rail by while the board scrolls
 });
 const emit = defineEmits(['press']);
@@ -35,8 +34,7 @@ onMounted(measure);
 const topEdge = computed(() => cy.value - R.value * (bounds.value ? 1 - 2 * bounds.value.top : 1));
 const bottomEdge = computed(() => cy.value + R.value * (bounds.value ? 2 * bounds.value.bottom - 1 : 1));
 const rem = n => `${n / 10}rem`;
-const cy = computed(() => props.node.cy - props.hudTop);
-const railY = RAIL_Y - props.hudTop;
+const cy = computed(() => props.node.cy);
 
 const state = computed(() => game.keyState(props.node));
 // What a screen reader hears for the key: its name and year, then where it stands.
@@ -48,34 +46,42 @@ const label = computed(() => {
 });
 const glyph = computed(() => (state.value === 'collected' ? 'check' : state.value === 'locked' ? 'question' : null));
 
-// The key hangs from (or stands on) the rail by its connector, a flexible rod rooted at the rail
-// dot. While the board scrolls the key trails the rail by `lag` and the rod bends to reach it: it
-// leaves the rail vertically and meets the key square to the key's face, which is tilted by the
-// rod's angle at the key's centre (a hanging key turns the opposite way from a standing one).
+// The key hangs from its hook on the rail by its connector, a flexible rod. While the board scrolls
+// the key trails the rail by `lag` and the rod bends to reach it: it leaves the rail vertically and
+// meets the key square to the key's face, which is tilted by the rod's angle at the key's centre.
+// A key that hangs to one side of its hook (keys from close years spread apart) makes that sideways
+// bend near the rail: a near-row rod over its whole length, a far-row rod within BEND_DEPTH, below
+// which it hangs straight down between the near-row keys and swings from there.
 // The name and year trail the key in turn, a little further each, like a chain. The tilt, bend
 // and trail factors are the Scroll physics window's knobs (stores/swing.js).
-const rod = computed(() => (props.node.above ? railY - bottomEdge.value : topEdge.value - railY));
-const tilt = computed(() => (props.node.above ? 1 : -1) * swing.settings.tilt * Math.atan2(props.lag, Math.abs(railY - cy.value)));
+const pivot = props.node.row === 1 ? BEND_DEPTH : 0;   // below the rail, where the rod's last stretch hangs from
+const rod = computed(() => topEdge.value - RAIL_Y);
+const tilt = computed(() => -swing.settings.tilt * Math.atan2(props.lag, cy.value - RAIL_Y - pivot));
 // The connector as an SVG in canvas px. Its box runs from the rail to the key's edge and is wide
-// enough for the key's whole swing (Safari clips an SVG to its box whatever its overflow), with
-// x = W/2 at the key's rest position; the path is a cubic whose handles reach `bend` of the way.
+// enough for the hook, the key and the key's whole swing (Safari clips an SVG to its box whatever
+// its overflow). Each stretch is a cubic whose handles reach `bend` of its height.
 const connector = computed(() => {
   const H = Math.max(1, rod.value);
-  const W = 2 * (swing.settings.maxLag + 12);
-  const h = swing.settings.bend * H;
-  const x0 = W / 2;
-  const x = x0 + props.lag;
+  const pad = swing.settings.maxLag + 12;
+  const left = Math.min(props.node.hx, props.node.cx) - pad;
+  const W = Math.abs(props.node.cx - props.node.hx) + 2 * pad;
+  const hook = props.node.hx - left;
+  const k = props.node.cx - left;     // the key's rest position
+  const x = k + props.lag;
   const t = tilt.value;
-  const d = props.node.above
-    // rail at the bottom (x0, H), key edge at the top (x, 0); into the key along its local up
-    ? `M ${x0} ${H} C ${x0} ${H - h}, ${x - h * Math.sin(t)} ${h * Math.cos(t)}, ${x} 0`
-    // rail at the top (x0, 0), key edge at the bottom (x, H); into the key along its local down
-    : `M ${x0} 0 C ${x0} ${h}, ${x + h * Math.sin(t)} ${H - h * Math.cos(t)}, ${x} ${H}`;
-  return { W, H, d };
+  const b = swing.settings.bend;
+  const D = Math.min(pivot, H);
+  const L = H - D;
+  // A far-row rod first bends from the hook to above the key's rest position, arriving vertical at D.
+  const start = D ? `M ${hook} 0 C ${hook} ${b * D}, ${k} ${D - b * D}, ${k} ${D}` : `M ${hook} 0`;
+  const from = D ? k : hook;
+  // Then down to the key edge at the bottom (x, H), into the key along its local down.
+  const d = `${start} C ${from} ${D + b * L}, ${x + b * L * Math.sin(t)} ${H - b * L * Math.cos(t)}, ${x} ${H}`;
+  return { left, W, H, d };
 });
 const connectorStyle = computed(() => ({
-  left: rem(props.node.cx - connector.value.W / 2),
-  top: rem(props.node.above ? bottomEdge.value : railY),
+  left: rem(connector.value.left),
+  top: rem(RAIL_Y),
   width: rem(connector.value.W),
   height: rem(connector.value.H),
 }));
@@ -85,11 +91,10 @@ const nodeStyle = computed(() => ({
   rotate: `${tilt.value}rad`,
 }));
 
-// Labels sit on the far side of the node from the rail: 19 canvas px above it (anchored by their
-// bottom edge, so the type size doesn't matter) or 21 below it.
+// Labels sit 21 canvas px below the node.
 const labelStyle = computed(() => ({
   left: rem(props.node.cx + props.lag),
-  top: rem(props.node.above ? topEdge.value - 19 : bottomEdge.value + 21),
+  top: rem(bottomEdge.value + 21),
 }));
 const nameStyle = computed(() => ({ translate: rem(props.lag * swing.settings.nameTrail) }));
 const yearStyle = computed(() => ({ translate: rem(props.lag * swing.settings.yearTrail) }));
@@ -106,7 +111,7 @@ function onPress() {
   <svg class="connector" :style="connectorStyle" :viewBox="`0 0 ${connector.W} ${connector.H}`" aria-hidden="true">
     <path :d="connector.d" />
   </svg>
-  <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.cx) }">
+  <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.hx), top: rem(RAIL_Y) }">
     <GlyphIcon v-if="photo && state === 'collected'" name="check" />
   </div>
   <button
@@ -124,7 +129,7 @@ function onPress() {
     <GlyphIcon v-else-if="glyph" class="glyph" :name="glyph" />
     <span v-else class="glyph">PRESS</span>
   </button>
-  <div class="node-label" :class="{ 'node-label--above': node.above }" :data-locked="state === 'locked'" :style="labelStyle">
+  <div class="node-label" :data-locked="state === 'locked'" :style="labelStyle">
     <div class="name" :style="nameStyle">{{ node.short ?? node.name }}</div>   <!-- the plain name: ⌘ Command reads Command on the board -->
     <div class="year" :style="yearStyle">{{ node.year }}</div>
   </div>
@@ -174,7 +179,6 @@ function onPress() {
   text-align: center;
   pointer-events: none;
 }
-.node-label--above { transform: translateY(-100%); }
 .node-label .name { font: 600 var(--text-body)/var(--lh-body) var(--font-body); }   /* Body strong: the names are the board's wayfinding */
 .node-label .year { font: 500 var(--text-label)/var(--lh-label) var(--font-display); color: var(--muted); letter-spacing: .02em; }
 .node-label[data-locked="true"] { color: var(--muted); }
@@ -189,7 +193,6 @@ function onPress() {
   position: absolute;
   width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;
   border-radius: 50%; background: var(--ink);
-  top: calc(126rem - 16.8rem);
   transition: width var(--dur-sm) var(--ease-standard), height var(--dur-sm) var(--ease-standard), margin var(--dur-sm) var(--ease-standard);
 }
 /* A collected photographed key: the junction grows into the ✓ badge, the same as a cleared era dot's. */

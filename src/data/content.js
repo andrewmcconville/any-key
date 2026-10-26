@@ -1,5 +1,5 @@
 // Any Key — content. Mirrors the Figma file (p2.5 Content / p2.6 Lo-Fi Wireframe).
-// Positions are in Figma canvas px (1440-wide board, 2560 tall); 1rem = 10 canvas px.
+// Positions are in canvas px from the board's top left; 1rem = 10 canvas px.
 
 export const ERAS = [
   { id: 1, numeral: 'I',   name: 'MECHANICAL', years: '1874–1900' },
@@ -8,16 +8,22 @@ export const ERAS = [
   { id: 4, numeral: 'IV',  name: 'GLASS',      years: '2011' },
 ];
 
-export const ERA_WIDTH = 1800;      // canvas px per era region
-export const RAIL_Y = 1260;         // rail centreline, canvas px
-export const NODE_PITCH = 400;
-export const NODE_FIRST_X = 200;    // centre of the first node in each era
+// The board is a timeline drawn to scale: a ruler from YEAR_FROM to YEAR_TO along the top, and
+// every key hanging below the rail from a hook at its year.
+export const YEAR_FROM = 1870;
+export const YEAR_TO = 2020;
+export const YEAR_WIDTH = 60;       // canvas px per year
+export const yearX = year => (year - YEAR_FROM) * YEAR_WIDTH;
+export const BOARD_WIDTH = yearX(YEAR_TO);
+export const RAIL_Y = 300;          // rail centreline
 
-// Circle-centre y per tier (canvas px), mirrored about the rail: a 108-radius circle's edge sits
-// 168 or 408 from it, above or below.
-const TIER = { farAbove: 744, nearAbove: 984, nearBelow: 1536, farBelow: 1776 };
-const FOUR = ['farAbove', 'nearBelow', 'nearAbove', 'farBelow'];
-const TWO  = ['nearAbove', 'nearBelow'];
+// Keys hang in a near row, and a key steps down to the far row when the key before it is too
+// close to share a row. Every cable makes its sideways bend within BEND_DEPTH of the rail, above
+// the near row, so a far-row cable runs straight down between two near-row keys.
+export const BEND_DEPTH = 200;
+const ROW_Y = [RAIL_Y + 480, RAIL_Y + 1080];   // a key's centre in the near and far row
+const KEY_GAP = 240;   // least distance between neighbouring keys: a far-row cable clears a near-row photo (radius 170) by 70
+const TIE_GAP = 72;    // hooks for keys from the same year sit this far apart about it, so each one's ✓ badge shows
 
 // Where each key's picture came from, by the key's `photoSource`. Every picture so far was
 // generated with ChatGPT; a real photograph would get its own entry naming the photographer,
@@ -108,16 +114,49 @@ export const KEYS = [
     why: 'The key you press to stop typing.' },
 ];
 
-// Derive board positions
-for (const era of ERAS) {
-  const keys = KEYS.filter(k => k.era === era.id);
-  const tiers = keys.length === 2 ? TWO : FOUR;
-  keys.forEach((k, i) => {
-    k.index = i;
-    k.cx = (era.id - 1) * ERA_WIDTH + NODE_FIRST_X + i * NODE_PITCH;
-    k.cy = TIER[tiers[i]];
-    k.above = k.cy < RAIL_Y;
+// Derive board positions. KEYS is in year order. A key's year on the scale is the first four-digit
+// year in its `year` ('c. 1900' and '1900s' are both 1900), and its hook sits there on the rail.
+for (const k of KEYS) k.at = Number(k.year.match(/\d{4}/)[0]);
+for (const k of KEYS) {
+  const tied = KEYS.filter(o => o.at === k.at);
+  k.hx = yearX(k.at) + (tied.indexOf(k) - (tied.length - 1) / 2) * TIE_GAP;
+}
+// Each key hangs as close below its hook as it can while neighbours stay KEY_GAP apart.
+spread(KEYS.map(k => k.hx), KEY_GAP).forEach((x, i) => { KEYS[i].cx = x; });
+KEYS.forEach((k, i) => {
+  const prev = KEYS[i - 1];
+  k.row = prev && k.cx - prev.cx < 2 * KEY_GAP ? 1 - prev.row : 0;
+  k.cy = ROW_Y[k.row];
+});
+
+// Each era's stretch of the board, for knowing which era is in view: it begins halfway between the
+// last key of the era before and its own first key. `x` is its first key's year, where its label starts.
+ERAS.forEach((era, i) => {
+  const first = KEYS.find(k => k.era === era.id);
+  const last = KEYS.findLast(k => k.era === era.id - 1);
+  era.x = yearX(first.at);
+  era.from = i === 0 ? 0 : yearX((last.at + first.at) / 2);
+});
+
+/**
+ * Positions as close as they can be to `targets` (in order) with every neighbour at least `gap`
+ * apart, the least-squares fit. Less each target's index × gap, "at least gap apart" becomes "in
+ * order", so pool every run that comes out of order into its mean (pool adjacent violators), then
+ * add the gaps back.
+ */
+function spread(targets, gap) {
+  const runs = [];   // { sum, n }
+  targets.forEach((t, i) => {
+    let run = { sum: t - i * gap, n: 1 };
+    while (runs.length && runs.at(-1).sum / runs.at(-1).n > run.sum / run.n) {
+      const before = runs.pop();
+      run = { sum: before.sum + run.sum, n: before.n + run.n };
+    }
+    runs.push(run);
   });
+  const out = [];
+  for (const run of runs) for (let j = 0; j < run.n; j++) out.push(run.sum / run.n + out.length * gap);
+  return out;
 }
 
 export const ACHIEVEMENTS = [

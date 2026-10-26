@@ -37,13 +37,14 @@ export const SWING_CONTROLS = [
 ];
 
 const REST = 0.05;          // below this displacement and speed a key is still
-const SHORTEST_ROD = 161;   // canvas px, the shortest circle key's connector: the frequency knob refers to it
 const MAX_PHASE = 0.25;     // rad of the stiffest spring per integration step; symplectic Euler is safe well under 2
 const MAX_STEPS = 32;       // sub-steps per frame at most, so a long stall costs bounded work
 const decimals = c => (String(c.step).split('.')[1] || '').length;
 
 /** Each key's connector length, canvas px: rail to the key's edge (a photo is the larger box). */
 export const RODS = KEYS.map(k => ({ id: k.id, length: Math.abs(RAIL_Y - k.cy) - (k.photo ? 170 : 108) }));
+// The shortest circle key's connector: the frequency knob refers to it.
+const SHORTEST_ROD = Math.min(...RODS.filter((_, i) => !KEYS[i].photo).map(rod => rod.length));
 
 export const useSwingStore = defineStore('swing', () => {
   const settings = reactive({ ...SWING_DEFAULTS });

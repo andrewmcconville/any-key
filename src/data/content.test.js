@@ -1,6 +1,44 @@
 import { describe, expect, it } from 'vitest';
-import { IMAGE_SOURCES, KEYS } from './content';
+import { BOARD_WIDTH, ERAS, IMAGE_SOURCES, KEYS, YEAR_WIDTH, yearX } from './content';
 import { photoUrl } from '../lib/photos';
+
+describe('board layout', () => {
+  const PHOTO_R = 170;     // a photo key's box, the widest key
+  const LABEL_W = 360;     // a key's name and year
+  const pairs = KEYS.flatMap((a, i) => KEYS.slice(i + 1).map(b => [a, b]));
+
+  it('keys are in year order', () => {
+    for (let i = 1; i < KEYS.length; i++) expect(KEYS[i].at, KEYS[i].id).toBeGreaterThanOrEqual(KEYS[i - 1].at);
+  });
+
+  it('every hook is on the ruler, within a year of its key’s year', () => {
+    for (const k of KEYS) {
+      expect(Math.abs(k.hx - yearX(k.at)), k.id).toBeLessThan(YEAR_WIDTH);
+      expect(k.cx, k.id).toBeGreaterThanOrEqual(0);
+      expect(k.cx, k.id).toBeLessThanOrEqual(BOARD_WIDTH);
+    }
+  });
+
+  it('keys in the same row keep their labels apart', () => {
+    for (const [a, b] of pairs.filter(([a, b]) => a.row === b.row)) {
+      expect(Math.abs(a.cx - b.cx), `${a.id} / ${b.id}`).toBeGreaterThanOrEqual(LABEL_W);
+    }
+  });
+
+  it('a far-row rod clears every near-row key', () => {
+    for (const [a, b] of pairs.filter(([a, b]) => a.row !== b.row)) {
+      expect(Math.abs(a.cx - b.cx), `${a.id} / ${b.id}`).toBeGreaterThan(PHOTO_R + 30);
+    }
+  });
+
+  it('every key lies in its own era’s stretch of the board', () => {
+    for (const k of KEYS) {
+      const next = ERAS.find(e => e.id === k.era + 1);
+      expect(k.cx, k.id).toBeGreaterThanOrEqual(ERAS[k.era - 1].from);
+      if (next) expect(k.cx, k.id).toBeLessThan(next.from);
+    }
+  });
+});
 
 describe('key pictures', () => {
   const withPhoto = KEYS.filter(k => k.photo);

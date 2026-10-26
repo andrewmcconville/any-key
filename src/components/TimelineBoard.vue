@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useOverlayNav } from '../composables/useOverlayNav';
-import { ERAS, KEYS, ERA_WIDTH } from '../data/content';
+import { BOARD_WIDTH, ERAS, KEYS, RAIL_Y, YEAR_FROM, YEAR_TO, yearX } from '../data/content';
 import { UNLOCK_AT, useGameStore } from '../stores/game';
 import { useSwingStore } from '../stores/swing';
 import { useUiStore } from '../stores/ui';
@@ -14,19 +14,26 @@ const nav = useOverlayNav();
 const board = ref(null);
 const tree = ref(null);
 const rem = n => `${n / 10}rem`;
-const BOARD_WIDTH = ERAS.length * ERA_WIDTH;
-// The rail runs from the first key's tick to the last, not edge to edge.
-const RAIL_START = KEYS[0].cx;
-const RAIL_END = KEYS[KEYS.length - 1].cx;
+const FIRST_X = KEYS[0].cx;
+const LAST_X = KEYS[KEYS.length - 1].cx;
 
 // The track is what scrolls: slack before the tree so the first key sits at screen centre at
-// scroll start, and it ends half a screen past the last key so that key sits at centre at scroll
-// end (the tree's empty tail beyond that is clipped). 50% is half the board's visible width.
-const slack = `max(0rem, calc(50% - ${rem(RAIL_START)}))`;
+// scroll start, and it ends half a screen and a gutter past the last key, so that key sits near
+// centre at scroll end and the last era's label, which starts at that key's year, still clears the
+// screen edge (the tree's empty tail beyond that is clipped). 50% is half the board's visible width.
+const slack = `max(0rem, calc(50% - ${rem(FIRST_X)}))`;
 const trackStyle = {
   paddingLeft: slack,
-  width: `calc(${slack} + ${rem(RAIL_END)} + 50%)`,
+  width: `calc(${slack} + ${rem(LAST_X)} + 50% + var(--hud-gutter))`,
 };
+
+// The ruler along the rail: a tick every year, taller every five years and tallest at each decade,
+// which is numbered above it. Heights in canvas px above the rail.
+const TICK = 44;
+const tickHeight = year => (year % 10 === 0 ? TICK : year % 5 === 0 ? 28 : 16);
+const YEARS = Array.from({ length: YEAR_TO - YEAR_FROM + 1 }, (_, i) => YEAR_FROM + i);
+const DECADES = YEARS.filter(year => year % 10 === 0);
+const ticks = YEARS.map(year => `M ${yearX(year)} ${TICK} v ${-tickHeight(year)}`).join(' ');
 
 // canvas px → CSS px for this viewport
 const scale = () => tree.value.offsetWidth / BOARD_WIDTH;
@@ -42,10 +49,10 @@ function onScroll() {
   const el = board.value;
   hintOpacity.value = Math.max(0, 1 - el.scrollLeft / (el.clientWidth * HINT_FADE));
   swingBy(el.scrollLeft);
-  // Era in view = the era whose region holds the centre of the view: an era lights up the moment
+  // Era in view = the era whose stretch holds the centre of the view: an era lights up the moment
   // its left edge crosses the centre of the screen, and stays lit until the next era's edge does.
   const centre = (el.scrollLeft + el.clientWidth / 2 - padLeft()) / scale();
-  ui.eraInView = Math.min(ERAS.length, Math.max(1, Math.floor(centre / ERA_WIDTH) + 1));
+  ui.eraInView = ERAS.findLast(era => era.from <= centre)?.id ?? 1;
 }
 
 // Jumping to an era centres its first key, the same spot Space bar occupies at scroll start,
@@ -54,7 +61,7 @@ function scrollToEra(eraId, behavior = 'smooth') {
   stopGlide();
   const el = board.value;
   if (!el) return;
-  const firstKeyX = padLeft() + ((eraId - 1) * ERA_WIDTH + RAIL_START) * scale();
+  const firstKeyX = padLeft() + KEYS.find(k => k.era === eraId).cx * scale();
   const left = Math.max(0, Math.min(firstKeyX - el.clientWidth / 2, el.scrollWidth - el.clientWidth));
   el.scrollTo({ left, behavior });
 }
@@ -172,19 +179,23 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
     @click.capture="onClickCapture"
   >
     <div class="track" :style="trackStyle">
-      <div ref="tree" class="tree">
-        <div class="rail" :style="{ left: rem(RAIL_START), width: rem(RAIL_END - RAIL_START) }" />
-
+      <div ref="tree" class="tree" :style="{ width: rem(BOARD_WIDTH) }">
         <section
           v-for="era in ERAS"
           :key="era.id"
-          class="era-region"
+          class="era"
           :data-locked="!game.isUnlocked(era.id)"
-          :style="{ left: rem((era.id - 1) * ERA_WIDTH) }"
+          :style="{ left: rem(era.x) }"
         >
-          <p class="era-region__label t-label">ERA {{ era.numeral }} · {{ era.name }} · {{ era.years }}</p>
-          <p class="era-region__lock t-label t-label--lc">{{ lockLine(era) }}</p>
+          <p class="era__label t-label">ERA {{ era.numeral }} · {{ era.name }} · {{ era.years }}</p>
+          <p class="era__lock t-label t-label--lc">{{ lockLine(era) }}</p>
         </section>
+
+        <span v-for="year in DECADES" :key="year" class="year t-label" :style="{ left: rem(yearX(year)), top: rem(RAIL_Y - TICK - 8) }">{{ year }}</span>
+        <svg class="ticks" :style="{ top: rem(RAIL_Y - TICK), width: rem(BOARD_WIDTH), height: rem(TICK) }" :viewBox="`0 0 ${BOARD_WIDTH} ${TICK}`" aria-hidden="true">
+          <path :d="ticks" />
+        </svg>
+        <div class="rail" :style="{ top: rem(RAIL_Y), width: rem(BOARD_WIDTH) }" />
 
         <TimelineNode v-for="node in KEYS" :key="node.id" :node="node" :lag="swing.lags[node.id]" @press="openKey" />
       </div>
@@ -215,30 +226,36 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   box-sizing: border-box;
   height: 100%;
   display: flex;
-  align-items: center;    /* the tree is a fixed-height drawing; centre it so the rail sits mid-board */
   overflow: hidden;       /* fallback */
   overflow: clip;         /* clip the tree's empty tail without becoming a scroll container */
 }
 .tree {
-  position: relative;
+  position: relative;     /* width set inline: the ruler's length */
   flex: 0 0 auto;
-  width: 720rem;          /* 4 eras × 180rem */
-  height: 218.4rem;       /* twice the rail's y inside the tree (126rem − 16.8rem HUD top), so the rail is its centre */
+  height: 100%;
 }
 .rail {
-  position: absolute;            /* left/width set inline: first key tick → last key tick */
-  top: calc(126rem - 16.8rem);   /* RAIL_Y minus HUD top */
+  position: absolute; left: 0;   /* top and width set inline: the ruler's length, at RAIL_Y */
   height: 0.6rem; margin-top: -0.3rem;
   background: var(--ink);
 }
-.era-region {
-  position: absolute; top: 0; height: 100%;
-  width: 180rem;
+.ticks {
+  position: absolute; left: 0;   /* sits on the rail; the end ticks overhang the box by half a stroke */
+  overflow: visible;
 }
-.era-region__label { position: absolute; left: 4.8rem; top: calc(20.8rem - 16.8rem); color: var(--muted); }
-.era-region__lock  { position: absolute; left: 4.8rem; top: calc(26.4rem - 16.8rem); color: var(--muted); }
-.era-region[data-locked="false"] .era-region__lock { display: none; }
-.era-region[data-locked="true"] .era-region__label { opacity: .7; }
+/* Stroke in canvas px (the viewBox's units): 3 = 0.3rem. */
+.ticks path { fill: none; stroke: var(--ink); stroke-width: 3; }
+.year {
+  position: absolute;            /* centred above its decade's tick, bottom edge 8 canvas px clear of it */
+  translate: -50% -100%;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.era { position: absolute; top: 4rem; }
+.era p { margin: 0; white-space: nowrap; color: var(--muted); }
+.era .era__lock { margin-top: 0.6rem; }
+.era[data-locked="false"] .era__lock { display: none; }
+.era[data-locked="true"] .era__label { opacity: .7; }
 .swipe-hint {
   position: absolute;
   bottom: 4.8rem;                  /* the board ends where the bottom HUD begins */

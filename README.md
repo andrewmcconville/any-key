@@ -50,7 +50,8 @@ src/
   router/index.js      routes + the start-screen guard
   stores/game.js       collection state, unlock + achievement rules, localStorage persistence
   stores/ui.js         the notice (unlocks, locked keys), scroll-to-era requests, era in view, the collect flight
-  data/content.js      the 14 keys, eras, achievements, image sources and all copy; node positions derived here
+  data/content.js      the 14 keys, eras, achievements, image sources and all copy; node positions derived here,
+                       from each key's year on the board's ruler
   assets/images/       the key pictures (AI-generated, see Images)
   assets/styles.css    global styles. The Figma board is 1440 canvas px wide and 1rem = 10 canvas px,
                        so a Figma value of 192 becomes 19.2rem. Type sizes and the minimum control size are
