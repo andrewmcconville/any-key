@@ -25,7 +25,7 @@ Then open the URL Vite prints (http://127.0.0.1:5173 by default). `npm run build
 npm test
 ```
 
-Vitest runs in jsdom; `npm run test:watch` reruns on save. Tests sit beside the code they cover as `*.test.js`: the game rules (`stores/game.test.js`), the overlay stack against real browser history (`composables/useOverlayNav.test.js`), closing a card during the collect beat (`views/KeyDetailView.test.js`), modal focus (`components/ModalShell.test.js`), the notice (`stores/ui.test.js`), the kiosk idle reset and its flag, and the key pictures' files and sources (`data/content.test.js`).
+Vitest runs in jsdom; `npm run test:watch` reruns on save. Tests sit beside the code they cover as `*.test.js`: the game rules (`stores/game.test.js`), the overlay stack against real browser history (`composables/useOverlayNav.test.js`), closing a card during the collect beat (`views/KeyDetailView.test.js`), modal focus (`components/ModalShell.test.js`), the notice (`stores/ui.test.js`), the kiosk idle reset and its flag, and the board's layout and the key pictures' files and sources (`data/content.test.js`).
 
 ## Kiosk mode
 
@@ -39,7 +39,9 @@ The eight key pictures in `src/assets/images` are AI-generated with ChatGPT (Ope
 
 Every push to `main` runs `.github/workflows/deploy.yml`, which builds the app and publishes `dist/` to GitHub Pages at https://andrewmcconville.github.io/any-key/. The repo's Pages source must be set to **GitHub Actions** (Settings → Pages → Build and deployment → Source); the "deploy from a branch" mode serves the raw repo and the app will not load.
 
-The app is portrait and sized to a 9:16 stage. On a phone, a tablet or a kiosk it fills the screen. With a mouse (a desktop or laptop browser) it stops at a large phone's size: the bars and cards are no wider than 432 px, centred, while the board runs the width of the window. Browser zoom makes it bigger.
+The app is portrait and sized to a 9:16 stage. On a phone, a tablet or a kiosk it fills the screen. With a mouse (a desktop or laptop browser) it stops at a large phone's size: the bars and cards are no wider than 432 px, centred, while the board runs the width of the window. Browser zoom makes it bigger. The board runs the full height of the stage and both HUD bars lie over it (`--hud-top-h` and `--hud-bottom-h`), so a key hanging beside the bottom bar shows past it.
+
+The rem size comes from the window's full height (`100vh`) but the stage is drawn at the visible height (`100dvh`), so on a phone whose address bar stays up, most of all in landscape, the stage is shorter than 256rem: about 217rem on an Android phone in landscape. The board's drawing is planned to fit that. The deepest key's name ends about 213rem from the top of the stage, so a fourth row of keys would not fit (`data/content.test.js` holds it to three).
 
 ## Structure
 
@@ -106,6 +108,8 @@ The Design tools group shows in every visitor's Menu today, kiosk or not. Hiding
 
 ## Rules implemented
 
+- The board is a timeline drawn to scale: a ruler from 1870 to 2020 at 6rem a year, numbered by decade, with the era names above it. Each key hangs straight down from a hook at its year, in the first of up to three rows where it clears the keys already hanging there; keys from the same year hang side by side, and a deeper key's line runs behind the keys above it. The empty decades are real board space (1900 to 1960 holds only Return).
+- Scrolling swings the keys like weights on chains: each trails the rail and swings back on an arc about its hook, turning in line with its chain. Pressing a key tugs it down, chain and all, and it springs back.
 - Era I is open at start; collecting 2 keys in an era unlocks the next one.
 - Collecting flies the key's cap to the gauge and closes the card a beat later. Anything a card adds later plays when the card opens, never in the moment after the press.
 - An unlock is announced by a notice under the top bar once the cap lands. It has no timer: it stays until the visitor taps GO TO ERA, reaches that era, opens an overlay, or dismisses it. The board never moves by itself.

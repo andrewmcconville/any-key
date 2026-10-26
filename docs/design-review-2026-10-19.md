@@ -21,6 +21,7 @@
 >   - Completion has three outlined buttons of equal weight (BACK TO BOARD, VIEW STATS, START OVER), so the "one full-width primary" under Keep is gone. START OVER clears the collection without the confirmation RESET asks for.
 >   - RESET is still a visual peer of STATS and ABOUT, now in the Menu.
 >   - Reset's two-button confirmation sits in the full-height frame, mostly empty.
+> - **Superseded, 26 Oct 2026.** The timeline was redrawn to scale. The rail is now a ruler near the top of the board, and every key hangs below it from a hook at its own year, in up to three rows. So synthesis item 6, Grid & layout finding 6, Whitespace & gestalt finding 4, and the Timeline line under Applied describe a board that no longer exists. The names are still Body strong, as Typography item 2 asks, and a deeper key's line now runs behind the names rather than through them. The HUD bars now lie over the board instead of taking their own rows.
 > - **Sitemap.** any-key-sitemap.png predates all of this. It still shows How to play, the old bottom bar, a "Three-finger salute" achievement that was never added, and per-key Sound and previous / next controls that were not built. The route table in the README is the current map.
 
 Three focused reviews of the Lo-Fi Wireframe page in the Any Key Figma file, run against the project's own p2.9 design-system rules. Screens reviewed: Timeline, Key detail, Stats, How to play, About, Completion, Reset, Start overlay, HUD top, HUD bottom. All measurements are canvas px (3× CSS px), read from renders, ±2 px.

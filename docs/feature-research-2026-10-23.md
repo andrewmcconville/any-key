@@ -22,6 +22,7 @@ What changed under the research since it was written:
 
 - **Collecting closes the card.** The card closes itself a beat after the press, while the cap flies to the gauge. Anything that pays off inside the card has to play when the card opens, or be replayed from a collected card. This affects the live press demo, the face-down reveal, the placement bonus and read-aloud.
 - **One continuous rail.** The board no longer has breaks between eras, so the rail-break notes under Colour returns by era and Meanwhile captions no longer apply.
+- **The board is to scale (26 Oct).** Keys hang at their years on a ruler from 1870 to 2020, so the empty decades are real stretches of board: 1900 to 1960 holds only Return. Meanwhile captions could sit in those stretches with no rail break needed. Eras now differ in width, which any per-era colour has to follow.
 - **Eight keys have pictures.** All eight are AI-generated with ChatGPT, not photographs, and the app now says so. The imagery theme's choice between photographs and drawn plates now also has to cover disclosure.
 - **The menu moved.** The Esc menu is the hamburger Menu in the top bar, Stats moved there, and How to play was removed.
 - **Reset already exists.** The hard reset the idle reset needed is the existing game reset, which now returns to the start screen.
