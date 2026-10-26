@@ -258,7 +258,7 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   font-variant-numeric: tabular-nums;
 }
 .eras { position: absolute; top: 0; }
-.era { position: absolute; top: 4rem; padding-right: var(--hud-gutter); }   /* the padding keeps the last label off the screen edge at scroll end */
+.era { position: absolute; top: 12rem; padding-right: var(--hud-gutter); }   /* the padding keeps the last label off the screen edge at scroll end */
 .era p { margin: 0; white-space: nowrap; color: var(--muted); }
 .era .era__lock { margin-top: 0.6rem; }
 .era[data-locked="false"] .era__lock { display: none; }

@@ -15,7 +15,7 @@ export const YEAR_TO = 2020;
 export const YEAR_WIDTH = 60;       // canvas px per year
 export const yearX = year => (year - YEAR_FROM) * YEAR_WIDTH;
 export const BOARD_WIDTH = yearX(YEAR_TO);
-export const RAIL_Y = 300;          // rail centreline
+export const RAIL_Y = 380;          // rail centreline
 
 // Every key hangs straight down from its hook, in the first row where it clears the keys already
 // hanging there; a deeper key's chain runs down behind the keys above it.
