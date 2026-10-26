@@ -4,7 +4,7 @@
 export const ERAS = [
   { id: 1, numeral: 'I',   name: 'MECHANICAL', years: '1874–1900' },
   { id: 2, numeral: 'II',  name: 'ELECTRIC',   years: '1929–1973' },
-  { id: 3, numeral: 'III', name: 'COMPUTER',   years: '1981–1994' },
+  { id: 3, numeral: 'III', name: 'COMPUTER',   years: '1973–1994' },
   { id: 4, numeral: 'IV',  name: 'GLASS',      years: '2011' },
 ];
 
@@ -79,16 +79,16 @@ export const KEYS = [
     why: 'The press that takes a press back.' },
 
   // Era III · Computer
+  { id: 'capslock', legend: '⇪', era: 3, name: 'Caps Lock',  year: '1973',    feedback: 'click',
+    image: 'A black keycap marked LOCK, in the style of the 1973 Xerox Alto', photo: 'xerox-alto-lock.png', photoSource: 'chatgpt',
+    press: 'Toggles a mode: every letter arrives uppercase until it is pressed again. On most keyboards a light shows when it is on.',
+    description: 'Typewriters had a shift lock that held the carriage up. The Xerox Alto of 1973 marked the key LOCK, but its keyboard only reported which keys were down, so what locked meant was up to the program. The IBM PC of 1981 called it Caps Lock, the PC/AT of 1984 gave it a light, and Google dropped it from the Chromebook in 2011.',
+    why: 'The only key that changes what every later press means until you press it again.' },
   { id: 'f1', legend: 'F1',       era: 3, name: 'F1',         year: '1981',    feedback: 'click',
     image: 'A beige keycap marked F1, in the style of the IBM PC keyboard', photo: 'ibm-f1-key-transparent.png', photoSource: 'chatgpt',
     press: 'Sends a code the program interprets; by convention, opens help.',
     description: 'The IBM PC of 1981 put ten numbered function keys in two columns down the left of its keyboard, labeled F1 to F10. Nothing on the keycap says what they do; software decided, and F1 settled into meaning help.',
     why: 'The first key whose label is a number, not a letter — the keyboard stops describing itself.' },
-  { id: 'capslock', legend: '⇪', era: 3, name: 'Caps Lock',  year: '1981',    feedback: 'click + LED',
-    image: 'A black keycap marked LOCK, in the style of the 1973 Xerox Alto: an earlier lock key, not the lit IBM PC key described here', photo: 'xerox-alto-lock.png', photoSource: 'chatgpt',
-    press: 'Toggles a mode: every letter arrives uppercase until it is pressed again. An LED says which state you are in.',
-    description: 'Typewriters had a shift lock that held the carriage up; the IBM PC of 1981 renamed it Caps Lock, gave it a light, and made it affect only letters. The Happy Hacking Keyboard replaced it with Ctrl in 1996 and Google dropped it from the Chromebook in 2011.',
-    why: 'The only key that changes what every later press means until you press it again.' },
   { id: 'command', legend: '⌘',  era: 3, name: '⌘ Command',  short: 'Command', year: '1984', feedback: 'none',
     image: 'A beige keycap marked ⌘, in the style of the original Macintosh keyboard', photo: 'apple-command-key-transparent.png', photoSource: 'chatgpt',
     press: 'Nothing alone. With a letter, runs a menu command — ⌘Z, ⌘S, ⌘Q — so the whole menu bar can be learned by hand.',
@@ -159,6 +159,7 @@ export const COPY = {
       'Deskthority wiki — Return key; Marcin Wichary — The day Return became Enter',
       'Wikipedia — Sholes and Glidden typewriter; Bob Bemer; Teletype Model 33; Control-Alt-Delete',
       'Wikipedia — IBM Selectric; IBM — Selectric typewriter history',
+      'Xerox — Alto Operating System Reference Manual; Wikipedia — Caps Lock; IBM PC keyboard',
       'Folklore.org — Swedish Campground (Andy Hertzfeld)',
       'Wikipedia — Microsoft Natural Keyboard; Windows 95',
     ],
