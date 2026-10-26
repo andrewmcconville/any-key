@@ -24,7 +24,7 @@ const dotStyle = id => ({ left: `${50 + 50 * swing.lags[id] / Math.max(1, swing.
         <span class="trace__track"><span class="trace__dot" :style="dotStyle(r.id)" /></span>
         <span class="trace__len t-label t-label--lc">{{ r.length }}</span>
       </div>
-      <p class="trace__note t-label t-label--lc muted">lag, −max to +max · connector length, px</p>
+      <p class="trace__note t-label t-label--lc muted">lag, −max to +max · chain length, px</p>
     </div>
 
     <div v-for="c in SWING_CONTROLS" :key="c.key" class="param">

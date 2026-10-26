@@ -18,13 +18,14 @@ const FIRST_X = KEYS[0].cx;
 const LAST_X = KEYS[KEYS.length - 1].cx;
 
 // The track is what scrolls: slack before the tree so the first key sits at screen centre at
-// scroll start, and it ends half a screen and a gutter past the last key, so that key sits near
-// centre at scroll end and the last era's label, which starts at that key's year, still clears the
-// screen edge (the tree's empty tail beyond that is clipped). 50% is half the board's visible width.
+// scroll start, and it ends half a screen past the last key so that key sits at centre at scroll
+// end (the tree's empty tail beyond that is clipped). 50% is half the board's visible width.
+// The era labels sit outside the track, unclipped, so where the last one runs further than half a
+// screen past the last key (it starts at that key's year), the board scrolls on until it clears.
 const slack = `max(0rem, calc(50% - ${rem(FIRST_X)}))`;
 const trackStyle = {
   paddingLeft: slack,
-  width: `calc(${slack} + ${rem(LAST_X)} + 50% + var(--hud-gutter))`,
+  width: `calc(${slack} + ${rem(LAST_X)} + 50%)`,
 };
 
 // The ruler along the rail: a tick every year, taller every five years and tallest at each decade,
@@ -180,17 +181,6 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   >
     <div class="track" :style="trackStyle">
       <div ref="tree" class="tree" :style="{ width: rem(BOARD_WIDTH) }">
-        <section
-          v-for="era in ERAS"
-          :key="era.id"
-          class="era"
-          :data-locked="!game.isUnlocked(era.id)"
-          :style="{ left: rem(era.x) }"
-        >
-          <p class="era__label t-label">ERA {{ era.numeral }} · {{ era.name }} · {{ era.years }}</p>
-          <p class="era__lock t-label t-label--lc">{{ lockLine(era) }}</p>
-        </section>
-
         <span v-for="year in DECADES" :key="year" class="year t-label" :style="{ left: rem(yearX(year)), top: rem(RAIL_Y - TICK - 8) }">{{ year }}</span>
         <svg class="ticks" :style="{ top: rem(RAIL_Y - TICK), width: rem(BOARD_WIDTH), height: rem(TICK) }" :viewBox="`0 0 ${BOARD_WIDTH} ${TICK}`" aria-hidden="true">
           <path :d="ticks" />
@@ -199,6 +189,20 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
 
         <TimelineNode v-for="node in KEYS" :key="node.id" :node="node" :lag="swing.lags[node.id]" @press="openKey" />
       </div>
+    </div>
+
+    <!-- Lined up with the tree (the same slack before it), but outside the track's clip: see trackStyle. -->
+    <div class="eras" :style="{ left: slack }">
+      <section
+        v-for="era in ERAS"
+        :key="era.id"
+        class="era"
+        :data-locked="!game.isUnlocked(era.id)"
+        :style="{ left: rem(era.x) }"
+      >
+        <p class="era__label t-label">ERA {{ era.numeral }} · {{ era.name }} · {{ era.years }}</p>
+        <p class="era__lock t-label t-label--lc">{{ lockLine(era) }}</p>
+      </section>
     </div>
 
     <!-- Sits at the foot of the first screen, just above the bottom HUD; scrolls away with the content and fades with it. -->
@@ -233,11 +237,15 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   position: relative;     /* width set inline: the ruler's length */
   flex: 0 0 auto;
   height: 100%;
+  isolation: isolate;     /* the chains, rail and keys stack among themselves (see TimelineNode), not with the HUD */
 }
+/* A steel rod: lit from above, so a highlight runs along it above its centre and its underside is in shade. */
 .rail {
   position: absolute; left: 0;   /* top and width set inline: the ruler's length, at RAIL_Y */
-  height: 0.6rem; margin-top: -0.3rem;
-  background: var(--ink);
+  z-index: 2;                    /* over the tops of the chains */
+  height: 1.2rem; margin-top: -0.6rem;
+  border-radius: 0.6rem;
+  background: linear-gradient(var(--steel) 0%, var(--steel-light) 30%, var(--steel) 65%, var(--steel-dark) 100%);
 }
 .ticks {
   position: absolute; left: 0;   /* sits on the rail; the end ticks overhang the box by half a stroke */
@@ -251,7 +259,8 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-.era { position: absolute; top: 4rem; }
+.eras { position: absolute; top: 0; }
+.era { position: absolute; top: 4rem; padding-right: var(--hud-gutter); }   /* the padding keeps the last label off the screen edge at scroll end */
 .era p { margin: 0; white-space: nowrap; color: var(--muted); }
 .era .era__lock { margin-top: 0.6rem; }
 .era[data-locked="false"] .era__lock { display: none; }

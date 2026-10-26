@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { BEND_DEPTH, RAIL_Y } from '../data/content';
+import { RAIL_Y } from '../data/content';
 import { photoBounds, photoUrl } from '../lib/photos';
 import { useGameStore } from '../stores/game';
 import { useSwingStore } from '../stores/swing';
@@ -8,7 +8,7 @@ import { useUiStore } from '../stores/ui';
 import GlyphIcon from './GlyphIcon.vue';
 
 const props = defineProps({
-  node: { type: Object, required: true },   // a KEYS entry with hx / cx / cy / row
+  node: { type: Object, required: true },   // a KEYS entry with cx / cy / row
   lag: { type: Number, default: 0 },        // canvas px the key trails the rail by while the board scrolls
 });
 const emit = defineEmits(['press']);
@@ -17,7 +17,7 @@ const game = useGameStore();
 const swing = useSwingStore();
 const ui = useUiStore();
 // A key with a photo shows the keycap itself in place of the circle, a little larger since the
-// photo has white around the cap; its labels and connector keep clear of it the same way.
+// photo has white around the cap; its labels and chain keep clear of it the same way.
 const photo = computed(() => photoUrl(props.node.photo));
 const R = computed(() => (photo.value ? 170 : 108));   // the node's radius, canvas px
 // Where the node's visible top and bottom are, in canvas px: the circle's edges, or for a photo the
@@ -46,49 +46,30 @@ const label = computed(() => {
 });
 const glyph = computed(() => (state.value === 'collected' ? 'check' : state.value === 'locked' ? 'question' : null));
 
-// The key hangs from its hook on the rail by its connector, a flexible rod. While the board scrolls
-// the key trails the rail by `lag` and the rod bends to reach it: it leaves the rail vertically and
-// meets the key square to the key's face, which is tilted by the rod's angle at the key's centre.
-// A key that hangs to one side of its hook (keys from close years spread apart) makes that sideways
-// bend near the rail: a near-row rod over its whole length, a far-row rod within BEND_DEPTH, below
-// which it hangs straight down between the near-row keys and swings from there.
-// The name and year trail the key in turn, a little further each, like a chain. The tilt, bend
-// and trail factors are the Scroll physics window's knobs (stores/swing.js).
-const pivot = props.node.row === 1 ? BEND_DEPTH : 0;   // below the rail, where the rod's last stretch hangs from
-const rod = computed(() => topEdge.value - RAIL_Y);
-const tilt = computed(() => -swing.settings.tilt * Math.atan2(props.lag, cy.value - RAIL_Y - pivot));
-// The connector as an SVG in canvas px. Its box runs from the rail to the key's edge and is wide
-// enough for the hook, the key and the key's whole swing (Safari clips an SVG to its box whatever
-// its overflow). Each stretch is a cubic whose handles reach `bend` of its height.
-const connector = computed(() => {
-  const H = Math.max(1, rod.value);
-  const pad = swing.settings.maxLag + 12;
-  const left = Math.min(props.node.hx, props.node.cx) - pad;
-  const W = Math.abs(props.node.cx - props.node.hx) + 2 * pad;
-  const hook = props.node.hx - left;
-  const k = props.node.cx - left;     // the key's rest position
-  const x = k + props.lag;
-  const t = tilt.value;
-  const b = swing.settings.bend;
-  const D = Math.min(pivot, H);
-  const L = H - D;
-  // A far-row rod first bends from the hook to above the key's rest position, arriving vertical at D.
-  const start = D ? `M ${hook} 0 C ${hook} ${b * D}, ${k} ${D - b * D}, ${k} ${D}` : `M ${hook} 0`;
-  const from = D ? k : hook;
-  // Then down to the key edge at the bottom (x, H), into the key along its local down.
-  const d = `${start} C ${from} ${D + b * L}, ${x + b * L * Math.sin(t)} ${H - b * L * Math.cos(t)}, ${x} ${H}`;
-  return { left, W, H, d };
+// The key hangs straight down from its hook on the rail by a ball chain, the kind that switches a
+// light on. While the board scrolls the key trails the rail by `lag` and swings back like a
+// pendulum: the chain, held taut by the key's weight, runs straight from the hook to the top of the
+// key, and the key turns with it (by the Tilt knob × the chain's angle). The name and year trail
+// the key in turn, a little further each. Pressing the key pulls it down, chain and all (--pull in
+// the styles). The tilt and trail factors are the Scroll physics window's knobs (stores/swing.js).
+const tilt = computed(() => -swing.settings.tilt * Math.atan2(props.lag, cy.value - RAIL_Y));
+// The chain runs from the hook to the middle of the key's top edge, wherever the key's turn puts it.
+const chainStyle = computed(() => {
+  const r = cy.value - topEdge.value;
+  const dx = props.lag + r * Math.sin(tilt.value);
+  const dy = cy.value - r * Math.cos(tilt.value) - RAIL_Y;
+  return {
+    left: rem(props.node.cx),
+    top: rem(RAIL_Y),
+    height: `calc(${rem(Math.hypot(dx, dy))} + var(--pull))`,
+    rotate: `${-Math.atan2(dx, dy)}rad`,
+  };
 });
-const connectorStyle = computed(() => ({
-  left: rem(connector.value.left),
-  top: rem(RAIL_Y),
-  width: rem(connector.value.W),
-  height: rem(connector.value.H),
-}));
 const nodeStyle = computed(() => ({
   left: rem(props.node.cx + props.lag),
   top: rem(cy.value),
   rotate: `${tilt.value}rad`,
+  '--cap': photo.value ? `url("${photo.value}")` : null,
 }));
 
 // Labels sit 21 canvas px below the node.
@@ -108,34 +89,54 @@ function onPress() {
 </script>
 
 <template>
-  <svg class="connector" :style="connectorStyle" :viewBox="`0 0 ${connector.W} ${connector.H}`" aria-hidden="true">
-    <path :d="connector.d" />
-  </svg>
-  <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.hx), top: rem(RAIL_Y) }">
-    <GlyphIcon v-if="photo && state === 'collected'" name="check" />
-  </div>
-  <button
-    class="node"
-    :class="{ 'node--photo': photo }"
-    :data-state="state"
-    :data-era="node.era"
-    :style="nodeStyle"
-    type="button"
-    :aria-label="label"
-    :aria-disabled="state === 'locked'"
-    @click="onPress"
-  >
-    <img v-if="photo" ref="img" class="photo" :src="photo" alt="" draggable="false" @load="measure">
-    <GlyphIcon v-else-if="glyph" class="glyph" :name="glyph" />
-    <span v-else class="glyph">PRESS</span>
-  </button>
-  <div class="node-label" :data-locked="state === 'locked'" :style="labelStyle">
-    <div class="name" :style="nameStyle">{{ node.short ?? node.name }}</div>   <!-- the plain name: ⌘ Command reads Command on the board -->
-    <div class="year" :style="yearStyle">{{ node.year }}</div>
+  <div class="hang">
+    <div class="chain" :style="chainStyle" />
+    <div class="rail-dot" :class="{ 'rail-dot--check': photo && state === 'collected' }" :style="{ left: rem(node.cx), top: rem(RAIL_Y) }">
+      <GlyphIcon v-if="photo && state === 'collected'" name="check" />
+    </div>
+    <button
+      class="node"
+      :class="{ 'node--photo': photo }"
+      :data-state="state"
+      :data-era="node.era"
+      :style="nodeStyle"
+      type="button"
+      :aria-label="label"
+      :aria-disabled="state === 'locked'"
+      @click="onPress"
+    >
+      <img v-if="photo" ref="img" class="photo" :src="photo" alt="" draggable="false" @load="measure">
+      <GlyphIcon v-else-if="glyph" class="glyph" :name="glyph" />
+      <span v-else class="glyph">PRESS</span>
+    </button>
+    <div class="node-label" :data-locked="state === 'locked'" :style="labelStyle">
+      <div class="name" :style="nameStyle">{{ node.short ?? node.name }}</div>   <!-- the plain name: ⌘ Command reads Command on the board -->
+      <div class="year" :style="yearStyle">{{ node.year }}</div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+/* Stacking within the board's tree: the chains at the back, then the rail (TimelineBoard, 2) and the
+   hooks on it, then the keys and their names, so a deeper key's chain runs down behind the keys above it. */
+.hang { display: contents; }
+.chain { z-index: 1; }
+.rail-dot { z-index: 3; }
+.node, .node-label { z-index: 4; }
+
+/* Pressing a key pulls its chain, as you would a light's: while it is held the key and its name drop
+   by --pull and the chain pays out after them, and on release they spring back, a little past rest. */
+@property --pull { syntax: '<length>'; inherits: true; initial-value: 0px; }
+.hang {
+  --pull: 0rem;
+  transition: --pull var(--dur-md) var(--ease-spring);
+}
+.hang:has(.node:active) {
+  --pull: 2.4rem;
+  transition: --pull var(--dur-xs) var(--ease-standard);
+}
+.node, .node-label { translate: 0 var(--pull); }
+
 .node {
   position: absolute;
   width: 21.6rem; height: 21.6rem;
@@ -145,17 +146,17 @@ function onPress() {
   background: var(--white);
   display: grid; place-items: center;
   color: var(--ink);
-  transition: transform var(--dur-xs) var(--ease-standard), background var(--dur-sm) var(--ease-standard), color var(--dur-sm) var(--ease-standard);
+  transition: background var(--dur-sm) var(--ease-standard), color var(--dur-sm) var(--ease-standard);
 }
-.node:active { transform: scale(.94); }
 .node .glyph { font: 500 var(--text-label)/var(--lh-label) var(--font-display); letter-spacing: .02em; }
 .node[data-state="collected"] { background: var(--ink); color: var(--white); }
 .node[data-state="collected"] .glyph { font-size: 7.2rem; }   /* the ✓ and ? icons are 1em */
-.node[data-state="locked"] { border-style: dashed; background: transparent; cursor: default; }
+/* Paper rather than clear, so a chain behind it stays hidden. */
+.node[data-state="locked"] { border-style: dashed; background: var(--paper); cursor: default; }
 .node[data-state="locked"] .glyph { font-size: 4.8rem; color: var(--muted); }
 
 /* A photographed key: the cap itself, no circle; the photo is shot on paper-white so its edges vanish.
-   Locked it is grey and faint; collected, the ✓ sits where its connector meets the rail (see .rail-dot--check). */
+   Locked it is grey and faint; collected, the ✓ sits where its chain meets the rail (see .rail-dot--check). */
 .node--photo {
   width: 34rem; height: 34rem;
   margin: -17rem 0 0 -17rem;
@@ -163,6 +164,14 @@ function onPress() {
 }
 /* No fill in any state (the collected rule above would paint it ink); the rail dot carries the state. */
 .node--photo[data-state] { background: none; }
+/* A paper cut-out of the cap behind the photo (--cap is the photo's URL), so a chain running behind a
+   faint locked cap is hidden by it rather than showing through. */
+.node--photo::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--paper);
+  mask: var(--cap) center / contain no-repeat;
+}
 .node--photo .photo {
   /* Pinned to the box rather than sized by percentages: the button's grid row is auto, so a
      percentage height would fall back to the image's own aspect ratio and a portrait photo would
@@ -181,23 +190,37 @@ function onPress() {
 }
 .node-label .name { font: 600 var(--text-body)/var(--lh-body) var(--font-body); }   /* Body strong: the names are the board's wayfinding */
 .node-label .year { font: 500 var(--text-label)/var(--lh-label) var(--font-display); color: var(--muted); letter-spacing: .02em; }
+/* Each line on paper, so a deeper key's chain passes behind the words instead of through them. */
+.node-label .name, .node-label .year { width: fit-content; margin-inline: auto; padding-inline: 0.8rem; background: var(--paper); }
 .node-label[data-locked="true"] { color: var(--muted); }
-.connector {
+
+/* A ball chain: steel beads on a fine wire, lit from the upper left. It hangs from its top edge at
+   the hook (left and top set inline) and swings about it; its length and angle come from the key's
+   position. The beads are laid from the key's end up, so when a press pulls more chain out they
+   travel down with the key and new ones come out from under the rail. */
+.chain {
   position: absolute;
-  overflow: visible;      /* a safety margin; the box already covers the key's whole swing */
+  width: 1.6rem; margin-left: -0.8rem;
+  transform-origin: 50% 0;
   pointer-events: none;
+  background:
+    radial-gradient(circle 0.32rem at 42% 42%, var(--white), transparent) 50% 100% / 1.6rem 2.2rem repeat-y,
+    radial-gradient(circle 0.8rem, var(--steel) 35%, var(--steel-dark) 85%, transparent) 50% 100% / 1.6rem 2.2rem repeat-y,
+    linear-gradient(90deg, transparent 0.65rem, var(--steel-dark) 0 0.95rem, transparent 0);
 }
-/* Stroke in canvas px (the viewBox's units): 3 = 0.3rem, dashed like the border it replaced. */
-.connector path { fill: none; stroke: var(--muted); stroke-width: 3; stroke-dasharray: 9 9; }
+/* The hook: a steel collar round the rail, shaded across like the rail is shaded down. */
 .rail-dot {
   position: absolute;
-  width: 2.4rem; height: 2.4rem; margin: -1.2rem 0 0 -1.2rem;
-  border-radius: 50%; background: var(--ink);
+  width: 1.6rem; height: 2.4rem; margin: -1.2rem 0 0 -0.8rem;
+  border-radius: 0.6rem;
+  background: linear-gradient(90deg, var(--steel-dark), var(--steel-light) 35%, var(--steel) 65%, var(--steel-dark));
   transition: width var(--dur-sm) var(--ease-standard), height var(--dur-sm) var(--ease-standard), margin var(--dur-sm) var(--ease-standard);
 }
-/* A collected photographed key: the junction grows into the ✓ badge, the same as a cleared era dot's. */
+/* A collected photographed key: the hook grows into the ✓ badge, the same as a cleared era dot's. */
 .rail-dot--check {
   width: 6.4rem; height: 6.4rem; margin: -3.2rem 0 0 -3.2rem;
+  border-radius: 50%;
+  background: var(--ink);
   display: grid; place-items: center;
   color: var(--white);
   font-size: 4.8rem;

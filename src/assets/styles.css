@@ -14,6 +14,10 @@
   --line-soft: oklch(0.836 0 0);            /* #c9c9c9: hairlines, card borders */
   --fill-soft: oklch(0.922 0 0);            /* #e5e5e5: image placeholder */
   --scrim:     oklch(0.269 0 0 / 0.72);     /* behind modals */
+  /* Steel: the rail the keys hang from and their ball chains, shaded from ink and white so it follows them. */
+  --steel-dark:  color-mix(in oklch, var(--ink) 85%, var(--white));
+  --steel:       color-mix(in oklch, var(--ink) 45%, var(--white));
+  --steel-light: color-mix(in oklch, var(--ink) 8%, var(--white));
   /* Corner radii, on the 0.4rem grid. --radius is the default (buttons). */
   --radius-xs: 1.2rem;   /* images inside cards */
   --radius-sm: 1.6rem;   /* panel rows and action groups */

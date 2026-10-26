@@ -3,7 +3,6 @@ import { BOARD_WIDTH, ERAS, IMAGE_SOURCES, KEYS, YEAR_WIDTH, yearX } from './con
 import { photoUrl } from '../lib/photos';
 
 describe('board layout', () => {
-  const PHOTO_R = 170;     // a photo key's box, the widest key
   const LABEL_W = 360;     // a key's name and year
   const pairs = KEYS.flatMap((a, i) => KEYS.slice(i + 1).map(b => [a, b]));
 
@@ -11,9 +10,9 @@ describe('board layout', () => {
     for (let i = 1; i < KEYS.length; i++) expect(KEYS[i].at, KEYS[i].id).toBeGreaterThanOrEqual(KEYS[i - 1].at);
   });
 
-  it('every hook is on the ruler, within a year of its key’s year', () => {
+  it('every key hangs from a hook on the ruler, within a year of its key’s year', () => {
     for (const k of KEYS) {
-      expect(Math.abs(k.hx - yearX(k.at)), k.id).toBeLessThan(YEAR_WIDTH);
+      expect(Math.abs(k.cx - yearX(k.at)), k.id).toBeLessThan(YEAR_WIDTH);
       expect(k.cx, k.id).toBeGreaterThanOrEqual(0);
       expect(k.cx, k.id).toBeLessThanOrEqual(BOARD_WIDTH);
     }
@@ -25,10 +24,9 @@ describe('board layout', () => {
     }
   });
 
-  it('a far-row rod clears every near-row key', () => {
-    for (const [a, b] of pairs.filter(([a, b]) => a.row !== b.row)) {
-      expect(Math.abs(a.cx - b.cx), `${a.id} / ${b.id}`).toBeGreaterThan(PHOTO_R + 30);
-    }
+  // The board's height is planned for three rows; a fourth would hang below a short window.
+  it('the keys hang in three rows at most', () => {
+    expect(Math.max(...KEYS.map(k => k.row))).toBeLessThanOrEqual(2);
   });
 
   it('every key lies in its own era’s stretch of the board', () => {
