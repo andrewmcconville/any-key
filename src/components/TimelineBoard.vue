@@ -226,9 +226,12 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
 .board[data-dragging="true"] { scroll-behavior: auto; }
 .board[data-dragging="true"], .board[data-dragging="true"] :deep(*) { cursor: grabbing; }
 .track {
-  /* Width and left padding set inline from the key data (see <script>). */
+  /* Width and left padding set inline from the key data (see <script>). The board runs the full
+     height of the stage under both HUD bars; the drawing starts below the top one and runs on down
+     past the top of the bottom one, so whatever hangs beside that bar still shows. */
   box-sizing: border-box;
   height: 100%;
+  padding-top: var(--hud-top-h);
   display: flex;
   overflow: hidden;       /* fallback */
   overflow: clip;         /* clip the tree's empty tail without becoming a scroll container */
@@ -257,7 +260,7 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-.eras { position: absolute; top: 0; }
+.eras { position: absolute; top: var(--hud-top-h); }   /* level with the tree's top */
 .era { position: absolute; top: 12rem; padding-right: var(--hud-gutter); }   /* the padding keeps the last label off the screen edge at scroll end */
 .era p { margin: 0; white-space: nowrap; color: var(--muted); }
 .era .era__lock { margin-top: 0.6rem; }
@@ -265,7 +268,7 @@ const lockLine = era => `LOCKED · collect ${UNLOCK_AT} keys in Era ${ERAS[era.i
 .era[data-locked="true"] .era__label { opacity: .7; }
 .swipe-hint {
   position: absolute;
-  bottom: 4.8rem;                  /* the board ends where the bottom HUD begins */
+  bottom: calc(var(--hud-bottom-h) + 4.8rem);   /* just above the bottom HUD, which lies over the board */
   left: 50%; translate: -50%;      /* centre of the board at scroll start */
   white-space: nowrap;
   color: var(--muted);

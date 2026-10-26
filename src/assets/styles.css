@@ -59,6 +59,10 @@
   --icon: 6.4rem;
   /* The HUD bars stop this far short of the stage's left and right edges, so paper shows round them. */
   --hud-gutter: 4.8rem;
+  /* The HUD bars' heights. They lie over the board, which runs the full height of the stage and
+     keeps its own contents clear of them; what hangs beside a bar shows past it. */
+  --hud-top-h:    calc(16.8rem + var(--safe-top));
+  --hud-bottom-h: calc(19.2rem + var(--safe-bottom));
 
   /* Safe areas. The viewport meta says viewport-fit=cover, so on phones the page is drawn behind
      the status bar, notch and gesture bar; the HUD bars, overlays and toast add these insets so

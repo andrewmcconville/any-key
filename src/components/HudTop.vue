@@ -53,8 +53,8 @@ const dashOffset = computed(() => LAP * (1 - shown.value / game.total));
 
 <style scoped>
 .hud-top {
-  flex: 0 0 auto;
-  height: calc(16.8rem + var(--safe-top));
+  position: absolute; top: 0; left: 0; right: 0;   /* over the board (see --hud-top-h) */
+  height: var(--hud-top-h);
   padding-top: var(--safe-top);
   /* Inset from the stage edges by --hud-gutter; the border runs down both sides and along the bottom, with rounded bottom corners. */
   width: calc(min(100%, var(--phone-w)) - 2 * var(--hud-gutter));

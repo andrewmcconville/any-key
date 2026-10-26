@@ -10,8 +10,8 @@ import EraDots from './EraDots.vue';
 
 <style scoped>
 .hud-bottom {
-  flex: 0 0 auto;
-  height: calc(19.2rem + var(--safe-bottom));
+  position: absolute; bottom: 0; left: 0; right: 0;   /* over the board (see --hud-bottom-h) */
+  height: var(--hud-bottom-h);
   padding-bottom: var(--safe-bottom);   /* keeps the era dots above the phone's gesture bar */
   /* Inset from the stage edges by --hud-gutter; the border runs down both sides and along the top, with rounded top corners. */
   width: calc(min(100%, var(--phone-w)) - 2 * var(--hud-gutter));
